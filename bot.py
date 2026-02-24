@@ -100,7 +100,7 @@ def main():
     _, _, hist = macd(close)
     a = atr(gold, 14)
 
-    price = float(close["Close"].iloc[-1])
+    price = float(close.iloc[-1])
     ema21_v = float(e21.iloc[i])
     ema50_v = float(e50.iloc[i])
     hist_v = float(hist.iloc[i])
