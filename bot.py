@@ -58,6 +58,22 @@ def fetch_ohlc(ticker: str) -> pd.DataFrame:
     if df is None or df.empty:
         raise RuntimeError(f"Sin datos para {ticker}")
     df = df.rename(columns=str.lower).dropna()
+    # Normaliza columnas para que siempre exista df["close"] como Serie
+if isinstance(df.columns, pd.MultiIndex):
+    # Caso MultiIndex: columnas tipo ('Close', 'GC=F')
+    if "Close" in df.columns.get_level_values(0):
+        close_df = df["Close"]
+    else:
+        close_df = df.xs("close", level=0, axis=1)
+    # si quedan varias columnas (por ticker), nos quedamos con la primera
+    df = pd.DataFrame({"close": close_df.iloc[:, 0]})
+else:
+    df = df.copy()
+    df.columns = [c.lower() for c in df.columns]
+    df = df[["close"]]
+
+df = df.dropna()
+return df
     return df
 
 def last_closed_index(df: pd.DataFrame) -> int:
@@ -100,7 +116,7 @@ def main():
     _, _, hist = macd(close)
     a = atr(gold, 14)
 
-    price = float(close.iloc[-1])
+    price = float(close.iloc[i])
     ema21_v = float(e21.iloc[i])
     ema50_v = float(e50.iloc[i])
     hist_v = float(hist.iloc[i])
