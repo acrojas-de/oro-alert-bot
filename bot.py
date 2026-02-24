@@ -74,7 +74,6 @@ else:
 
 df = df.dropna()
 return df
-    return df
 
 def last_closed_index(df: pd.DataFrame) -> int:
     return -2 if len(df) >= 3 else -1
