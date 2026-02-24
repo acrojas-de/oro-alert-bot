@@ -57,23 +57,22 @@ def fetch_ohlc(ticker: str) -> pd.DataFrame:
     df = yf.download(ticker, period=PERIOD, interval=TIMEFRAME, progress=False)
     if df is None or df.empty:
         raise RuntimeError(f"Sin datos para {ticker}")
-    df = df.rename(columns=str.lower).dropna()
-    # Normaliza columnas para que siempre exista df["close"] como Serie
-if isinstance(df.columns, pd.MultiIndex):
-    # Caso MultiIndex: columnas tipo ('Close', 'GC=F')
-    if "Close" in df.columns.get_level_values(0):
-        close_df = df["Close"]
-    else:
-        close_df = df.xs("close", level=0, axis=1)
-    # si quedan varias columnas (por ticker), nos quedamos con la primera
-    df = pd.DataFrame({"close": close_df.iloc[:, 0]})
-else:
-    df = df.copy()
-    df.columns = [c.lower() for c in df.columns]
-    df = df[["close"]]
 
-df = df.dropna()
-return df
+    # Si viene MultiIndex (a veces pasa con yfinance), aplana columnas
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(0)
+
+    # Normaliza nombres de columnas
+    df = df.rename(columns=str.lower).dropna()
+
+    # Asegura que existen las columnas necesarias (ATR usa high/low/close)
+    needed = ["open", "high", "low", "close"]
+    for col in needed:
+        if col not in df.columns:
+            raise RuntimeError(f"Falta columna '{col}' en datos de {ticker}. Columnas: {list(df.columns)}")
+
+    df = df.dropna()
+    return df
 
 def last_closed_index(df: pd.DataFrame) -> int:
     return -2 if len(df) >= 3 else -1
