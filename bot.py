@@ -93,6 +93,10 @@ def save_state(state: dict) -> None:
 
 # ===== MAIN =====
 def main():
+    send_telegram("🚀 TEST ORO BOT funcionando correctamente")
+
+    state = load_state()
+    position = state.get("position", "NONE")
     state = load_state()
     position = state.get("position", "NONE")  # NONE / LONG / SHORT
     entry = state.get("entry")
