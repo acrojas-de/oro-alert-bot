@@ -3,7 +3,7 @@ name: Macro Dashboard (Pages)
 on:
   workflow_dispatch:
   schedule:
-    - cron: "15 * * * *"   # cada hora, minuto 15
+    - cron: "15 * * * *"
 
 permissions:
   contents: write
@@ -23,7 +23,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pandas yfinance
-      
+
       - name: Generate dashboard data
         env:
           GOLD_TICKER: ${{ secrets.GOLD_TICKER }}
@@ -32,19 +32,20 @@ jobs:
           IXIC_TICKER: ${{ secrets.IXIC_TICKER }}
         run: |
           python macro_bot.py
-          echo "=== LIST ROOT ==="
-          ls -la
-          echo "=== LIST DOCS ==="
-          ls -la docs || true
-      
+
       - name: Commit updated data (if changed)
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add docs/macro_data.json
+
+          git fetch origin
+          git pull --rebase origin main
+
+          git add -A docs
+
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
             git commit -m "Update macro dashboard data"
-            git push
+            git push origin main
           fi
