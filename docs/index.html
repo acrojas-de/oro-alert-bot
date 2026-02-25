@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Macro Dashboard (Oro)</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<style>
+body{font-family:system-ui; margin:20px; background:#0f172a; color:#e2e8f0;}
+.card{background:#1e293b; padding:12px; border-radius:12px; margin-bottom:10px;}
+.grid{display:grid; gap:14px;}
+.badge{padding:4px 8px; border-radius:999px; font-size:12px; font-weight:bold;}
+.long{background:#14532d;}
+.mix{background:#78350f;}
+.short{background:#7f1d1d;}
+canvas{background:#0f172a;}
+</style>
+</head>
+
+<body>
+
+<h2>📡 Macro Dashboard</h2>
+<div id="updated"></div>
+
+<div class="card">
+Score: <span id="score"></span> |
+Bias: <span id="bias"></span> |
+Oro: <span id="gold"></span>
+</div>
+
+<div class="grid">
+<div class="card"><canvas id="goldChart"></canvas></div>
+<div class="card"><canvas id="scoreChart"></canvas></div>
+</div>
+
+<script>
+async function loadData(){
+const res = await fetch('./macro_data.json',{cache:'no-store'});
+const data = await res.json();
+const series = data.series;
+const last = series[series.length-1];
+
+document.getElementById("updated").innerText =
+"Actualizado: " + new Date(data.meta.updated_utc)
+.toLocaleString("es-ES",{timeZone:"Europe/Madrid"});
+
+document.getElementById("score").innerText = last.score + "/100";
+
+let biasText="🟡 Mixto"; let cls="mix";
+if(last.bias==="LONG_FAVORABLE"){biasText="🟢 LONG";cls="long";}
+if(last.bias==="SHORT_CUIDADO"){biasText="🔴 SHORT";cls="short";}
+
+const biasEl=document.getElementById("bias");
+biasEl.innerText=biasText;
+biasEl.className="badge "+cls;
+
+document.getElementById("gold").innerText=last.gold;
+
+const labels=series.map(x=>new Date(x.ts)
+.toLocaleString("es-ES",{timeZone:"Europe/Madrid"}));
+
+new Chart(document.getElementById("goldChart"),{
+type:"line",
+data:{
+labels:labels,
+datasets:[
+{label:"Gold",data:series.map(x=>x.gold)},
+{label:"EMA21",data:series.map(x=>x.gold_ema21)},
+{label:"EMA50",data:series.map(x=>x.gold_ema50)}
+]
+}
+});
+
+new Chart(document.getElementById("scoreChart"),{
+type:"line",
+data:{
+labels:labels,
+datasets:[
+{label:"Score",data:series.map(x=>x.score)}
+]
+}
+});
+}
+
+loadData();
+</script>
+
+</body>
+</html>
