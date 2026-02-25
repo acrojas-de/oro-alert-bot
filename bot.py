@@ -238,7 +238,8 @@ def main():
             save_state(state)
             return
 
-    print("No signal.")
+    send_telegram("DEBUG: Bot funcionando correctamente. No hay señal ahora mismo.")
+print("No signal.")
 
 if __name__ == "__main__":
     main()
