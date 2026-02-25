@@ -4,6 +4,8 @@ import pandas as pd
 import requests
 import yfinance as yf
 
+DEBUG = os.getenv("DEBUG", "0") == "1"
+
 # ===== CONFIG =====
 TIMEFRAME = "60m"
 PERIOD = "60d"
@@ -93,10 +95,8 @@ def save_state(state: dict) -> None:
 
 # ===== MAIN =====
 def main():
-    send_telegram("🚀 TEST ORO BOT funcionando correctamente")
-
-    state = load_state()
-    position = state.get("position", "NONE")
+    if DEBUG:
+        send_telegram("🚀 DEBUG: ORO BOT arrancó correctamente")
     state = load_state()
     position = state.get("position", "NONE")  # NONE / LONG / SHORT
     entry = state.get("entry")
@@ -238,8 +238,17 @@ def main():
             save_state(state)
             return
 
-    send_telegram("DEBUG: Bot funcionando correctamente. No hay señal ahora mismo.")
-print("No signal.")
+    # ===== DEBUG (si no hubo señal) =====
+    if DEBUG:
+        send_telegram(
+            "DEBUG: No hay señal ahora.\n"
+            f"position={position} entry={entry} sl={sl} tp={tp}\n"
+            f"price={price} ema21={ema21_v} ema50={ema50_v} hist={hist_v} atr={atr_v}\n"
+            f"dist_to_ema21={dist:.4f} max={MAX_DIST_TO_EMA21}\n"
+            f"uptrend={uptrend} downtrend={downtrend} dxy_weak={dxy_weak} dxy_strong={dxy_strong}"
+        )
+
+    print("No signal.")
 
 if __name__ == "__main__":
     main()
