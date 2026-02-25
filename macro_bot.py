@@ -50,7 +50,9 @@ def load_data(path: str) -> dict:
         return {"meta": {}, "series": []}
 
 def save_data(path: str, data: dict) -> None:
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    dir_ = os.path.dirname(path)
+    if dir_:
+        os.makedirs(dir_, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
