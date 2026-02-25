@@ -1,0 +1,29 @@
+{
+  "meta": {
+    "timeframe": "60m",
+    "period": "30d",
+    "updated_utc": "2026-02-25T19:50:35+00:00"
+  },
+  "series": [
+    {
+      "ts": "2026-02-25T19:50:35+00:00",
+      "score": 50,
+      "bias": "MIXTO_ESPERAR",
+      "gold": 5226.5,
+      "gold_ema21": 5204.04,
+      "gold_ema50": 5185.97,
+      "dxy": 97.703,
+      "dxy_ema21": 97.7952,
+      "tnx": 4.048,
+      "tnx_ema21": 4.0468,
+      "nasdaq": 23152.08,
+      "nasdaq_ema21": 22900.93,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
+    }
+  ]
+}
