@@ -197,6 +197,16 @@ def main():
         signals = signals[-200:]
     data["signals"] = signals
 
+    data["signals"] = data.get("signals", [])
+
+    data["signals"].append({
+        "ts": ts,
+        "asset": "GOLD",
+        "type": "WARN",
+        "reason": "TEST SIGNAL",
+        "strength": 1
+    })
+    
     save_data(DATA_PATH, data)
     print(f"Saved dashboard data: {DATA_PATH} (points={len(series)}) | signals={len(signals)}")
 
