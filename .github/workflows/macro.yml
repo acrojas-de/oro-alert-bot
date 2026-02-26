@@ -15,15 +15,9 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Sync with main
-        run: |
-          git fetch origin
-          git pull --rebase origin main
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -49,11 +43,11 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          git add -A docs
+          git add docs
 
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
             git commit -m "Update macro dashboard data"
-            git push origin HEAD:main
+            git push
           fi
