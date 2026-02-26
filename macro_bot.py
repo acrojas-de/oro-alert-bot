@@ -19,6 +19,9 @@ NASDAQ_TICKER = os.getenv("NASDAQ_TICKER", "^IXIC")
 DATA_PATH = os.getenv("MACRO_DATA_PATH", "docs/macro_data.json")
 MAX_POINTS = int(os.getenv("MAX_POINTS", "500"))
 
+# 0.30% = 0.003
+CONFIRM_PCT = float(os.getenv("CONFIRM_PCT", "0.003"))
+
 
 def ema(series: pd.Series, length: int) -> pd.Series:
     return series.ewm(span=length, adjust=False).mean()
@@ -53,16 +56,17 @@ def last_closed_index(series: pd.Series) -> int:
 
 def load_data(path: str) -> dict:
     if not os.path.exists(path):
-        return {"meta": {}, "series": [], "signals": []}
+        return {"meta": {}, "series": [], "signals": [], "state": {}}
     try:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
             data.setdefault("signals", [])
             data.setdefault("series", [])
             data.setdefault("meta", {})
+            data.setdefault("state", {})  # ✅ para confirmaciones pendientes
             return data
     except Exception:
-        return {"meta": {}, "series": [], "signals": []}
+        return {"meta": {}, "series": [], "signals": [], "state": {}}
 
 
 def save_data(path: str, data: dict) -> None:
@@ -142,26 +146,30 @@ def main():
     data = load_data(DATA_PATH)
     series = data.get("series", [])
     signals = data.get("signals", [])
+    state = data.get("state", {})
 
     # Limpia señales de prueba antiguas
     signals = [s for s in signals if s.get("reason") != "TEST SIGNAL"]
 
-    # Helper para señales
-    def add_signal(signals_list, ts_, asset, type_, reason, strength, price):
+    # Helper para señales (sin duplicados + con price + extras)
+    def add_signal(signals_list, ts_, asset, type_, reason, strength, price, extra=None):
         key = (ts_, asset, type_)
         for s in signals_list:
             if (s.get("ts"), s.get("asset"), s.get("type")) == key:
                 return
-        signals_list.append(
-            {
-                "ts": ts_,
-                "asset": asset,
-                "type": type_,
-                "reason": reason,
-                "strength": int(strength),
-                "price": round(float(price), 2),
-            }
-        )
+
+        item = {
+            "ts": ts_,
+            "asset": asset,
+            "type": type_,
+            "reason": reason,
+            "strength": int(strength),
+            "price": round(float(price), 2),
+        }
+        if extra and isinstance(extra, dict):
+            item.update(extra)
+
+        signals_list.append(item)
 
     # --- Señales por CRUCE (acción real) ---
     g_prev = float(gold.iloc[i_g - 1]) if len(gold) >= 3 else g
@@ -191,6 +199,84 @@ def main():
             g,
         )
 
+    # ----------------------------
+    # ✅ Confirmación por % (0.30%)
+    # ----------------------------
+
+    # Detectamos si se añadió BUY/SELL con este ts (en este run)
+    just_types = {
+        s.get("type")
+        for s in signals
+        if s.get("ts") == ts and s.get("asset") == "GOLD"
+    }
+
+    # Si hoy hay señal nueva, dejamos pendiente de confirmar (reemplaza lo anterior)
+    if "BUY" in just_types:
+        state["pending_confirm"] = {
+            "direction": "UP",
+            "from_ts": ts,
+            "from_price": float(g),
+            "threshold_pct": CONFIRM_PCT,
+            "source_type": "BUY",
+        }
+
+    if "SELL" in just_types:
+        state["pending_confirm"] = {
+            "direction": "DOWN",
+            "from_ts": ts,
+            "from_price": float(g),
+            "threshold_pct": CONFIRM_PCT,
+            "source_type": "SELL",
+        }
+
+    # Si hay confirmación pendiente, comprobamos si ya se cumplió
+    pc = state.get("pending_confirm")
+    if pc:
+        from_price = float(pc.get("from_price", g))
+        thr = float(pc.get("threshold_pct", CONFIRM_PCT))
+        move = float(g) - from_price
+        move_pct = (move / from_price) if from_price else 0.0
+
+        if pc.get("direction") == "DOWN" and move_pct <= -thr:
+            add_signal(
+                signals,
+                ts,
+                "GOLD",
+                "CONFIRM_DOWN",
+                f"Confirmación bajista: {move_pct*100:.2f}% ({move:.2f}$) desde {from_price:.2f}",
+                3,
+                g,
+                extra={
+                    "from_price": round(from_price, 2),
+                    "move": round(move, 2),
+                    "move_pct": round(move_pct, 6),
+                    "threshold_pct": thr,
+                    "source_ts": pc.get("from_ts"),
+                    "source_type": pc.get("source_type"),
+                },
+            )
+            state.pop("pending_confirm", None)
+
+        elif pc.get("direction") == "UP" and move_pct >= thr:
+            add_signal(
+                signals,
+                ts,
+                "GOLD",
+                "CONFIRM_UP",
+                f"Confirmación alcista: {move_pct*100:.2f}% (+{move:.2f}$) desde {from_price:.2f}",
+                3,
+                g,
+                extra={
+                    "from_price": round(from_price, 2),
+                    "move": round(move, 2),
+                    "move_pct": round(move_pct, 6),
+                    "threshold_pct": thr,
+                    "source_ts": pc.get("from_ts"),
+                    "source_type": pc.get("source_type"),
+                },
+            )
+            state.pop("pending_confirm", None)
+
     # TEST opcional
     if DEBUG_TEST_SIGNAL:
         add_signal(signals, ts, "GOLD", "WARN", "TEST SIGNAL", 1, g)
@@ -203,9 +289,12 @@ def main():
     data["meta"] = {"timeframe": TIMEFRAME, "period": PERIOD, "updated_utc": ts}
     data["series"] = series
     data["signals"] = signals
+    data["state"] = state
 
     save_data(DATA_PATH, data)
-    print(f"Saved dashboard data: {DATA_PATH} (points={len(series)}) | signals={len(signals)})")
+    print(
+        f"Saved dashboard data: {DATA_PATH} (points={len(series)}) | signals={len(signals)}"
+    )
 
 
 if __name__ == "__main__":
