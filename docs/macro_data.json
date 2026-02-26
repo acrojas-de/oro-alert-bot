@@ -2,7 +2,7 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-02-26T13:38:23+00:00"
+    "updated_utc": "2026-02-26T14:33:37+00:00"
   },
   "series": [
     {
@@ -546,6 +546,33 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-02-26T14:33:37+00:00",
+      "candle_ts": "2026-02-26T13:00:00+00:00",
+      "score": 0,
+      "bias": "SHORT_CUIDADO",
+      "gold": 5182.3,
+      "gold_ema21": 5198.16,
+      "gold_ema50": 5192.57,
+      "gold_rsi14": 44.07,
+      "gold_rsi14_prev": 50.17,
+      "dxy": 97.703,
+      "dxy_ema21": 97.6798,
+      "tnx": 4.048,
+      "tnx_ema21": 4.0469,
+      "nasdaq": 23156.64,
+      "nasdaq_ema21": 22945.0,
+      "ema_spread_pct": 0.001079,
+      "atr": 21.3078,
+      "atr_pct": 0.004112,
+      "ema21_slope_pct": -0.000306,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -601,15 +628,26 @@
       "from_price": 5200.0,
       "stop_price": 5192.2,
       "source_ts": "2026-02-26T12:00:00+00:00"
+    },
+    {
+      "ts": "2026-02-26T13:00:00+00:00",
+      "asset": "GOLD",
+      "type": "SELL",
+      "reason": "Cruce bajista: precio cae por debajo de EMA21",
+      "strength": 2,
+      "price": 5182.3,
+      "ema21": 5198.16,
+      "stop_price": 5190.07,
+      "confirm_pct": 0.003
     }
   ],
   "state": {
     "metrics": {
-      "ema_spread": 6.7576,
-      "ema_spread_pct": 0.0013,
-      "atr": 21.2623,
-      "atr_pct": 0.004089,
-      "ema21_slope_pct": 5e-06,
+      "ema_spread": 5.5906,
+      "ema_spread_pct": 0.001079,
+      "atr": 21.3078,
+      "atr_pct": 0.004112,
+      "ema21_slope_pct": -0.000306,
       "thresholds": {
         "COMP_EMA_PCT": 0.0015,
         "COMP_ATR_PCT": 0.0018,
@@ -619,14 +657,14 @@
     },
     "market_state": "NORMAL",
     "pending_confirm": {
-      "direction": "UP",
-      "from_ts": "2026-02-26T12:00:00+00:00",
-      "from_price": 5200.0,
+      "direction": "DOWN",
+      "from_ts": "2026-02-26T13:00:00+00:00",
+      "from_price": 5182.2998046875,
       "threshold_pct": 0.003,
-      "stop_price": 5192.200000000001,
+      "stop_price": 5190.073254394531,
       "warmup_bars": 1,
-      "source_type": "BUY",
-      "created_at": "2026-02-26T13:38:23+00:00"
+      "source_type": "SELL",
+      "created_at": "2026-02-26T14:33:37+00:00"
     }
   }
 }
