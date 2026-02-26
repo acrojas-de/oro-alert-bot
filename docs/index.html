@@ -1,147 +1,147 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Macro Dashboard (Oro)</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Macro Dashboard (Oro)</title>
 
-<style>
-body{font-family:system-ui; margin:20px; background:#0f172a; color:#e2e8f0;}
-.card{background:#1e293b; padding:12px; border-radius:12px; margin-bottom:10px;}
-.grid{display:grid; gap:14px;}
-.badge{padding:4px 8px; border-radius:999px; font-size:12px; font-weight:bold;}
-.long{background:#14532d;}
-.mix{background:#78350f;}
-.short{background:#7f1d1d;}
-canvas{background:#0f172a;}
-</style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    body{font-family:system-ui; margin:20px; background:#0f172a; color:#e2e8f0;}
+    .card{background:#1e293b; padding:12px; border-radius:12px; margin-bottom:10px;}
+    .grid{display:grid; gap:14px;}
+    .badge{padding:4px 8px; border-radius:999px; font-size:12px; font-weight:bold;}
+    .long{background:#14532d;}
+    .mix{background:#78350f;}
+    .short{background:#7f1d1d;}
+    canvas{background:#0f172a;}
+  </style>
 </head>
 
 <body>
 
-<h2>📡 Macro Dashboard</h2>
-<div id="updated"></div>
+  <h2>📡 Macro Dashboard</h2>
+  <div id="updated"></div>
 
-<div class="card">
-Score: <span id="score"></span> |
-Bias: <span id="bias"></span> |
-Oro: <span id="gold"></span>
-</div>
+  <div class="card">
+    Score: <span id="score"></span> |
+    Bias: <span id="bias"></span> |
+    Oro: <span id="gold"></span>
+  </div>
 
-  const signals = (data.signals || []).slice(-10).reverse();
-
-const last = signals[0];
-const lastText = document.getElementById("lastSignalText");
-const list = document.getElementById("signalsList");
-
-function iconFor(t){
-  if(t === "BUY") return "🟢⬆️";
-  if(t === "SELL") return "🔴⬇️";
-  return "🟠🚨";
-}
-
-if (!signals.length){
-  lastText.textContent = "Sin señales todavía.";
-  list.innerHTML = "";
-} else {
-  lastText.textContent = `${iconFor(last.type)} ${last.asset} — ${last.type} — ${last.reason}`;
-
-  list.innerHTML = signals.map(s => `
-    <div style="padding:10px; border:1px solid #2a2f3a; border-radius:10px;">
-      <div style="font-weight:700;">${iconFor(s.type)} ${s.asset} — ${s.type} (fuerza ${s.strength})</div>
-      <div style="opacity:.9">${s.reason}</div>
-      <div style="opacity:.65; font-size:12px">${s.ts}</div>
-    </div>
-  `).join("");
-}
-  
-<div class="grid">
-<div class="card"><canvas id="goldChart"></canvas></div>
-<div class="card"><canvas id="scoreChart"></canvas></div>
-</div>
-
-<script>
-async function loadData(){
-const res = await fetch('./macro_data.json',{cache:'no-store'});
-const data = await res.json();
-const series = data.series;
-const last = series[series.length-1];
-
- // ================= SEÑALES =================
-const signals = (data.signals || []).slice(-10).reverse();
-const lastSignalText = document.getElementById("lastSignalText");
-const signalsList = document.getElementById("signalsList");
-
-function iconFor(t){
-  if(t === "BUY") return "🟢⬆️";
-  if(t === "SELL") return "🔴⬇️";
-  return "🟠🚨";
-}
-
-if (!signals.length){
-  lastSignalText.innerText = "Sin señales.";
-  signalsList.innerHTML = "";
-} else {
-  const lastSig = signals[0];
-  lastSignalText.innerText =
-    `${iconFor(lastSig.type)} ${lastSig.asset} — ${lastSig.type} — ${lastSig.reason}`;
-
-  signalsList.innerHTML = signals.map(s => `
-    <div style="padding:10px; border:1px solid #2a2f3a; border-radius:10px;">
-      <div style="font-weight:700;">
-        ${iconFor(s.type)} ${s.asset} — ${s.type} (fuerza ${s.strength})
+  <!-- ✅ PANEL DE SEÑALES (HTML) -->
+  <div id="signalsPanel" class="card" style="border:1px solid #2a2f3a;">
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+      <div>
+        <div style="font-weight:700;">Señales</div>
+        <div id="lastSignalText" style="opacity:.9;">(cargando...)</div>
       </div>
-      <div style="opacity:.85">${s.reason}</div>
-      <div style="opacity:.6; font-size:12px">${new Date(s.ts).toLocaleString("es-ES")}</div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="https://www.etoro.com/" target="_blank"
+           style="padding:10px 14px; border-radius:10px; background:#1db954; color:#0b0f14; font-weight:700; text-decoration:none;">
+          Abrir eToro
+        </a>
+
+        <a href="https://www.binance.com/" target="_blank"
+           style="padding:10px 14px; border-radius:10px; background:#f0b90b; color:#0b0f14; font-weight:700; text-decoration:none;">
+          Abrir Binance
+        </a>
+      </div>
     </div>
-  `).join("");
-} 
 
-document.getElementById("updated").innerText =
-"Actualizado: " + new Date(data.meta.updated_utc)
-.toLocaleString("es-ES",{timeZone:"Europe/Madrid"});
+    <div id="signalsList" style="margin-top:10px; display:grid; gap:8px;"></div>
+  </div>
 
-document.getElementById("score").innerText = last.score + "/100";
+  <div class="grid">
+    <div class="card"><canvas id="goldChart"></canvas></div>
+    <div class="card"><canvas id="scoreChart"></canvas></div>
+  </div>
 
-let biasText="🟡 Mixto"; let cls="mix";
-if(last.bias==="LONG_FAVORABLE"){biasText="🟢 LONG";cls="long";}
-if(last.bias==="SHORT_CUIDADO"){biasText="🔴 SHORT";cls="short";}
+  <script>
+    async function loadData(){
+      const res = await fetch('./macro_data.json',{cache:'no-store'});
+      const data = await res.json();
+      const series = data.series || [];
+      const last = series[series.length-1];
 
-const biasEl=document.getElementById("bias");
-biasEl.innerText=biasText;
-biasEl.className="badge "+cls;
+      // ======= CABECERA =======
+      document.getElementById("updated").innerText =
+        "Actualizado: " + new Date(data.meta.updated_utc)
+          .toLocaleString("es-ES",{timeZone:"Europe/Madrid"});
 
-document.getElementById("gold").innerText=last.gold;
+      document.getElementById("score").innerText = last.score + "/100";
 
-const labels=series.map(x=>new Date(x.ts)
-.toLocaleString("es-ES",{timeZone:"Europe/Madrid"}));
+      let biasText="🟡 Mixto"; let cls="mix";
+      if(last.bias==="LONG_FAVORABLE"){biasText="🟢 LONG";cls="long";}
+      if(last.bias==="SHORT_CUIDADO"){biasText="🔴 SHORT";cls="short";}
 
-new Chart(document.getElementById("goldChart"),{
-type:"line",
-data:{
-labels:labels,
-datasets:[
-{label:"Gold",data:series.map(x=>x.gold)},
-{label:"EMA21",data:series.map(x=>x.gold_ema21)},
-{label:"EMA50",data:series.map(x=>x.gold_ema50)}
-]
-}
-});
+      const biasEl=document.getElementById("bias");
+      biasEl.innerText=biasText;
+      biasEl.className="badge "+cls;
 
-new Chart(document.getElementById("scoreChart"),{
-type:"line",
-data:{
-labels:labels,
-datasets:[
-{label:"Score",data:series.map(x=>x.score)}
-]
-}
-});
-}
+      document.getElementById("gold").innerText=last.gold;
 
-loadData();
-</script>
+      // ======= ✅ SEÑALES (JS) =======
+      const signals = (data.signals || []).slice(-10).reverse();
+      const lastSignalText = document.getElementById("lastSignalText");
+      const signalsList = document.getElementById("signalsList");
+
+      function iconFor(t){
+        if(t === "BUY") return "🟢⬆️";
+        if(t === "SELL") return "🔴⬇️";
+        return "🟠🚨";
+      }
+
+      if (!signals.length){
+        lastSignalText.textContent = "Sin señales.";
+        signalsList.innerHTML = "";
+      } else {
+        const lastSig = signals[0];
+        lastSignalText.textContent =
+          `${iconFor(lastSig.type)} ${lastSig.asset} — ${lastSig.type} — ${lastSig.reason}`;
+
+        signalsList.innerHTML = signals.map(s => `
+          <div style="padding:10px; border:1px solid #2a2f3a; border-radius:10px;">
+            <div style="font-weight:700;">
+              ${iconFor(s.type)} ${s.asset} — ${s.type} (fuerza ${s.strength})
+            </div>
+            <div style="opacity:.85">${s.reason}</div>
+            <div style="opacity:.6; font-size:12px">${new Date(s.ts).toLocaleString("es-ES")}</div>
+          </div>
+        `).join("");
+      }
+
+      // ======= GRÁFICOS =======
+      const labels = series.map(x => new Date(x.ts)
+        .toLocaleString("es-ES",{timeZone:"Europe/Madrid"}));
+
+      new Chart(document.getElementById("goldChart"),{
+        type:"line",
+        data:{
+          labels,
+          datasets:[
+            {label:"Gold",data:series.map(x=>x.gold)},
+            {label:"EMA21",data:series.map(x=>x.gold_ema21)},
+            {label:"EMA50",data:series.map(x=>x.gold_ema50)}
+          ]
+        }
+      });
+
+      new Chart(document.getElementById("scoreChart"),{
+        type:"line",
+        data:{
+          labels,
+          datasets:[
+            {label:"Score",data:series.map(x=>x.score)}
+          ]
+        }
+      });
+    }
+
+    loadData();
+  </script>
 
 </body>
 </html>
