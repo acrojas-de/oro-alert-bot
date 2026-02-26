@@ -2,7 +2,7 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-02-26T15:28:40+00:00"
+    "updated_utc": "2026-02-26T16:28:59+00:00"
   },
   "series": [
     {
@@ -600,6 +600,33 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-02-26T16:28:59+00:00",
+      "candle_ts": "2026-02-26T15:00:00+00:00",
+      "score": 75,
+      "bias": "LONG_FAVORABLE",
+      "gold": 5202.5,
+      "gold_ema21": 5197.15,
+      "gold_ema50": 5192.53,
+      "gold_rsi14": 51.82,
+      "gold_rsi14_prev": 43.69,
+      "dxy": 97.752,
+      "dxy_ema21": 97.6833,
+      "tnx": 4.014,
+      "tnx_ema21": 4.0434,
+      "nasdaq": 22742.63,
+      "nasdaq_ema21": 22926.6,
+      "ema_spread_pct": 0.000888,
+      "atr": 25.5307,
+      "atr_pct": 0.004907,
+      "ema21_slope_pct": 0.000103,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -666,15 +693,37 @@
       "ema21": 5198.16,
       "stop_price": 5190.07,
       "confirm_pct": 0.003
+    },
+    {
+      "ts": "2026-02-26T15:00:00+00:00",
+      "asset": "GOLD",
+      "type": "BUY",
+      "reason": "Cruce alcista: precio pasa por encima de EMA21",
+      "strength": 2,
+      "price": 5202.5,
+      "ema21": 5197.15,
+      "stop_price": 5194.7,
+      "confirm_pct": 0.003
+    },
+    {
+      "ts": "2026-02-26T16:28:59+00:00",
+      "asset": "GOLD",
+      "type": "STOP_HIT",
+      "reason": "Stop tocado (BUY): 5193.70 < 5194.70",
+      "strength": 4,
+      "price": 5193.7,
+      "from_price": 5202.5,
+      "stop_price": 5194.7,
+      "source_ts": "2026-02-26T15:00:00+00:00"
     }
   ],
   "state": {
     "metrics": {
-      "ema_spread": 4.4886,
-      "ema_spread_pct": 0.000866,
-      "atr": 22.4715,
-      "atr_pct": 0.004337,
-      "ema21_slope_pct": -0.000299,
+      "ema_spread": 4.6177,
+      "ema_spread_pct": 0.000888,
+      "atr": 25.5307,
+      "atr_pct": 0.004907,
+      "ema21_slope_pct": 0.000103,
       "thresholds": {
         "COMP_EMA_PCT": 0.0015,
         "COMP_ATR_PCT": 0.0018,
@@ -682,16 +731,6 @@
         "ATR_LEN": 14
       }
     },
-    "market_state": "NORMAL",
-    "pending_confirm": {
-      "direction": "DOWN",
-      "from_ts": "2026-02-26T13:00:00+00:00",
-      "from_price": 5182.2998046875,
-      "threshold_pct": 0.003,
-      "stop_price": 5190.073254394531,
-      "warmup_bars": 1,
-      "source_type": "SELL",
-      "created_at": "2026-02-26T14:33:37+00:00"
-    }
+    "market_state": "NORMAL"
   }
 }
