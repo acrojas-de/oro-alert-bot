@@ -11,30 +11,34 @@ import yfinance as yf
 # ======================
 DEBUG_TEST_SIGNAL = os.getenv("DEBUG_TEST_SIGNAL", "0") == "1"
 
-# Marco principal (señal)
-TIMEFRAME = os.getenv("TIMEFRAME", "60m")   # señal por cruce
+# Marco principal (estructura)
+TIMEFRAME = os.getenv("TIMEFRAME", "60m")
 PERIOD = os.getenv("PERIOD", "30d")
 
-# Marco rápido (confirmación al inicio de la vela siguiente)
-EXEC_TIMEFRAME = os.getenv("EXEC_TIMEFRAME", "5m")   # para “ver dirección”
+# Marco rápido (confirmación táctica)
+EXEC_TIMEFRAME = os.getenv("EXEC_TIMEFRAME", "5m")
 EXEC_PERIOD = os.getenv("EXEC_PERIOD", "7d")
 
+# Tickers
 GOLD_TICKER = os.getenv("GOLD_TICKER", "GC=F")
 DXY_TICKER = os.getenv("DXY_TICKER", "DX-Y.NYB")
 TNX_TICKER = os.getenv("TNX_TICKER", "^TNX")
 NASDAQ_TICKER = os.getenv("NASDAQ_TICKER", "^IXIC")
 
+# Output
 DATA_PATH = os.getenv("MACRO_DATA_PATH", "docs/macro_data.json")
 MAX_POINTS = int(os.getenv("MAX_POINTS", "500"))
 
-# Confirmación: % desde el precio del cruce (ej 0.30% = 0.003)
-CONFIRM_PCT = float(os.getenv("CONFIRM_PCT", "0.003"))
+# Confirmación / protección
+CONFIRM_PCT = float(os.getenv("CONFIRM_PCT", "0.003"))   # 0.30%
+SL_PCT = float(os.getenv("SL_PCT", "0.0015"))            # 0.15% stop pegado
+WARMUP_BARS = int(os.getenv("WARMUP_BARS", "1"))          # 1 vela de 5m = 5 min
 
-# Stop “tolerancia” pegada al cruce (ej 0.15% = 0.0015)
-SL_PCT = float(os.getenv("SL_PCT", "0.0015"))
-
-# Esperar “un instante” al inicio de la vela nueva (n velas de 5m)
-WARMUP_BARS = int(os.getenv("WARMUP_BARS", "1"))  # 2 velas de 5m = 10 min
+# ==== COMPRESIÓN / EXPANSIÓN (PRO) ====
+COMP_EMA_PCT = float(os.getenv("COMP_EMA_PCT", "0.0015"))  # 0.15% EMA21-EMA50 pegadas
+COMP_ATR_PCT = float(os.getenv("COMP_ATR_PCT", "0.0018"))  # 0.18% ATR% bajo
+SLOPE_PCT = float(os.getenv("SLOPE_PCT", "0.0002"))        # 0.02% EMA21 casi plana
+ATR_LEN = int(os.getenv("ATR_LEN", "14"))
 
 
 # ==============
@@ -55,9 +59,42 @@ def rsi(series: pd.Series, period: int = 14) -> pd.Series:
     return rsi_val.bfill().fillna(50)
 
 
+def atr(df: pd.DataFrame, length: int = 14) -> pd.Series:
+    high = df["high"]
+    low = df["low"]
+    close = df["close"]
+    prev_close = close.shift(1)
+
+    tr = pd.concat(
+        [
+            (high - low),
+            (high - prev_close).abs(),
+            (low - prev_close).abs(),
+        ],
+        axis=1,
+    ).max(axis=1)
+
+    return tr.ewm(alpha=1 / length, adjust=False).mean()
+
+
 # ==============
-# DATA IO
+# DATA FETCH
 # ==============
+def fetch_ohlc(ticker: str, period: str, interval: str) -> pd.DataFrame:
+    df = yf.download(ticker, period=period, interval=interval, progress=False)
+    if df is None or df.empty:
+        raise RuntimeError(f"Sin datos para {ticker} ({interval}/{period})")
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(0)
+    df = df.rename(columns=str.lower).dropna()
+
+    required = {"open", "high", "low", "close"}
+    if not required.issubset(set(df.columns)):
+        raise RuntimeError(f"Faltan OHLC en {ticker}. Columnas: {list(df.columns)}")
+
+    return df[["open", "high", "low", "close"]].dropna()
+
+
 def fetch_close(ticker: str, period: str, interval: str) -> pd.Series:
     df = yf.download(ticker, period=period, interval=interval, progress=False)
     if df is None or df.empty:
@@ -71,10 +108,13 @@ def fetch_close(ticker: str, period: str, interval: str) -> pd.Series:
 
 
 def last_closed_index(series: pd.Series) -> int:
-    # para evitar la vela “en formación” cuando hay suficiente histórico
+    # Evita la vela en formación cuando hay histórico suficiente
     return -2 if len(series) >= 3 else -1
 
 
+# ==============
+# JSON IO
+# ==============
 def load_data(path: str) -> dict:
     if not os.path.exists(path):
         return {"meta": {}, "series": [], "signals": [], "state": {}}
@@ -103,7 +143,7 @@ def save_data(path: str, data: dict) -> None:
 # ==============
 def add_signal(signals_list: list, ts_: str, asset: str, type_: str, reason: str,
                strength: int, price: float, extra: dict | None = None) -> None:
-    # dedupe por vela: ts + asset + type
+    # Dedup por vela: ts + asset + type
     key = (ts_, asset, type_)
     for s in signals_list:
         if (s.get("ts"), s.get("asset"), s.get("type")) == key:
@@ -119,11 +159,12 @@ def add_signal(signals_list: list, ts_: str, asset: str, type_: str, reason: str
     }
     if extra and isinstance(extra, dict):
         item.update(extra)
+
     signals_list.append(item)
 
 
 def pct_move(now: float, base: float) -> float:
-    if base == 0:
+    if not base:
         return 0.0
     return (now - base) / base
 
@@ -132,10 +173,10 @@ def pct_move(now: float, base: float) -> float:
 # MAIN
 # ==============
 def main():
-    # ---------
-    # 1) Marco principal (1H): señal por cruce
-    # ---------
-    gold = fetch_close(GOLD_TICKER, PERIOD, TIMEFRAME)
+    # ========== 1) Datos 1H (estructura) ==========
+    gold_df = fetch_ohlc(GOLD_TICKER, PERIOD, TIMEFRAME)
+    gold = gold_df["close"]
+
     dxy = fetch_close(DXY_TICKER, PERIOD, TIMEFRAME)
     tnx = fetch_close(TNX_TICKER, PERIOD, TIMEFRAME)
     nas = fetch_close(NASDAQ_TICKER, PERIOD, TIMEFRAME)
@@ -145,24 +186,30 @@ def main():
     i_t = last_closed_index(tnx)
     i_n = last_closed_index(nas)
 
-    # Timestamp REAL de la vela cerrada (clave anti-duplicados)
+    # Timestamp REAL de la vela 1H cerrada (anti duplicados)
     candle_ts = pd.Timestamp(gold.index[i_g]).to_pydatetime().replace(tzinfo=timezone.utc).isoformat()
+    now_ts = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
     g = float(gold.iloc[i_g])
     g_prev = float(gold.iloc[i_g - 1]) if len(gold) >= 3 else g
 
-    g_ema21 = float(ema(gold, 21).iloc[i_g])
-    ema21_prev = float(ema(gold, 21).iloc[i_g - 1]) if len(gold) >= 3 else g_ema21
+    ema21_series = ema(gold, 21)
+    ema50_series = ema(gold, 50)
+    g_ema21 = float(ema21_series.iloc[i_g])
+    g_ema50 = float(ema50_series.iloc[i_g])
 
-    g_ema50 = float(ema(gold, 50).iloc[i_g])
+    ema21_prev = float(ema21_series.iloc[i_g - 1]) if len(gold) >= 3 else g_ema21
+    ema21_slope_pct = ((g_ema21 - ema21_prev) / g) if g else 0.0
 
-    d = float(dxy.iloc[i_d]);  d_ema21 = float(ema(dxy, 21).iloc[i_d])
-    t = float(tnx.iloc[i_t]);  t_ema21 = float(ema(tnx, 21).iloc[i_t])
-    n = float(nas.iloc[i_n]);  n_ema21 = float(ema(nas, 21).iloc[i_n])
-
+    # RSI
     gold_rsi = rsi(gold, 14)
     g_rsi14 = float(gold_rsi.iloc[i_g])
     g_rsi14_prev = float(gold_rsi.iloc[i_g - 1]) if len(gold) >= 3 else g_rsi14
+
+    # Macro score (como lo tenías)
+    d = float(dxy.iloc[i_d]);  d_ema21 = float(ema(dxy, 21).iloc[i_d])
+    t = float(tnx.iloc[i_t]);  t_ema21 = float(ema(tnx, 21).iloc[i_t])
+    n = float(nas.iloc[i_n]);  n_ema21 = float(ema(nas, 21).iloc[i_n])
 
     score = 0
     score += 25 if (g > g_ema21 and g_ema21 > g_ema50) else 0
@@ -177,10 +224,27 @@ def main():
     else:
         bias = "MIXTO_ESPERAR"
 
-    now_ts = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    # ATR y compresión (PRO)
+    gold_atr = atr(gold_df, ATR_LEN)
+    g_atr = float(gold_atr.iloc[i_g])
+    atr_pct = (g_atr / g) if g else 0.0
 
+    ema_spread = abs(g_ema21 - g_ema50)
+    ema_spread_pct = (ema_spread / g) if g else 0.0
+
+    # ========== 2) Cargar JSON ==========
+    data = load_data(DATA_PATH)
+    series = data.get("series", [])
+    signals = data.get("signals", [])
+    state = data.get("state", {})
+
+    # Limpia señales de prueba antiguas
+    signals = [s for s in signals if s.get("reason") != "TEST SIGNAL"]
+
+    # ========== 3) Guardar punto de serie ==========
     row = {
         "ts": now_ts,
+        "candle_ts": candle_ts,
         "score": score,
         "bias": bias,
         "gold": round(g, 2),
@@ -194,6 +258,10 @@ def main():
         "tnx_ema21": round(t_ema21, 4),
         "nasdaq": round(n, 2),
         "nasdaq_ema21": round(n_ema21, 2),
+        "ema_spread_pct": round(ema_spread_pct, 6),
+        "atr": round(g_atr, 4),
+        "atr_pct": round(atr_pct, 6),
+        "ema21_slope_pct": round(ema21_slope_pct, 6),
         "tickers": {
             "gold": GOLD_TICKER,
             "dxy": DXY_TICKER,
@@ -202,20 +270,10 @@ def main():
         },
     }
 
-    data = load_data(DATA_PATH)
-    series = data.get("series", [])
-    signals = data.get("signals", [])
-    state = data.get("state", {})
-
-    # Limpia señales de prueba antiguas
-    signals = [s for s in signals if s.get("reason") != "TEST SIGNAL"]
-
-    # ---------
-    # 2) Señal por cruce (1H)
-    # ---------
+    # ========== 4) Señales por CRUCE (1H) ==========
     just_types = set()
 
-    # BUY: cruza de abajo a arriba EMA21
+    # BUY cruce arriba
     if (g_prev <= ema21_prev) and (g > g_ema21):
         add_signal(
             signals,
@@ -226,15 +284,14 @@ def main():
             2,
             g,
             extra={
-                "from_candle_ts": candle_ts,
                 "ema21": round(g_ema21, 2),
-                "stop_price": round(g * (1 - SL_PCT), 2),   # stop sugerido (pegado)
-                "confirm_pct": CONFIRM_PCT
-            }
+                "stop_price": round(g * (1 - SL_PCT), 2),
+                "confirm_pct": CONFIRM_PCT,
+            },
         )
         just_types.add("BUY")
 
-    # SELL: cruza de arriba a abajo EMA21
+    # SELL cruce abajo
     if (g_prev >= ema21_prev) and (g < g_ema21):
         add_signal(
             signals,
@@ -245,59 +302,129 @@ def main():
             2,
             g,
             extra={
-                "from_candle_ts": candle_ts,
                 "ema21": round(g_ema21, 2),
-                "stop_price": round(g * (1 + SL_PCT), 2),   # stop sugerido (pegado)
-                "confirm_pct": CONFIRM_PCT
-            }
+                "stop_price": round(g * (1 + SL_PCT), 2),
+                "confirm_pct": CONFIRM_PCT,
+            },
         )
         just_types.add("SELL")
 
-    # ---------
-    # 3) Preparar confirmación desde el precio del cruce
-    #    y “esperar un instante” al inicio de la vela siguiente (5m)
-    # ---------
+    # ========== 5) PRO: COMPRESIÓN / EXPANSIÓN ==========
+    is_ema_tight = ema_spread_pct <= COMP_EMA_PCT
+    is_atr_low = atr_pct <= COMP_ATR_PCT
+    is_flat = abs(ema21_slope_pct) <= SLOPE_PCT
+    compression_now = bool(is_ema_tight and is_atr_low and is_flat)
+
+    prev_comp = bool(state.get("compression_active", False))
+
+    state["metrics"] = {
+        "ema_spread": round(ema_spread, 4),
+        "ema_spread_pct": round(ema_spread_pct, 6),
+        "atr": round(g_atr, 4),
+        "atr_pct": round(atr_pct, 6),
+        "ema21_slope_pct": round(ema21_slope_pct, 6),
+        "thresholds": {
+            "COMP_EMA_PCT": COMP_EMA_PCT,
+            "COMP_ATR_PCT": COMP_ATR_PCT,
+            "SLOPE_PCT": SLOPE_PCT,
+            "ATR_LEN": ATR_LEN,
+        },
+    }
+
+    if compression_now and not prev_comp:
+        state["compression_active"] = True
+        state["compression_from_ts"] = candle_ts
+        state["compression_from_price"] = float(g)
+        add_signal(
+            signals,
+            candle_ts,
+            "GOLD",
+            "COMPRESSION_ON",
+            "EMAs hermanadas + ATR bajo + EMA21 plana (energía cargándose)",
+            1,
+            g,
+            extra={"ema_spread_pct": round(ema_spread_pct, 6), "atr_pct": round(atr_pct, 6)},
+        )
+
+    if (not compression_now) and prev_comp:
+        state["compression_active"] = False
+        add_signal(
+            signals,
+            candle_ts,
+            "GOLD",
+            "COMPRESSION_OFF",
+            "Fin de compresión (empieza expansión)",
+            1,
+            g,
+            extra={"ema_spread_pct": round(ema_spread_pct, 6), "atr_pct": round(atr_pct, 6)},
+        )
+
+        # Dirección de expansión tras compresión
+        if (g > g_ema21) and (ema21_slope_pct > SLOPE_PCT):
+            state["market_state"] = "EXPANSION_UP"
+            add_signal(
+                signals,
+                candle_ts,
+                "GOLD",
+                "EXPANSION_UP",
+                "Inicio expansión alcista tras compresión (posible movimiento fuerte)",
+                2,
+                g,
+                extra={"ema21_slope_pct": round(ema21_slope_pct, 6)},
+            )
+        elif (g < g_ema21) and (ema21_slope_pct < -SLOPE_PCT):
+            state["market_state"] = "EXPANSION_DOWN"
+            add_signal(
+                signals,
+                candle_ts,
+                "GOLD",
+                "EXPANSION_DOWN",
+                "Inicio expansión bajista tras compresión (posible movimiento fuerte)",
+                2,
+                g,
+                extra={"ema21_slope_pct": round(ema21_slope_pct, 6)},
+            )
+        else:
+            state["market_state"] = "EXPANSION_UNCLEAR"
+
+    if compression_now:
+        state["market_state"] = "COMPRESSION"
+    else:
+        state.setdefault("market_state", "NORMAL")
+
+    # ========== 6) Confirmación táctica (5m) desde el cruce ==========
+    # Si hoy se generó BUY/SELL, dejamos confirmación pendiente (reemplaza anterior)
     if "BUY" in just_types:
         state["pending_confirm"] = {
             "direction": "UP",
             "from_ts": candle_ts,
-            "from_price": float(g),       # ✅ desde el precio del cruce
+            "from_price": float(g),                 # ✅ desde cruce
             "threshold_pct": CONFIRM_PCT,
             "stop_price": float(g) * (1 - SL_PCT),
-            "warmup_bars": WARMUP_BARS,
+            "warmup_bars": WARMUP_BARS,            # ✅ 1 = 5 min
             "source_type": "BUY",
-            "created_at": now_ts
+            "created_at": now_ts,
         }
 
     if "SELL" in just_types:
         state["pending_confirm"] = {
             "direction": "DOWN",
             "from_ts": candle_ts,
-            "from_price": float(g),       # ✅ desde el precio del cruce
+            "from_price": float(g),                 # ✅ desde cruce
             "threshold_pct": CONFIRM_PCT,
             "stop_price": float(g) * (1 + SL_PCT),
-            "warmup_bars": WARMUP_BARS,
+            "warmup_bars": WARMUP_BARS,            # ✅ 1 = 5 min
             "source_type": "SELL",
-            "created_at": now_ts
+            "created_at": now_ts,
         }
 
-    # Si hay confirmación pendiente, miramos marco 5m:
-    # - esperamos WARMUP_BARS velas
-    # - luego medimos si el precio se mueve en la dirección esperada
     pc = state.get("pending_confirm")
     if pc:
-        # data 5m (para “ver dirección” al empezar la vela nueva)
         exec_gold = fetch_close(GOLD_TICKER, EXEC_PERIOD, EXEC_TIMEFRAME)
-
-        # usamos vela cerrada de 5m (también evitar “en formación”)
         i_e = last_closed_index(exec_gold)
 
-        # tomamos “warmup” mirando el cambio desde hace N velas de 5m
         warm = int(pc.get("warmup_bars", WARMUP_BARS))
-        if len(exec_gold) >= (abs(i_e) + warm + 1):
-            base_idx = i_e - warm
-        else:
-            base_idx = i_e
+        base_idx = i_e - warm if len(exec_gold) >= (abs(i_e) + warm + 1) else i_e
 
         p_now = float(exec_gold.iloc[i_e])
         p_base = float(exec_gold.iloc[base_idx])
@@ -309,17 +436,17 @@ def main():
         move = p_now - from_price
         move_pct = pct_move(p_now, from_price)
 
-        # Si toca stop (protección cerca)
+        # Stop hit (protección pegada)
         if pc.get("direction") == "DOWN" and p_now > stop_price:
             add_signal(
                 signals,
                 now_ts,
                 "GOLD",
                 "STOP_HIT",
-                f"Stop tocado (SELL): precio sube a {p_now:.2f} (> {stop_price:.2f})",
+                f"Stop tocado (SELL): {p_now:.2f} > {stop_price:.2f}",
                 4,
                 p_now,
-                extra={"from_price": round(from_price, 2), "stop_price": round(stop_price, 2), "source_ts": pc.get("from_ts")}
+                extra={"from_price": round(from_price, 2), "stop_price": round(stop_price, 2), "source_ts": pc.get("from_ts")},
             )
             state.pop("pending_confirm", None)
 
@@ -329,15 +456,15 @@ def main():
                 now_ts,
                 "GOLD",
                 "STOP_HIT",
-                f"Stop tocado (BUY): precio baja a {p_now:.2f} (< {stop_price:.2f})",
+                f"Stop tocado (BUY): {p_now:.2f} < {stop_price:.2f}",
                 4,
                 p_now,
-                extra={"from_price": round(from_price, 2), "stop_price": round(stop_price, 2), "source_ts": pc.get("from_ts")}
+                extra={"from_price": round(from_price, 2), "stop_price": round(stop_price, 2), "source_ts": pc.get("from_ts")},
             )
             state.pop("pending_confirm", None)
 
         else:
-            # Confirmación por % (desde el cruce)
+            # Confirmación por % desde el cruce
             if pc.get("direction") == "DOWN" and move_pct <= -thr:
                 add_signal(
                     signals,
@@ -390,9 +517,7 @@ def main():
     if DEBUG_TEST_SIGNAL:
         add_signal(signals, now_ts, "GOLD", "WARN", "TEST SIGNAL", 1, g)
 
-    # ---------
-    # 4) Guardar datos
-    # ---------
+    # ========== 7) Guardar todo ==========
     series.append(row)
     if len(series) > MAX_POINTS:
         series = series[-MAX_POINTS:]
