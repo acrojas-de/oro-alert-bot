@@ -2,7 +2,7 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-02-26T19:13:58+00:00"
+    "updated_utc": "2026-02-26T19:55:34+00:00"
   },
   "series": [
     {
@@ -708,6 +708,33 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-02-26T19:55:34+00:00",
+      "candle_ts": "2026-02-26T18:00:00+00:00",
+      "score": 75,
+      "bias": "LONG_FAVORABLE",
+      "gold": 5196.9,
+      "gold_ema21": 5195.97,
+      "gold_ema50": 5192.52,
+      "gold_rsi14": 50.15,
+      "gold_rsi14_prev": 45.4,
+      "dxy": 97.907,
+      "dxy_ema21": 97.7364,
+      "tnx": 4.025,
+      "tnx_ema21": 4.0372,
+      "nasdaq": 22841.39,
+      "nasdaq_ema21": 22885.56,
+      "ema_spread_pct": 0.000665,
+      "atr": 25.1621,
+      "atr_pct": 0.004842,
+      "ema21_slope_pct": 1.8e-05,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -822,7 +849,7 @@
   ],
   "state": {
     "metrics": {
-      "ema_spread": 3.4585,
+      "ema_spread": 3.4579,
       "ema_spread_pct": 0.000665,
       "atr": 25.1621,
       "atr_pct": 0.004842,
@@ -843,7 +870,7 @@
       "stop_price": 5189.104552490235,
       "warmup_bars": 1,
       "source_type": "BUY",
-      "created_at": "2026-02-26T19:13:58+00:00"
+      "created_at": "2026-02-26T19:55:34+00:00"
     }
   }
 }
