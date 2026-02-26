@@ -2,7 +2,7 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-02-26T06:13:42+00:00"
+    "updated_utc": "2026-02-26T07:30:20+00:00"
   },
   "series": [
     {
@@ -132,6 +132,28 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-02-26T07:30:20+00:00",
+      "score": 50,
+      "bias": "MIXTO_ESPERAR",
+      "gold": 5209.8,
+      "gold_ema21": 5204.01,
+      "gold_ema50": 5192.57,
+      "gold_rsi14": 53.0,
+      "gold_rsi14_prev": 54.93,
+      "dxy": 97.577,
+      "dxy_ema21": 97.6609,
+      "tnx": 4.048,
+      "tnx_ema21": 4.0468,
+      "nasdaq": 23152.89,
+      "nasdaq_ema21": 22923.84,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -141,34 +163,6 @@
       "type": "SELL",
       "reason": "Precio pierde EMA21 (posible debilidad)",
       "strength": 2
-    },
-    {
-      "ts": "2026-02-25T23:46:14+00:00",
-      "asset": "GOLD",
-      "type": "WARN",
-      "reason": "TEST SIGNAL",
-      "strength": 1
-    },
-    {
-      "ts": "2026-02-26T03:12:45+00:00",
-      "asset": "GOLD",
-      "type": "WARN",
-      "reason": "TEST SIGNAL",
-      "strength": 1
-    },
-    {
-      "ts": "2026-02-26T05:04:07+00:00",
-      "asset": "GOLD",
-      "type": "WARN",
-      "reason": "TEST SIGNAL",
-      "strength": 1
-    },
-    {
-      "ts": "2026-02-26T06:13:42+00:00",
-      "asset": "GOLD",
-      "type": "WARN",
-      "reason": "TEST SIGNAL",
-      "strength": 1
     }
   ]
 }
