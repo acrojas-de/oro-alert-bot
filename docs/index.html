@@ -8,140 +8,176 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-  <style>
-    body{font-family:system-ui; margin:20px; background:#0f172a; color:#e2e8f0;}
-    .card{background:#1e293b; padding:12px; border-radius:12px; margin-bottom:10px;}
-    .grid{display:grid; gap:14px;}
-    .badge{padding:4px 8px; border-radius:999px; font-size:12px; font-weight:bold;}
-    .long{background:#14532d;}
-    .mix{background:#78350f;}
-    .short{background:#7f1d1d;}
-    canvas{background:#0f172a;}
-  </style>
 </head>
 
 <body>
 
-  <h2>📡 Macro Dashboard</h2>
-  <div id="updated"></div>
-
-  <div class="card">
-    Score: <span id="score"></span> |
-    Bias: <span id="bias"></span> |
-    Oro: <span id="gold"></span>
-  </div>
-
-  <!-- ✅ PANEL DE SEÑALES (HTML) -->
-  <div id="signalsPanel" class="card" style="border:1px solid #2a2f3a;">
-    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
-      <div>
-        <div style="font-weight:700;">Señales</div>
-        <div id="lastSignalText" style="opacity:.9;">(cargando...)</div>
-      </div>
-
-      <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <a href="https://www.etoro.com/" target="_blank"
-           style="padding:10px 14px; border-radius:10px; background:#1db954; color:#0b0f14; font-weight:700; text-decoration:none;">
-          Abrir eToro
-        </a>
-
-        <a href="https://www.binance.com/" target="_blank"
-           style="padding:10px 14px; border-radius:10px; background:#f0b90b; color:#0b0f14; font-weight:700; text-decoration:none;">
-          Abrir Binance
-        </a>
-      </div>
+  <!-- TOPBAR FIJA -->
+  <div class="topbar">
+    <div class="left">
+      <div style="font-weight:800;">📡 Macro Dashboard</div>
+      <div id="updated" style="opacity:.8;"></div>
     </div>
 
-    <div id="signalsList" style="margin-top:10px; display:grid; gap:8px;"></div>
+    <div class="right">
+      <div class="card" style="margin:0; padding:8px 10px;">
+        Score: <span id="score"></span> |
+        Bias: <span id="bias" class="badge mix"></span> |
+        Oro: <span id="gold"></span>
+      </div>
+    </div>
   </div>
 
-  <div class="grid">
-    <div class="card"><canvas id="goldChart"></canvas></div>
-    <div class="card"><canvas id="scoreChart"></canvas></div>
+  <!-- CONTENIDO (SCROLL INTERNO) -->
+  <div class="main">
+    <!-- ✅ PANEL DE SEÑALES -->
+    <div id="signalsPanel" class="card">
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+        <div>
+          <div style="font-weight:700;">Señales</div>
+          <div id="lastSignalText" style="opacity:.9;">(cargando...)</div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <a class="btn" href="https://www.etoro.com/" target="_blank"
+             style="background:#1db954; color:#0b0f14; font-weight:800; text-decoration:none;">
+            Abrir eToro
+          </a>
+
+          <a class="btn" href="https://www.binance.com/" target="_blank"
+             style="background:#f0b90b; color:#0b0f14; font-weight:800; text-decoration:none;">
+            Abrir Binance
+          </a>
+        </div>
+      </div>
+
+      <div id="signalsList" style="margin-top:10px; display:grid; gap:8px;"></div>
+    </div>
+
+    <!-- GRÁFICOS -->
+    <div class="grid">
+      <div class="chart-card">
+        <div class="chart-wrap">
+          <canvas id="goldChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-wrap">
+          <canvas id="scoreChart"></canvas>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
-    async function loadData(){
-      const res = await fetch('./macro_data.json',{cache:'no-store'});
-      const data = await res.json();
-      const series = data.series || [];
-      const last = series[series.length-1];
+let goldChartInstance = null;
+let scoreChartInstance = null;
 
-      // ======= CABECERA =======
-      document.getElementById("updated").innerText =
-        "Actualizado: " + new Date(data.meta.updated_utc)
-          .toLocaleString("es-ES",{timeZone:"Europe/Madrid"});
+async function loadData() {
+  const res = await fetch('./macro_data.json', { cache: 'no-store' });
+  const data = await res.json();
+  const series = data.series || [];
 
-      document.getElementById("score").innerText = last.score + "/100";
+  // ✅ si no hay datos, salimos sin romper
+  if (!series.length) {
+    document.getElementById("updated").innerText = "Sin datos aún…";
+    return;
+  }
 
-      let biasText="🟡 Mixto"; let cls="mix";
-      if(last.bias==="LONG_FAVORABLE"){biasText="🟢 LONG";cls="long";}
-      if(last.bias==="SHORT_CUIDADO"){biasText="🔴 SHORT";cls="short";}
+  const last = series[series.length - 1];
 
-      const biasEl=document.getElementById("bias");
-      biasEl.innerText=biasText;
-      biasEl.className="badge "+cls;
+  // ======= CABECERA =======
+  document.getElementById("updated").innerText =
+    "Actualizado: " + new Date(data.meta.updated_utc)
+      .toLocaleString("es-ES", { timeZone: "Europe/Madrid" });
 
-      document.getElementById("gold").innerText=last.gold;
+  document.getElementById("score").innerText = last.score + "/100";
 
-      // ======= ✅ SEÑALES (JS) =======
-      const signals = (data.signals || []).slice(-10).reverse();
-      const lastSignalText = document.getElementById("lastSignalText");
-      const signalsList = document.getElementById("signalsList");
+  let biasText = "🟡 Mixto";
+  let cls = "mix";
+  if (last.bias === "LONG_FAVORABLE") { biasText = "🟢 LONG"; cls = "long"; }
+  if (last.bias === "SHORT_CUIDADO") { biasText = "🔴 SHORT"; cls = "short"; }
 
-      function iconFor(t){
-        if(t === "BUY") return "🟢⬆️";
-        if(t === "SELL") return "🔴⬇️";
-        return "🟠🚨";
-      }
+  const biasEl = document.getElementById("bias");
+  biasEl.innerText = biasText;
+  biasEl.className = "badge " + cls;
 
-      if (!signals.length){
-        lastSignalText.textContent = "Sin señales.";
-        signalsList.innerHTML = "";
-      } else {
-        const lastSig = signals[0];
-        lastSignalText.textContent =
-          `${iconFor(lastSig.type)} ${lastSig.asset} — ${lastSig.type} — ${lastSig.reason}`;
+  document.getElementById("gold").innerText = last.gold;
 
-        signalsList.innerHTML = signals.map(s => `
-          <div style="padding:10px; border:1px solid #2a2f3a; border-radius:10px;">
-            <div style="font-weight:700;">
-              ${iconFor(s.type)} ${s.asset} — ${s.type} (fuerza ${s.strength})
-            </div>
-            <div style="opacity:.85">${s.reason}</div>
-            <div style="opacity:.6; font-size:12px">${new Date(s.ts).toLocaleString("es-ES")}</div>
-          </div>
-        `).join("");
-      }
+  // ======= SEÑALES =======
+  const signals = (data.signals || []).slice(-10).reverse();
+  const lastSignalText = document.getElementById("lastSignalText");
+  const signalsList = document.getElementById("signalsList");
 
-      // ======= GRÁFICOS =======
-      const labels = series.map(x => new Date(x.ts)
-        .toLocaleString("es-ES",{timeZone:"Europe/Madrid"}));
+  function iconFor(t) {
+    if (t === "BUY") return "🟢⬆️";
+    if (t === "SELL") return "🔴⬇️";
+    return "🟠🚨";
+  }
 
-      new Chart(document.getElementById("goldChart"),{
-        type:"line",
-        data:{
-          labels,
-          datasets:[
-            {label:"Gold",data:series.map(x=>x.gold)},
-            {label:"EMA21",data:series.map(x=>x.gold_ema21)},
-            {label:"EMA50",data:series.map(x=>x.gold_ema50)}
-          ]
-        }
-      });
+  if (!signals.length) {
+    lastSignalText.textContent = "Sin señales.";
+    signalsList.innerHTML = "";
+  } else {
+    const lastSig = signals[0];
+    lastSignalText.textContent =
+      `${iconFor(lastSig.type)} ${lastSig.asset} — ${lastSig.type} — ${lastSig.reason}`;
 
-      new Chart(document.getElementById("scoreChart"),{
-        type:"line",
-        data:{
-          labels,
-          datasets:[
-            {label:"Score",data:series.map(x=>x.score)}
-          ]
-        }
-      });
+    signalsList.innerHTML = signals.map(s => `
+      <div class="card" style="padding:10px;">
+        <div style="font-weight:700;">
+          ${iconFor(s.type)} ${s.asset} — ${s.type} (fuerza ${s.strength})
+        </div>
+        <div style="opacity:.85">${s.reason}</div>
+        <div style="opacity:.6; font-size:12px">${new Date(s.ts).toLocaleString("es-ES")}</div>
+      </div>
+    `).join("");
+  }
+
+  // ======= GRÁFICOS =======
+  const labels = series.map(x =>
+    new Date(x.ts).toLocaleString("es-ES", { timeZone: "Europe/Madrid" })
+  );
+
+  // ✅ destruir ANTES de crear nuevos (evita duplicados)
+  if (goldChartInstance) goldChartInstance.destroy();
+  if (scoreChartInstance) scoreChartInstance.destroy();
+
+  goldChartInstance = new Chart(document.getElementById("goldChart"), {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        { label: "Gold", data: series.map(x => x.gold) },
+        { label: "EMA21", data: series.map(x => x.gold_ema21) },
+        { label: "EMA50", data: series.map(x => x.gold_ema50) }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false
     }
+  });
 
-    loadData();
+  scoreChartInstance = new Chart(document.getElementById("scoreChart"), {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        { label: "Score", data: series.map(x => x.score) }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false
+    }
+  });
+}
+
+// ✅ 1ª carga + refresco cada 30s
+loadData();
+setInterval(loadData, 30000);
   </script>
 
 </body>
