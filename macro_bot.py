@@ -5,6 +5,9 @@ from datetime import datetime, timezone
 import pandas as pd
 import yfinance as yf
 
+# 👇 AQUÍ MISMO
+DEBUG_TEST_SIGNAL = os.getenv("DEBUG_TEST_SIGNAL", "0") == "1"
+
 TIMEFRAME = os.getenv("TIMEFRAME", "60m")
 PERIOD = os.getenv("PERIOD", "30d")
 
@@ -116,26 +119,24 @@ def main():
         "nasdaq_ema21": round(n_ema21, 2),
         "tickers": {"gold": GOLD_TICKER, "dxy": DXY_TICKER, "tnx": TNX_TICKER, "nasdaq": NASDAQ_TICKER}
     }
-
     data = load_data(DATA_PATH)
     series = data.get("series", [])
     signals = data.get("signals", [])
 
-    series.append(row)
-    series = series[-MAX_POINTS:]
-    data["series"] = series
-    data["meta"] = {"timeframe": TIMEFRAME, "period": PERIOD, "updated_utc": ts}
+    # Limpia señales de prueba antiguas
+    signals = [s for s in signals if s.get("reason") != "TEST SIGNAL"]
 
-    # ✅ TEST SIGNAL (para comprobar que aparece en el JSON sí o sí)
-    signals.append({
-        "ts": ts,
-        "asset": "GOLD",
-        "type": "WARN",
-        "reason": "TEST SIGNAL",
-        "strength": 1
-    })
-    signals = signals[-200:]
-    data["signals"] = signals
+    # --- aquí arriba ya debiste haber añadido señales REALES ---
+    # ej: signals.append(...) o tu add_signal(...)
+
+    # Guardar punto nuevo
+    series.append(row)
+    if len(series) > MAX_POINTS:
+        series = series[-MAX_POINTS:]
+
+    data["meta"] = {"timeframe": TIMEFRAME, "period": PERIOD, "updated_utc": ts}
+    data["series"] = series
+    data["signals"] = signals  # ✅ CLAVE
 
     save_data(DATA_PATH, data)
     print(f"Saved dashboard data: {DATA_PATH} (points={len(series)}) | signals={len(signals)}")
