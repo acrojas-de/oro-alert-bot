@@ -1,43 +1,47 @@
 :root{
   --topbar-h: 64px;
+  --gap: 14px;
+  --card: rgba(255,255,255,.06);
+  --card2: rgba(255,255,255,.08);
+  --border: rgba(255,255,255,.10);
+  --text: #e8eefc;
+  --muted: rgba(232,238,252,.7);
 }
 
 *{ box-sizing:border-box; }
 
-body{
+html, body{
+  height:100%;
   margin:0;
-  height:100vh;
-  overflow:hidden; /* ✅ no scroll de página */
+}
+
+body{
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background: #0b1220;
-  color: #e8eefc;
+  background:#0b1220;
+  color:var(--text);
+
+  /* ✅ nada de scroll de página */
+  overflow:hidden;
+
+  /* ✅ layout: barra arriba + contenido */
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
 }
 
-button{
-  cursor:pointer;
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.06);
-  color: #e8eefc;
-}
-
-button:hover{
-  background: rgba(255,255,255,.10);
-}
-
+/* ============ TOPBAR (fija) ============ */
 .topbar{
-  position: sticky;
-  top: 0;
-  z-index: 50;
   height: var(--topbar-h);
+  flex: 0 0 var(--topbar-h);
+
   display:flex;
   align-items:center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0 14px;
-  background: rgba(10,16,28,.95);
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  justify-content:space-between;
+  gap:12px;
+
+  padding: 10px 14px;
+  border-bottom:1px solid var(--border);
+  background: rgba(0,0,0,.18);
   backdrop-filter: blur(8px);
 }
 
@@ -45,58 +49,83 @@ button:hover{
   display:flex;
   align-items:center;
   gap:10px;
-  flex-wrap: wrap;
 }
 
-.kpi{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding: 6px 10px;
-  border: 1px solid rgba(255,255,255,.10);
-  border-radius: 10px;
-  font-size: 13px;
-  white-space: nowrap;
-}
-
-.kpi b{ font-weight:700; }
-
-.badge{
-  padding: 4px 8px;
-  border-radius: 999px;
-  font-size: 12px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.04);
-}
-
-/* ✅ Marco principal sin scroll */
+/* ============ MAIN (ocupa toda la pantalla restante) ============ */
 .main{
+  /* ✅ ocupa TODO lo que queda bajo la topbar */
   height: calc(100vh - var(--topbar-h));
-  display:grid;
-  grid-template-columns: 2fr 1fr;  /* gráfico grande + panel */
-  grid-template-rows: 1fr 220px;   /* gráfico + zona inferior */
-  gap: 12px;
-  padding: 12px;
-  overflow:hidden;
-}
+  flex: 1 1 auto;
 
-.card{
-  background: rgba(12,18,32,.85);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 14px;
-  overflow:hidden;
-}
-
-/* ✅ SOLO el panel lateral hace scroll si crece */
-.panel-scroll{
+  /* ✅ aquí metemos el “scroll interno” */
   overflow:auto;
-  max-height: 100%;
-  padding: 10px;
+
+  padding: var(--gap);
 }
 
-/* ✅ charts ocupan todo el card */
-.card canvas{
+/* Esto evita “micro-scroll” por desbordes */
+.main > *{
+  max-width: 100%;
+}
+
+/* ============ TARJETAS / SECCIONES ============ */
+.card{
+  background: var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px;
+}
+
+/* Si tienes 2 columnas (señales arriba, chart abajo etc.) */
+.grid{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap);
+}
+
+/* En pantallas anchas puedes activar 2 columnas si quieres */
+@media (min-width: 1200px){
+  .grid.two{
+    grid-template-columns: 420px 1fr;
+    align-items: start;
+  }
+}
+
+/* ============ CHARTS (muy importante) ============ */
+/* El truco: darle una altura clara al contenedor del canvas */
+.chart-card{
+  background: var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px;
+
+  /* ✅ que se vea grande pero sin romper el layout */
+  min-height: 420px;
+}
+
+.chart-wrap{
+  position:relative;
+  width:100%;
+  height: 420px; /* puedes subir a 480 si quieres */
+}
+
+/* El canvas SIEMPRE ocupa el wrapper */
+.chart-wrap canvas{
   width:100% !important;
   height:100% !important;
   display:block;
+}
+
+/* ============ BOTONES ============ */
+button, .btn{
+  cursor:pointer;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border:1px solid var(--border);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+}
+
+button:hover, .btn:hover{
+  background: rgba(255,255,255,.10);
 }
