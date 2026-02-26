@@ -2,7 +2,7 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-02-26T03:12:45+00:00"
+    "updated_utc": "2026-02-26T05:04:07+00:00"
   },
   "series": [
     {
@@ -88,6 +88,28 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-02-26T05:04:07+00:00",
+      "score": 25,
+      "bias": "SHORT_CUIDADO",
+      "gold": 5197.6,
+      "gold_ema21": 5200.37,
+      "gold_ema50": 5188.73,
+      "gold_rsi14": 49.48,
+      "gold_rsi14_prev": 51.28,
+      "dxy": 97.572,
+      "dxy_ema21": 97.7168,
+      "tnx": 4.048,
+      "tnx_ema21": 4.0468,
+      "nasdaq": 23152.89,
+      "nasdaq_ema21": 22923.83,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -107,6 +129,13 @@
     },
     {
       "ts": "2026-02-26T03:12:45+00:00",
+      "asset": "GOLD",
+      "type": "WARN",
+      "reason": "TEST SIGNAL",
+      "strength": 1
+    },
+    {
+      "ts": "2026-02-26T05:04:07+00:00",
       "asset": "GOLD",
       "type": "WARN",
       "reason": "TEST SIGNAL",
