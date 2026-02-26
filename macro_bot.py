@@ -126,6 +126,60 @@ def main():
     # Limpia señales de prueba antiguas
     signals = [s for s in signals if s.get("reason") != "TEST SIGNAL"]
 
+    def add_signal(signals, ts, asset, type_, reason, strength, price):
+    # Evitar duplicados: misma ts + asset + type
+    key = (ts, asset, type_)
+    for s in signals:
+        if (s.get("ts"), s.get("asset"), s.get("type")) == key:
+            return
+    signals.append({
+        "ts": ts,
+        "asset": asset,
+        "type": type_,
+        "reason": reason,
+        "strength": int(strength),
+        "price": round(float(price), 2)  # ✅ CLAVE para pintarlo en el gráfico
+    })
+
+# --- Señales por CRUCE (acción real) ---
+g_prev = float(gold.iloc[i_g - 1]) if len(gold) >= 3 else g
+ema21_prev = float(ema(gold, 21).iloc[i_g - 1]) if len(gold) >= 3 else g_ema21
+
+# BUY: cruza de abajo hacia arriba
+if (g_prev <= ema21_prev) and (g > g_ema21):
+    add_signal(
+        signals=signals,
+        ts=ts,
+        asset="GOLD",
+        type_="BUY",
+        reason="Cruce alcista: precio pasa por encima de EMA21",
+        strength=2,
+        price=g
+    )
+
+# SELL: cruza de arriba hacia abajo
+if (g_prev >= ema21_prev) and (g < g_ema21):
+    add_signal(
+        signals=signals,
+        ts=ts,
+        asset="GOLD",
+        type_="SELL",
+        reason="Cruce bajista: precio cae por debajo de EMA21",
+        strength=2,
+        price=g
+    )
+
+# Señal TEST opcional (solo si activas DEBUG_TEST_SIGNAL=1)
+if DEBUG_TEST_SIGNAL:
+    add_signal(
+        signals=signals,
+        ts=ts,
+        asset="GOLD",
+        type_="WARN",
+        reason="TEST SIGNAL",
+        strength=1,
+        price=g
+    )
     # --- aquí arriba ya debiste haber añadido señales REALES ---
     # ej: signals.append(...) o tu add_signal(...)
 
