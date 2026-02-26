@@ -32,7 +32,7 @@ MAX_POINTS = int(os.getenv("MAX_POINTS", "500"))
 # Confirmación / protección
 CONFIRM_PCT = float(os.getenv("CONFIRM_PCT", "0.003"))   # 0.30%
 SL_PCT = float(os.getenv("SL_PCT", "0.0015"))            # 0.15% stop pegado
-WARMUP_BARS = int(os.getenv("WARMUP_BARS", "1"))          # 1 vela de 5m = 5 min
+WARMUP_BARS = int(os.getenv("WARMUP_BARS", "1"))         # 1 vela de 5m = 5 min
 
 # ==== COMPRESIÓN / EXPANSIÓN (PRO) ====
 COMP_EMA_PCT = float(os.getenv("COMP_EMA_PCT", "0.0015"))  # 0.15% EMA21-EMA50 pegadas
@@ -66,11 +66,7 @@ def atr(df: pd.DataFrame, length: int = 14) -> pd.Series:
     prev_close = close.shift(1)
 
     tr = pd.concat(
-        [
-            (high - low),
-            (high - prev_close).abs(),
-            (low - prev_close).abs(),
-        ],
+        [(high - low), (high - prev_close).abs(), (low - prev_close).abs()],
         axis=1,
     ).max(axis=1)
 
@@ -142,8 +138,7 @@ def save_data(path: str, data: dict) -> None:
 # SIGNALS
 # ==============
 def add_signal(signals_list: list, ts_: str, asset: str, type_: str, reason: str,
-               strength: int, price: float, extra: dict | None = None) -> None:
-    # Dedup por vela: ts + asset + type
+               strength: int, price: float, extra: dict = None) -> None:
     key = (ts_, asset, type_)
     for s in signals_list:
         if (s.get("ts"), s.get("asset"), s.get("type")) == key:
@@ -186,7 +181,6 @@ def main():
     i_t = last_closed_index(tnx)
     i_n = last_closed_index(nas)
 
-    # Timestamp REAL de la vela 1H cerrada (anti duplicados)
     candle_ts = pd.Timestamp(gold.index[i_g]).to_pydatetime().replace(tzinfo=timezone.utc).isoformat()
     now_ts = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
@@ -201,12 +195,10 @@ def main():
     ema21_prev = float(ema21_series.iloc[i_g - 1]) if len(gold) >= 3 else g_ema21
     ema21_slope_pct = ((g_ema21 - ema21_prev) / g) if g else 0.0
 
-    # RSI
     gold_rsi = rsi(gold, 14)
     g_rsi14 = float(gold_rsi.iloc[i_g])
     g_rsi14_prev = float(gold_rsi.iloc[i_g - 1]) if len(gold) >= 3 else g_rsi14
 
-    # Macro score (como lo tenías)
     d = float(dxy.iloc[i_d]);  d_ema21 = float(ema(dxy, 21).iloc[i_d])
     t = float(tnx.iloc[i_t]);  t_ema21 = float(ema(tnx, 21).iloc[i_t])
     n = float(nas.iloc[i_n]);  n_ema21 = float(ema(nas, 21).iloc[i_n])
@@ -224,7 +216,6 @@ def main():
     else:
         bias = "MIXTO_ESPERAR"
 
-    # ATR y compresión (PRO)
     gold_atr = atr(gold_df, ATR_LEN)
     g_atr = float(gold_atr.iloc[i_g])
     atr_pct = (g_atr / g) if g else 0.0
@@ -238,7 +229,6 @@ def main():
     signals = data.get("signals", [])
     state = data.get("state", {})
 
-    # Limpia señales de prueba antiguas
     signals = [s for s in signals if s.get("reason") != "TEST SIGNAL"]
 
     # ========== 3) Guardar punto de serie ==========
@@ -262,50 +252,27 @@ def main():
         "atr": round(g_atr, 4),
         "atr_pct": round(atr_pct, 6),
         "ema21_slope_pct": round(ema21_slope_pct, 6),
-        "tickers": {
-            "gold": GOLD_TICKER,
-            "dxy": DXY_TICKER,
-            "tnx": TNX_TICKER,
-            "nasdaq": NASDAQ_TICKER,
-        },
+        "tickers": {"gold": GOLD_TICKER, "dxy": DXY_TICKER, "tnx": TNX_TICKER, "nasdaq": NASDAQ_TICKER},
     }
 
     # ========== 4) Señales por CRUCE (1H) ==========
     just_types = set()
 
-    # BUY cruce arriba
     if (g_prev <= ema21_prev) and (g > g_ema21):
         add_signal(
-            signals,
-            candle_ts,
-            "GOLD",
-            "BUY",
+            signals, candle_ts, "GOLD", "BUY",
             "Cruce alcista: precio pasa por encima de EMA21",
-            2,
-            g,
-            extra={
-                "ema21": round(g_ema21, 2),
-                "stop_price": round(g * (1 - SL_PCT), 2),
-                "confirm_pct": CONFIRM_PCT,
-            },
+            2, g,
+            extra={"ema21": round(g_ema21, 2), "stop_price": round(g * (1 - SL_PCT), 2), "confirm_pct": CONFIRM_PCT},
         )
         just_types.add("BUY")
 
-    # SELL cruce abajo
     if (g_prev >= ema21_prev) and (g < g_ema21):
         add_signal(
-            signals,
-            candle_ts,
-            "GOLD",
-            "SELL",
+            signals, candle_ts, "GOLD", "SELL",
             "Cruce bajista: precio cae por debajo de EMA21",
-            2,
-            g,
-            extra={
-                "ema21": round(g_ema21, 2),
-                "stop_price": round(g * (1 + SL_PCT), 2),
-                "confirm_pct": CONFIRM_PCT,
-            },
+            2, g,
+            extra={"ema21": round(g_ema21, 2), "stop_price": round(g * (1 + SL_PCT), 2), "confirm_pct": CONFIRM_PCT},
         )
         just_types.add("SELL")
 
@@ -323,12 +290,7 @@ def main():
         "atr": round(g_atr, 4),
         "atr_pct": round(atr_pct, 6),
         "ema21_slope_pct": round(ema21_slope_pct, 6),
-        "thresholds": {
-            "COMP_EMA_PCT": COMP_EMA_PCT,
-            "COMP_ATR_PCT": COMP_ATR_PCT,
-            "SLOPE_PCT": SLOPE_PCT,
-            "ATR_LEN": ATR_LEN,
-        },
+        "thresholds": {"COMP_EMA_PCT": COMP_EMA_PCT, "COMP_ATR_PCT": COMP_ATR_PCT, "SLOPE_PCT": SLOPE_PCT, "ATR_LEN": ATR_LEN},
     }
 
     if compression_now and not prev_comp:
@@ -336,72 +298,45 @@ def main():
         state["compression_from_ts"] = candle_ts
         state["compression_from_price"] = float(g)
         add_signal(
-            signals,
-            candle_ts,
-            "GOLD",
-            "COMPRESSION_ON",
+            signals, candle_ts, "GOLD", "COMPRESSION_ON",
             "EMAs hermanadas + ATR bajo + EMA21 plana (energía cargándose)",
-            1,
-            g,
+            1, g,
             extra={"ema_spread_pct": round(ema_spread_pct, 6), "atr_pct": round(atr_pct, 6)},
         )
 
     if (not compression_now) and prev_comp:
         state["compression_active"] = False
         add_signal(
-            signals,
-            candle_ts,
-            "GOLD",
-            "COMPRESSION_OFF",
+            signals, candle_ts, "GOLD", "COMPRESSION_OFF",
             "Fin de compresión (empieza expansión)",
-            1,
-            g,
+            1, g,
             extra={"ema_spread_pct": round(ema_spread_pct, 6), "atr_pct": round(atr_pct, 6)},
         )
 
-        # Dirección de expansión tras compresión
         if (g > g_ema21) and (ema21_slope_pct > SLOPE_PCT):
             state["market_state"] = "EXPANSION_UP"
-            add_signal(
-                signals,
-                candle_ts,
-                "GOLD",
-                "EXPANSION_UP",
-                "Inicio expansión alcista tras compresión (posible movimiento fuerte)",
-                2,
-                g,
-                extra={"ema21_slope_pct": round(ema21_slope_pct, 6)},
-            )
+            add_signal(signals, candle_ts, "GOLD", "EXPANSION_UP",
+                       "Inicio expansión alcista tras compresión (posible movimiento fuerte)",
+                       2, g, extra={"ema21_slope_pct": round(ema21_slope_pct, 6)})
         elif (g < g_ema21) and (ema21_slope_pct < -SLOPE_PCT):
             state["market_state"] = "EXPANSION_DOWN"
-            add_signal(
-                signals,
-                candle_ts,
-                "GOLD",
-                "EXPANSION_DOWN",
-                "Inicio expansión bajista tras compresión (posible movimiento fuerte)",
-                2,
-                g,
-                extra={"ema21_slope_pct": round(ema21_slope_pct, 6)},
-            )
+            add_signal(signals, candle_ts, "GOLD", "EXPANSION_DOWN",
+                       "Inicio expansión bajista tras compresión (posible movimiento fuerte)",
+                       2, g, extra={"ema21_slope_pct": round(ema21_slope_pct, 6)})
         else:
             state["market_state"] = "EXPANSION_UNCLEAR"
 
-    if compression_now:
-        state["market_state"] = "COMPRESSION"
-    else:
-        state.setdefault("market_state", "NORMAL")
+    state["market_state"] = "COMPRESSION" if compression_now else state.get("market_state", "NORMAL")
 
     # ========== 6) Confirmación táctica (5m) desde el cruce ==========
-    # Si hoy se generó BUY/SELL, dejamos confirmación pendiente (reemplaza anterior)
     if "BUY" in just_types:
         state["pending_confirm"] = {
             "direction": "UP",
             "from_ts": candle_ts,
-            "from_price": float(g),                 # ✅ desde cruce
+            "from_price": float(g),
             "threshold_pct": CONFIRM_PCT,
             "stop_price": float(g) * (1 - SL_PCT),
-            "warmup_bars": WARMUP_BARS,            # ✅ 1 = 5 min
+            "warmup_bars": WARMUP_BARS,
             "source_type": "BUY",
             "created_at": now_ts,
         }
@@ -410,10 +345,10 @@ def main():
         state["pending_confirm"] = {
             "direction": "DOWN",
             "from_ts": candle_ts,
-            "from_price": float(g),                 # ✅ desde cruce
+            "from_price": float(g),
             "threshold_pct": CONFIRM_PCT,
             "stop_price": float(g) * (1 + SL_PCT),
-            "warmup_bars": WARMUP_BARS,            # ✅ 1 = 5 min
+            "warmup_bars": WARMUP_BARS,
             "source_type": "SELL",
             "created_at": now_ts,
         }
@@ -424,7 +359,10 @@ def main():
         i_e = last_closed_index(exec_gold)
 
         warm = int(pc.get("warmup_bars", WARMUP_BARS))
-        base_idx = i_e - warm if len(exec_gold) >= (abs(i_e) + warm + 1) else i_e
+        if len(exec_gold) >= (warm + 2):
+            base_idx = i_e - warm
+        else:
+            base_idx = i_e
 
         p_now = float(exec_gold.iloc[i_e])
         p_base = float(exec_gold.iloc[base_idx])
@@ -436,84 +374,41 @@ def main():
         move = p_now - from_price
         move_pct = pct_move(p_now, from_price)
 
-        # Stop hit (protección pegada)
         if pc.get("direction") == "DOWN" and p_now > stop_price:
-            add_signal(
-                signals,
-                now_ts,
-                "GOLD",
-                "STOP_HIT",
-                f"Stop tocado (SELL): {p_now:.2f} > {stop_price:.2f}",
-                4,
-                p_now,
-                extra={"from_price": round(from_price, 2), "stop_price": round(stop_price, 2), "source_ts": pc.get("from_ts")},
-            )
+            add_signal(signals, now_ts, "GOLD", "STOP_HIT",
+                       f"Stop tocado (SELL): {p_now:.2f} > {stop_price:.2f}",
+                       4, p_now,
+                       extra={"from_price": round(from_price, 2), "stop_price": round(stop_price, 2), "source_ts": pc.get("from_ts")})
             state.pop("pending_confirm", None)
 
         elif pc.get("direction") == "UP" and p_now < stop_price:
-            add_signal(
-                signals,
-                now_ts,
-                "GOLD",
-                "STOP_HIT",
-                f"Stop tocado (BUY): {p_now:.2f} < {stop_price:.2f}",
-                4,
-                p_now,
-                extra={"from_price": round(from_price, 2), "stop_price": round(stop_price, 2), "source_ts": pc.get("from_ts")},
-            )
+            add_signal(signals, now_ts, "GOLD", "STOP_HIT",
+                       f"Stop tocado (BUY): {p_now:.2f} < {stop_price:.2f}",
+                       4, p_now,
+                       extra={"from_price": round(from_price, 2), "stop_price": round(stop_price, 2), "source_ts": pc.get("from_ts")})
             state.pop("pending_confirm", None)
 
         else:
-            # Confirmación por % desde el cruce
             if pc.get("direction") == "DOWN" and move_pct <= -thr:
-                add_signal(
-                    signals,
-                    now_ts,
-                    "GOLD",
-                    "CONFIRM_DOWN",
-                    f"Confirmación bajista: {move_pct*100:.2f}% ({move:.2f}$) desde cruce {from_price:.2f}",
-                    3,
-                    p_now,
-                    extra={
-                        "from_price": round(from_price, 2),
-                        "move": round(move, 2),
-                        "move_pct": round(move_pct, 6),
-                        "threshold_pct": thr,
-                        "stop_price": round(stop_price, 2),
-                        "source_ts": pc.get("from_ts"),
-                        "source_type": pc.get("source_type"),
-                        "exec_timeframe": EXEC_TIMEFRAME,
-                        "warmup_bars": warm,
-                        "p_base": round(p_base, 2),
-                    },
-                )
+                add_signal(signals, now_ts, "GOLD", "CONFIRM_DOWN",
+                           f"Confirmación bajista: {move_pct*100:.2f}% ({move:.2f}$) desde cruce {from_price:.2f}",
+                           3, p_now,
+                           extra={"from_price": round(from_price, 2), "move": round(move, 2), "move_pct": round(move_pct, 6),
+                                  "threshold_pct": thr, "stop_price": round(stop_price, 2),
+                                  "source_ts": pc.get("from_ts"), "source_type": pc.get("source_type"),
+                                  "exec_timeframe": EXEC_TIMEFRAME, "warmup_bars": warm, "p_base": round(p_base, 2)})
                 state.pop("pending_confirm", None)
 
             elif pc.get("direction") == "UP" and move_pct >= thr:
-                add_signal(
-                    signals,
-                    now_ts,
-                    "GOLD",
-                    "CONFIRM_UP",
-                    f"Confirmación alcista: {move_pct*100:.2f}% (+{move:.2f}$) desde cruce {from_price:.2f}",
-                    3,
-                    p_now,
-                    extra={
-                        "from_price": round(from_price, 2),
-                        "move": round(move, 2),
-                        "move_pct": round(move_pct, 6),
-                        "threshold_pct": thr,
-                        "stop_price": round(stop_price, 2),
-                        "source_ts": pc.get("from_ts"),
-                        "source_type": pc.get("source_type"),
-                        "exec_timeframe": EXEC_TIMEFRAME,
-                        "warmup_bars": warm,
-                        "p_base": round(p_base, 2),
-                    },
-                )
+                add_signal(signals, now_ts, "GOLD", "CONFIRM_UP",
+                           f"Confirmación alcista: {move_pct*100:.2f}% (+{move:.2f}$) desde cruce {from_price:.2f}",
+                           3, p_now,
+                           extra={"from_price": round(from_price, 2), "move": round(move, 2), "move_pct": round(move_pct, 6),
+                                  "threshold_pct": thr, "stop_price": round(stop_price, 2),
+                                  "source_ts": pc.get("from_ts"), "source_type": pc.get("source_type"),
+                                  "exec_timeframe": EXEC_TIMEFRAME, "warmup_bars": warm, "p_base": round(p_base, 2)})
                 state.pop("pending_confirm", None)
 
-    # TEST opcional
     if DEBUG_TEST_SIGNAL:
         add_signal(signals, now_ts, "GOLD", "WARN", "TEST SIGNAL", 1, g)
 
