@@ -94,12 +94,118 @@
 let goldChartInstance = null;
 let scoreChartInstance = null;
 
+let clockTimer = null;
+
+// ======= helpers =======
+function fmt(n, d=2){
+  if (n === undefined || n === null || Number.isNaN(n)) return "—";
+  return Number(n).toFixed(d);
+}
+function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+// Reloj digital (independiente del fetch)
+function startClock(){
+  const el = document.getElementById("liveClock");
+  if (!el) return;
+
+  if (clockTimer) clearInterval(clockTimer);
+
+  const tick = () => {
+    const now = new Date();
+    el.textContent = now.toLocaleTimeString("es-ES", {
+      timeZone: "Europe/Madrid",
+      hour12: false
+    });
+  };
+
+  tick();
+  clockTimer = setInterval(tick, 1000);
+}
+
+// Encuentra el "open" de la vela actual usando candle_ts
+function getCandleOpen(series, last){
+  // Si el backend ya manda candle_ts, usamos eso
+  const ct = last.candle_ts || null;
+
+  if (ct){
+    const idx = series.findIndex(x => x.candle_ts === ct);
+    if (idx !== -1) return series[idx].gold;
+  }
+
+  // Fallback: aproximar al inicio del timeframe (por si no llega candle_ts)
+  // Si meta.timeframe es "60m", redondea a la hora.
+  const lastTs = new Date(last.ts);
+  lastTs.setMinutes(0,0,0);
+  const iso = lastTs.toISOString().replace(".000Z","+00:00"); // formato parecido
+  const idx2 = series.findIndex(x => (x.candle_ts === iso));
+  if (idx2 !== -1) return series[idx2].gold;
+
+  // Último fallback
+  return series[0]?.gold ?? last.gold;
+}
+
+function updateLiveWidget(data, series, last){
+  const titleEl = document.getElementById("liveTitle");
+  const wickEl = document.getElementById("wick");
+  const candleEl = document.getElementById("candle");
+  const markerEl = document.getElementById("marker");
+  const statsEl = document.getElementById("liveStats");
+
+  if (!titleEl || !candleEl || !markerEl || !statsEl) return;
+
+  // Título: activo + timeframe
+  const tf = data?.meta?.timeframe || "—";
+  titleEl.textContent = `GOLD · ${tf}`;
+
+  const open = getCandleOpen(series, last);
+  const price = last.gold;
+
+  const delta = (price - open);
+  const deltaPct = open ? (delta / open) * 100 : 0;
+
+  // Normalización para el “termómetro”
+  // usamos ATR si existe, si no, un valor seguro
+  const atr = last.atr ?? data?.state?.metrics?.atr ?? 25;
+  const atrSafe = (atr && atr > 0) ? atr : 25;
+
+  // map: centro 50% = sin cambio, +ATR => cerca 100%, -ATR => cerca 0%
+  const pos = clamp(0.5 + (delta / (2 * atrSafe)), 0, 1);
+
+  // Altura de vela: rellena hasta el marcador (mínimo 6%)
+  const heightPct = clamp(pos * 100, 6, 100);
+
+  candleEl.style.height = `${heightPct}%`;
+  markerEl.style.bottom = `${pos * 100}%`;
+
+  // Color “sensación”: verde si sube, rojo si baja (sin meter colores en el chart)
+  // (en CSS ya tienes estilos neutros; aquí hacemos un toque suave)
+  candleEl.style.background = delta >= 0 ? "rgba(120,255,170,.22)" : "rgba(255,120,140,.20)";
+  markerEl.style.background = delta >= 0 ? "rgba(180,255,210,.95)" : "rgba(255,200,210,.95)";
+
+  // Stats
+  const rsi = last.gold_rsi14 ?? null;
+  const ema21 = last.gold_ema21 ?? null;
+  const ema50 = last.gold_ema50 ?? null;
+
+  statsEl.innerHTML = `
+    <div class="live-row"><span class="k">Precio</span><span class="v">${fmt(price,1)}</span></div>
+    <div class="live-row"><span class="k">Open vela</span><span class="v">${fmt(open,1)}</span></div>
+    <div class="live-row"><span class="k">Cambio</span><span class="v">${delta>=0?"+":""}${fmt(delta,1)} (${deltaPct>=0?"+":""}${fmt(deltaPct,2)}%)</span></div>
+    <div class="live-row"><span class="k">EMA21</span><span class="v">${fmt(ema21,2)}</span></div>
+    <div class="live-row"><span class="k">EMA50</span><span class="v">${fmt(ema50,2)}</span></div>
+    <div class="live-row"><span class="k">RSI14</span><span class="v">${rsi==null ? "—" : fmt(rsi,2)}</span></div>
+    <div class="live-row"><span class="k">ATR</span><span class="v">${fmt(atrSafe,2)}</span></div>
+    <div class="live-row"><span class="k">Score</span><span class="v">${last.score}/100</span></div>
+    <div class="live-row"><span class="k">Bias</span><span class="v">${last.bias || "—"}</span></div>
+  `;
+}
+
+// ======= main fetch/render =======
 async function loadData() {
   const res = await fetch('./macro_data.json', { cache: 'no-store' });
   const data = await res.json();
   const series = data.series || [];
 
-  // ✅ si no hay datos, salimos sin romper
   if (!series.length) {
     document.getElementById("updated").innerText = "Sin datos aún…";
     return;
@@ -125,6 +231,9 @@ async function loadData() {
 
   document.getElementById("gold").innerText = last.gold;
 
+  // ======= WIDGET LIVE =======
+  updateLiveWidget(data, series, last);
+
   // ======= SEÑALES =======
   const signals = (data.signals || []).slice(-10).reverse();
   const lastSignalText = document.getElementById("lastSignalText");
@@ -133,6 +242,8 @@ async function loadData() {
   function iconFor(t) {
     if (t === "BUY") return "🟢⬆️";
     if (t === "SELL") return "🔴⬇️";
+    if (t === "STOP_HIT") return "🟠🛑";
+    if (t === "CONFIRM_UP") return "🟦✅";
     return "🟠🚨";
   }
 
@@ -160,7 +271,6 @@ async function loadData() {
     new Date(x.ts).toLocaleString("es-ES", { timeZone: "Europe/Madrid" })
   );
 
-  // ✅ destruir ANTES de crear nuevos (evita duplicados)
   if (goldChartInstance) goldChartInstance.destroy();
   if (scoreChartInstance) scoreChartInstance.destroy();
 
@@ -174,31 +284,21 @@ async function loadData() {
         { label: "EMA50", data: series.map(x => x.gold_ema50) }
       ]
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false
-    }
+    options: { responsive: true, maintainAspectRatio: false }
   });
 
   scoreChartInstance = new Chart(document.getElementById("scoreChart"), {
     type: "line",
-    data: {
-      labels,
-      datasets: [
-        { label: "Score", data: series.map(x => x.score) }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false
-    }
+    data: { labels, datasets: [{ label: "Score", data: series.map(x => x.score) }] },
+    options: { responsive: true, maintainAspectRatio: false }
   });
 }
 
-// ✅ 1ª carga + refresco cada 30s
+// Arranque
+startClock();
 loadData();
 setInterval(loadData, 30000);
-  </script>
+</script>
 
 </body>
 </html>
