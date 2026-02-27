@@ -28,8 +28,27 @@
     </div>
   </div>
 
+  <!-- WIDGET VELA-TERMÓMETRO + RELOJ -->
+  <div class="live-wrap">
+    <div class="live-header">
+      <div class="live-title" id="liveTitle">GOLD · 60m</div>
+      <div class="live-clock" id="liveClock">--:--:--</div>
+    </div>
+
+    <div class="live-body">
+      <div class="thermo">
+        <div class="wick" id="wick"></div>
+        <div class="candle" id="candle"></div>
+        <div class="marker" id="marker"></div>
+      </div>
+
+      <div class="live-stats" id="liveStats"></div>
+    </div>
+  </div>
+
   <!-- CONTENIDO (SCROLL INTERNO) -->
   <div class="main">
+
     <!-- ✅ PANEL DE SEÑALES -->
     <div id="signalsPanel" class="card">
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
@@ -68,7 +87,8 @@
         </div>
       </div>
     </div>
-  </div>
+
+  </div> <!-- /main -->
 
   <script>
 let goldChartInstance = null;
