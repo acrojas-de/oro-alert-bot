@@ -29,22 +29,96 @@
   </div>
 
   <!-- WIDGET VELA-TERMÓMETRO + RELOJ -->
-  <div class="live-wrap">
+  <!-- WIDGETS LIVE (4 velas en fila) -->
+<div class="live-row-wrap" id="liveRow">
+  <div class="live-card" data-asset="gold" data-label="GOLD">
     <div class="live-header">
-      <div class="live-title" id="liveTitle">GOLD · 60m</div>
-      <div class="live-clock" id="liveClock">--:--:--</div>
+      <div class="live-title">GOLD · <span class="tf">--</span></div>
+      <div class="live-clock">
+        <span class="now">--:--:--</span>
+        <span class="sep">·</span>
+        <span class="left">--:--</span>
+      </div>
     </div>
 
     <div class="live-body">
       <div class="thermo">
-        <div class="wick" id="wick"></div>
-        <div class="candle" id="candle"></div>
-        <div class="marker" id="marker"></div>
+        <div class="wick"></div>
+        <div class="candle"></div>
+        <div class="marker"></div>
+        <div class="price-float">--</div>
       </div>
 
-      <div class="live-stats" id="liveStats"></div>
+      <div class="live-stats"></div>
     </div>
   </div>
+
+  <div class="live-card" data-asset="dxy" data-label="DXY">
+    <div class="live-header">
+      <div class="live-title">DXY · <span class="tf">--</span></div>
+      <div class="live-clock">
+        <span class="now">--:--:--</span>
+        <span class="sep">·</span>
+        <span class="left">--:--</span>
+      </div>
+    </div>
+
+    <div class="live-body">
+      <div class="thermo">
+        <div class="wick"></div>
+        <div class="candle"></div>
+        <div class="marker"></div>
+        <div class="price-float">--</div>
+      </div>
+
+      <div class="live-stats"></div>
+    </div>
+  </div>
+
+  <div class="live-card" data-asset="tnx" data-label="TNX">
+    <div class="live-header">
+      <div class="live-title">TNX · <span class="tf">--</span></div>
+      <div class="live-clock">
+        <span class="now">--:--:--</span>
+        <span class="sep">·</span>
+        <span class="left">--:--</span>
+      </div>
+    </div>
+
+    <div class="live-body">
+      <div class="thermo">
+        <div class="wick"></div>
+        <div class="candle"></div>
+        <div class="marker"></div>
+        <div class="price-float">--</div>
+      </div>
+
+      <div class="live-stats"></div>
+    </div>
+  </div>
+
+  <div class="live-card" data-asset="nasdaq" data-label="NASDAQ">
+    <div class="live-header">
+      <div class="live-title">NASDAQ · <span class="tf">--</span></div>
+      <div class="live-clock">
+        <span class="now">--:--:--</span>
+        <span class="sep">·</span>
+        <span class="left">--:--</span>
+      </div>
+    </div>
+
+    <div class="live-body">
+      <div class="thermo">
+        <div class="wick"></div>
+        <div class="candle"></div>
+        <div class="marker"></div>
+        <div class="price-float">--</div>
+      </div>
+
+      <div class="live-stats"></div>
+    </div>
+  </div>
+</div>
 
   <!-- CONTENIDO (SCROLL INTERNO) -->
   <div class="main">
