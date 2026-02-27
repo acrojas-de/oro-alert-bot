@@ -170,111 +170,164 @@ let scoreChartInstance = null;
 
 let clockTimer = null;
 
-// ======= helpers =======
+// ===== helpers =====
 function fmt(n, d=2){
   if (n === undefined || n === null || Number.isNaN(n)) return "—";
   return Number(n).toFixed(d);
 }
-function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
 
-// Reloj digital (independiente del fetch)
 function startClock(){
-  const el = document.getElementById("liveClock");
-  if (!el) return;
-
-  if (clockTimer) clearInterval(clockTimer);
-
   const tick = () => {
     const now = new Date();
-    el.textContent = now.toLocaleTimeString("es-ES", {
-      timeZone: "Europe/Madrid",
-      hour12: false
+    // reloj general si existe
+    const g = document.getElementById("liveClock");
+    if (g){
+      g.textContent = now.toLocaleTimeString("es-ES", {
+        timeZone:"Europe/Madrid", hour12:false
+      });
+    }
+    // relojes por vela (si existen)
+    document.querySelectorAll(".c-clock").forEach(el=>{
+      el.textContent = now.toLocaleTimeString("es-ES", {
+        timeZone:"Europe/Madrid", hour12:false
+      });
     });
   };
-
   tick();
+  if (clockTimer) clearInterval(clockTimer);
   clockTimer = setInterval(tick, 1000);
 }
 
-// Encuentra el "open" de la vela actual usando candle_ts
-function getCandleOpen(series, last){
-  // Si el backend ya manda candle_ts, usamos eso
-  const ct = last.candle_ts || null;
+// ---- timeframe -> minutos (para floor correcto) ----
+function tfToMinutes(tf){
+  const s = String(tf || "").trim().toLowerCase();
+  if (s.endsWith("m")) return parseInt(s,10);
+  if (s.endsWith("h")) return parseInt(s,10) * 60;
+  if (s.endsWith("d")) return parseInt(s,10) * 60 * 24;
+  return 60;
+}
+function floorToTfISO(tsIso, tfMinutes){
+  const d = new Date(tsIso);
+  const ms = d.getTime();
+  const step = tfMinutes * 60 * 1000;
+  const floored = new Date(Math.floor(ms/step)*step);
+  return floored.toISOString().replace(".000Z","+00:00");
+}
 
-  if (ct){
-    const idx = series.findIndex(x => x.candle_ts === ct);
-    if (idx !== -1) return series[idx].gold;
+// ---- busca OPEN de la vela actual por candle_ts ----
+function getOpenFor(series, candleTs, field, fallbackLast){
+  if (!series.length) return fallbackLast;
+  // 1) intenta con candle_ts exacto
+  const first = series.find(x => x.candle_ts === candleTs && x[field] != null);
+  if (first) return first[field];
+
+  // 2) fallback: primer valor que encuentre del campo
+  const any = series.find(x => x[field] != null);
+  return any ? any[field] : fallbackLast;
+}
+
+function setCard(cardId, payload){
+  const root = document.getElementById(cardId);
+  if (!root) return;
+
+  const elOpen  = root.querySelector(".c-open");
+  const elClose = root.querySelector(".c-close");
+  const elBody  = root.querySelector(".c-body");
+  const elWick  = root.querySelector(".c-wick");
+
+  const {open, close, high, low, dir, progress, labelTop, labelBottom} = payload;
+
+  if (elOpen)  elOpen.textContent  = labelTop;
+  if (elClose) elClose.textContent = labelBottom;
+
+  // cuerpo: tamaño según rango (si no hay high/low reales, usamos delta)
+  const range = (high != null && low != null) ? Math.max(0.000001, high-low) : Math.max(0.000001, Math.abs(close-open));
+  const bodyPct = clamp(Math.abs(close-open) / range, 0.08, 1) * 100;
+
+  // wick: altura total 100%
+  if (elWick) elWick.style.height = "100%";
+  if (elBody){
+    elBody.style.height = `${bodyPct}%`;
+
+    // color dirección (verde/rojo)
+    elBody.style.background = dir >= 0 ? "rgba(120,255,170,.22)" : "rgba(255,120,140,.20)";
+    elBody.style.borderColor = dir >= 0 ? "rgba(120,255,170,.35)" : "rgba(255,120,140,.35)";
+    elBody.style.bottom = dir >= 0 ? "0" : "0";
   }
 
-  // Fallback: aproximar al inicio del timeframe (por si no llega candle_ts)
-  // Si meta.timeframe es "60m", redondea a la hora.
-  const lastTs = new Date(last.ts);
-  lastTs.setMinutes(0,0,0);
-  const iso = lastTs.toISOString().replace(".000Z","+00:00"); // formato parecido
-  const idx2 = series.findIndex(x => (x.candle_ts === iso));
-  if (idx2 !== -1) return series[idx2].gold;
-
-  // Último fallback
-  return series[0]?.gold ?? last.gold;
+  // progreso lateral (si en CSS lo dibujas como pseudo o barra aparte)
+  // Si tienes un div .c-progress dentro:
+  const elProg = root.querySelector(".c-progress");
+  if (elProg){
+    elProg.style.height = `${clamp(progress,0,1)*100}%`;
+  }
 }
 
-function updateLiveWidget(data, series, last){
-  const titleEl = document.getElementById("liveTitle");
-  const wickEl = document.getElementById("wick");
-  const candleEl = document.getElementById("candle");
-  const markerEl = document.getElementById("marker");
-  const statsEl = document.getElementById("liveStats");
+function update4Candles(data){
+  const series = data.series || [];
+  if (!series.length) return;
 
-  if (!titleEl || !candleEl || !markerEl || !statsEl) return;
+  const last = series[series.length - 1];
+  const tf = data?.meta?.timeframe || "60m";
+  const tfMin = tfToMinutes(tf);
 
-  // Título: activo + timeframe
-  const tf = data?.meta?.timeframe || "—";
-  titleEl.textContent = `GOLD · ${tf}`;
+  // candle_ts: si no viene, lo calculamos
+  const candleTs = last.candle_ts || floorToTfISO(last.ts, tfMin);
 
-  const open = getCandleOpen(series, last);
-  const price = last.gold;
+  // OPEN por activo (primera lectura dentro de esa candle_ts)
+  const openGold = getOpenFor(series, candleTs, "gold", last.gold);
+  const openDxy  = getOpenFor(series, candleTs, "dxy", last.dxy);
+  const openTnx  = getOpenFor(series, candleTs, "tnx", last.tnx);
+  const openNas  = getOpenFor(series, candleTs, "nasdaq", last.nasdaq);
 
-  const delta = (price - open);
-  const deltaPct = open ? (delta / open) * 100 : 0;
+  // CLOSE = el último valor
+  const closeGold = last.gold;
+  const closeDxy  = last.dxy;
+  const closeTnx  = last.tnx;
+  const closeNas  = last.nasdaq;
 
-  // Normalización para el “termómetro”
-  // usamos ATR si existe, si no, un valor seguro
-  const atr = last.atr ?? data?.state?.metrics?.atr ?? 25;
-  const atrSafe = (atr && atr > 0) ? atr : 25;
+  // progreso de la vela (por tiempo dentro del timeframe)
+  const startMs = new Date(candleTs.replace("+00:00","Z")).getTime();
+  const nowMs = Date.now();
+  const endMs = startMs + tfMin*60*1000;
+  const progress = clamp((nowMs - startMs) / (endMs - startMs), 0, 1);
 
-  // map: centro 50% = sin cambio, +ATR => cerca 100%, -ATR => cerca 0%
-  const pos = clamp(0.5 + (delta / (2 * atrSafe)), 0, 1);
+  // Labels: arriba = close, abajo = open (como tú quieres)
+  setCard("cGold", {
+    open: openGold, close: closeGold,
+    dir: closeGold - openGold,
+    progress,
+    labelTop: fmt(closeGold,1),
+    labelBottom: fmt(openGold,1)
+  });
 
-  // Altura de vela: rellena hasta el marcador (mínimo 6%)
-  const heightPct = clamp(pos * 100, 6, 100);
+  setCard("cDxy", {
+    open: openDxy, close: closeDxy,
+    dir: closeDxy - openDxy,
+    progress,
+    labelTop: fmt(closeDxy,3),
+    labelBottom: fmt(openDxy,3)
+  });
 
-  candleEl.style.height = `${heightPct}%`;
-  markerEl.style.bottom = `${pos * 100}%`;
+  setCard("cTnx", {
+    open: openTnx, close: closeTnx,
+    dir: closeTnx - openTnx,
+    progress,
+    labelTop: fmt(closeTnx,3),
+    labelBottom: fmt(openTnx,3)
+  });
 
-  // Color “sensación”: verde si sube, rojo si baja (sin meter colores en el chart)
-  // (en CSS ya tienes estilos neutros; aquí hacemos un toque suave)
-  candleEl.style.background = delta >= 0 ? "rgba(120,255,170,.22)" : "rgba(255,120,140,.20)";
-  markerEl.style.background = delta >= 0 ? "rgba(180,255,210,.95)" : "rgba(255,200,210,.95)";
-
-  // Stats
-  const rsi = last.gold_rsi14 ?? null;
-  const ema21 = last.gold_ema21 ?? null;
-  const ema50 = last.gold_ema50 ?? null;
-
-  statsEl.innerHTML = `
-    <div class="live-row"><span class="k">Precio</span><span class="v">${fmt(price,1)}</span></div>
-    <div class="live-row"><span class="k">Open vela</span><span class="v">${fmt(open,1)}</span></div>
-    <div class="live-row"><span class="k">Cambio</span><span class="v">${delta>=0?"+":""}${fmt(delta,1)} (${deltaPct>=0?"+":""}${fmt(deltaPct,2)}%)</span></div>
-    <div class="live-row"><span class="k">EMA21</span><span class="v">${fmt(ema21,2)}</span></div>
-    <div class="live-row"><span class="k">EMA50</span><span class="v">${fmt(ema50,2)}</span></div>
-    <div class="live-row"><span class="k">RSI14</span><span class="v">${rsi==null ? "—" : fmt(rsi,2)}</span></div>
-    <div class="live-row"><span class="k">ATR</span><span class="v">${fmt(atrSafe,2)}</span></div>
-    <div class="live-row"><span class="k">Score</span><span class="v">${last.score}/100</span></div>
-    <div class="live-row"><span class="k">Bias</span><span class="v">${last.bias || "—"}</span></div>
-  `;
+  setCard("cNas", {
+    open: openNas, close: closeNas,
+    dir: closeNas - openNas,
+    progress,
+    labelTop: fmt(closeNas,2),
+    labelBottom: fmt(openNas,2)
+  });
 }
 
-// ======= main fetch/render =======
+// ===== main fetch/render =====
 async function loadData() {
   const res = await fetch('./macro_data.json', { cache: 'no-store' });
   const data = await res.json();
@@ -287,7 +340,7 @@ async function loadData() {
 
   const last = series[series.length - 1];
 
-  // ======= CABECERA =======
+  // CABECERA
   document.getElementById("updated").innerText =
     "Actualizado: " + new Date(data.meta.updated_utc)
       .toLocaleString("es-ES", { timeZone: "Europe/Madrid" });
@@ -305,10 +358,10 @@ async function loadData() {
 
   document.getElementById("gold").innerText = last.gold;
 
-  // ======= WIDGET LIVE =======
-  updateLiveWidget(data, series, last);
+  // ✅ NUEVO WIDGET 4 VELAS
+  update4Candles(data);
 
-  // ======= SEÑALES =======
+  // ===== SEÑALES (igual que antes) =====
   const signals = (data.signals || []).slice(-10).reverse();
   const lastSignalText = document.getElementById("lastSignalText");
   const signalsList = document.getElementById("signalsList");
@@ -340,7 +393,7 @@ async function loadData() {
     `).join("");
   }
 
-  // ======= GRÁFICOS =======
+  // ===== GRÁFICOS (igual que antes) =====
   const labels = series.map(x =>
     new Date(x.ts).toLocaleString("es-ES", { timeZone: "Europe/Madrid" })
   );
@@ -373,6 +426,6 @@ startClock();
 loadData();
 setInterval(loadData, 30000);
 </script>
-
+ 
 </body>
 </html>
