@@ -449,19 +449,30 @@ async function loadData() {
 }
 
 function hookRefreshButton(){
-  const btn = document.getElementById("btnRefresh");
-  if (!btn) return;
+  window.addEventListener("DOMContentLoaded", () => {
 
-  btn.addEventListener("click", async () => {
-    try{
-      btn.classList.add("is-loading");
-      await loadData();          // trae JSON + repinta todo
-      updateLiveRowFromCache();  // fuerza repaint live por si acaso
-    } catch (e){
-      console.error("Refresh error:", e);
-    } finally {
-      btn.classList.remove("is-loading");
+    const btn = document.getElementById("btnRefresh");
+    if (!btn) {
+      console.warn("No existe btnRefresh");
+      return;
     }
+
+    btn.addEventListener("click", async () => {
+      console.log("Manual refresh");
+
+      try{
+        btn.classList.add("is-loading");
+
+        await loadData();
+        updateLiveRowFromCache();
+
+      }catch(e){
+        console.error(e);
+      }finally{
+        btn.classList.remove("is-loading");
+      }
+    });
+
   });
 }
   
