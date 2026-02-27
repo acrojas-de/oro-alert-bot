@@ -270,20 +270,27 @@ button:hover, .btn:hover{
   z-index: 7;
 }
 
-/* Barra progreso (si está en HTML) */
+/* Progreso vertical (tiempo) dentro del tubo */
 .live-card .c-progress{
   position:absolute;
-  left:50%;
-  transform: translateX(-50%);
+  left: 14px;
+  right: 14px;
   bottom: 10px;
-  width: 34px;
-  height: 6px;
-  border-radius: 10px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.12);
-  overflow:hidden;
-  z-index: 8;
+  height: 0%;
+  border-radius: 14px;
+
+  background: linear-gradient(
+    to top,
+    rgba(255,255,255,.08),
+    rgba(255,255,255,.02)
+  );
+
+  border: 1px solid rgba(255,255,255,.08);
+  pointer-events:none;
+  z-index: 2;          /* detrás de candle/marker */
+  transition: height .35s ease;
 }
+
 .live-card .c-progress::before{
   content:"";
   display:block;
