@@ -46,6 +46,7 @@
           <div class="wick"></div>
           <div class="candle"></div>
           <div class="marker"></div>
+          <div class="c-progress"></div>
           <div class="price-float">--</div>
         </div>
         <div class="live-stats"></div>
@@ -266,7 +267,7 @@ function updateLiveRowFromCache(){
   document.querySelectorAll(".live-card .tf").forEach(el => el.textContent = tf);
   updateTimeLeftUI(tfMin, startMs);
 
-  // Mapa de assets (ajusta decimales si quieres)
+  // Mapa de assets (decimales)
   const map = {
     gold:   { key:"gold",   label:"GOLD",   atrKey:"atr",        decimals:1 },
     dxy:    { key:"dxy",    label:"DXY",    atrKey:null,         decimals:3 },
@@ -294,14 +295,28 @@ function updateLiveRowFromCache(){
       scale = Math.max(Math.abs(price) * 0.002, 0.00001);
     }
 
-    // pos 0..1 centrado
-    const pos = clamp(0.5 + (delta / (2 * scale)), 0, 1);
+   // pos 0..1 centrado
+const pos = clamp(0.5 + (delta / (2 * scale)), 0, 1);
 
-    const candle = card.querySelector(".candle");
-    const marker = card.querySelector(".marker");
-    const floatP = card.querySelector(".price-float");
-    const stats  = card.querySelector(".live-stats");
-    if (!candle || !marker || !floatP || !stats) return;
+const thermo = card.querySelector(".thermo");
+const candle = card.querySelector(".candle");
+const marker = card.querySelector(".marker");
+const floatP = card.querySelector(".price-float");
+const stats  = card.querySelector(".live-stats");
+const progBar = card.querySelector(".c-progress");
+
+if (!thermo || !candle || !marker || !floatP || !stats) return;
+
+// vela + marcador + precio
+candle.style.height = `${clamp(pos*100, 6, 100)}%`;
+marker.style.bottom = `${pos*100}%`;
+floatP.style.bottom = `${pos*100}%`;
+floatP.textContent = fmt(price, cfg.decimals);
+
+// ✅ progreso de tiempo
+if (progBar){
+  progBar.style.height = `${prog * 100}%`;
+}
 
     // altura vela + marcador + precio flotante
     candle.style.height = `${clamp(pos*100, 6, 100)}%`;
@@ -312,7 +327,7 @@ function updateLiveRowFromCache(){
     candle.classList.remove("c-up","c-down");
     candle.classList.add(delta >= 0 ? "c-up" : "c-down");
 
-    // stats: Open/Close + progreso
+    // stats: Open/Last + delta + progreso
     stats.innerHTML = `
       <div class="live-row"><span class="k">Open</span><span class="v">${fmt(open, cfg.decimals)}</span></div>
       <div class="live-row"><span class="k">Last</span><span class="v">${fmt(price, cfg.decimals)}</span></div>
@@ -324,7 +339,7 @@ function updateLiveRowFromCache(){
 
 function startLiveTicker(){
   if (liveTicker) clearInterval(liveTicker);
-  liveTicker = setInterval(updateLiveRowFromCache, 1000); // “corre” cada segundo
+  liveTicker = setInterval(updateLiveRowFromCache, 1000); // corre cada segundo
 }
 
 // ======= main fetch/render =======
@@ -361,7 +376,7 @@ async function loadData() {
 
   document.getElementById("gold").innerText = last.gold;
 
-  // LIVE 4 VELAS (pinta una vez y luego el ticker lo anima)
+  // LIVE 4 VELAS
   updateLiveRowFromCache();
 
   // SEÑALES
