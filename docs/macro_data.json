@@ -2,7 +2,7 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-02-27T06:11:59+00:00"
+    "updated_utc": "2026-02-27T07:12:27+00:00"
   },
   "series": [
     {
@@ -1140,6 +1140,33 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-02-27T07:12:27+00:00",
+      "candle_ts": "2026-02-27T06:00:00+00:00",
+      "score": 100,
+      "bias": "LONG_FAVORABLE",
+      "gold": 5202.8,
+      "gold_ema21": 5200.67,
+      "gold_ema50": 5196.01,
+      "gold_rsi14": 50.91,
+      "gold_rsi14_prev": 55.15,
+      "dxy": 97.733,
+      "dxy_ema21": 97.753,
+      "tnx": 4.025,
+      "tnx_ema21": 4.0372,
+      "nasdaq": 22833.67,
+      "nasdaq_ema21": 22880.85,
+      "ema_spread_pct": 0.000895,
+      "atr": 22.5515,
+      "atr_pct": 0.004334,
+      "ema21_slope_pct": 4.1e-05,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -1301,15 +1328,26 @@
       "ema21": 5199.02,
       "stop_price": 5206.88,
       "confirm_pct": 0.003
+    },
+    {
+      "ts": "2026-02-27T07:12:27+00:00",
+      "asset": "GOLD",
+      "type": "STOP_HIT",
+      "reason": "Stop tocado (BUY): 5202.80 < 5206.88",
+      "strength": 4,
+      "price": 5202.8,
+      "from_price": 5214.7,
+      "stop_price": 5206.88,
+      "source_ts": "2026-02-27T05:00:00+00:00"
     }
   ],
   "state": {
     "metrics": {
-      "ema_spread": 4.1019,
-      "ema_spread_pct": 0.000787,
-      "atr": 22.6204,
-      "atr_pct": 0.004338,
-      "ema21_slope_pct": 0.000301,
+      "ema_spread": 4.6561,
+      "ema_spread_pct": 0.000895,
+      "atr": 22.5515,
+      "atr_pct": 0.004334,
+      "ema21_slope_pct": 4.1e-05,
       "thresholds": {
         "COMP_EMA_PCT": 0.0015,
         "COMP_ATR_PCT": 0.0018,
@@ -1317,16 +1355,6 @@
         "ATR_LEN": 14
       }
     },
-    "market_state": "NORMAL",
-    "pending_confirm": {
-      "direction": "UP",
-      "from_ts": "2026-02-27T05:00:00+00:00",
-      "from_price": 5214.7001953125,
-      "threshold_pct": 0.003,
-      "stop_price": 5206.878145019532,
-      "warmup_bars": 1,
-      "source_type": "BUY",
-      "created_at": "2026-02-27T06:11:59+00:00"
-    }
+    "market_state": "NORMAL"
   }
 }
