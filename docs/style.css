@@ -18,13 +18,13 @@ body{
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   background:#0b1220;
   color:var(--text);
-  overflow:hidden;          /* nada de scroll de página */
+  overflow:hidden;
   display:flex;
   flex-direction:column;
   min-height:100vh;
 }
 
-/* ============ TOPBAR (fija) ============ */
+/* ============ TOPBAR ============ */
 .topbar{
   height: var(--topbar-h);
   flex: 0 0 var(--topbar-h);
@@ -58,14 +58,13 @@ body{
 .badge.short{ background: rgba(255,90,110,.10); }
 .badge.mix{ background: rgba(255,255,255,.06); }
 
-/* ============ MAIN (scroll interno) ============ */
+/* ============ MAIN ============ */
 .main{
   height: calc(100vh - var(--topbar-h));
   flex: 1 1 auto;
   overflow:auto;
   padding: var(--gap);
 }
-
 .main > *{ max-width:100%; }
 
 /* ============ TARJETAS ============ */
@@ -115,7 +114,9 @@ button:hover, .btn:hover{
   background: rgba(255,255,255,.10);
 }
 
-/* ======= LIVE ROW (4 velas en fila) ======= */
+/* ===========================
+   LIVE ROW (4 velas en fila)
+   =========================== */
 .live-row-wrap{
   margin: var(--gap);
   display:grid;
@@ -124,13 +125,15 @@ button:hover, .btn:hover{
 }
 
 .live-card{
-  background: var(--card);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.04));
   border:1px solid var(--border);
   border-radius:14px;
   padding:12px;
   min-height: 290px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.30) inset;
 }
 
+/* header */
 .live-card .live-header{
   display:flex;
   align-items:center;
@@ -157,6 +160,7 @@ button:hover, .btn:hover{
 }
 .live-card .live-clock .sep{ opacity:.6; }
 
+/* body */
 .live-card .live-body{
   display:grid;
   grid-template-columns: 90px 1fr;
@@ -172,17 +176,47 @@ button:hover, .btn:hover{
   border-radius:18px;
   border:1px solid var(--border);
   background: rgba(255,255,255,.04);
-  overflow:hidden;
+  overflow: visible;          /* ✅ NO recorta el price-float */
+  padding: 10px;
 }
 
+/* “Cristal” interior */
+.live-card .thermo::before{
+  content:"";
+  position:absolute;
+  inset:10px;
+  border-radius:16px;
+  background: rgba(0,0,0,.18);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+  pointer-events:none;
+}
+
+/* Línea de nivel (depende de --lvl desde JS) */
+.live-card .thermo::after{
+  content:"";
+  position:absolute;
+  left: 14px;
+  right: 14px;
+  bottom: var(--lvl, 50%);
+  height: 2px;
+  background: rgba(255,255,255,.22);
+  box-shadow: 0 0 10px rgba(255,255,255,.12);
+  z-index: 5;
+  pointer-events:none;
+}
+
+/* Mecha */
 .live-card .wick{
   position:absolute;
   left:50%;
   transform:translateX(-50%);
-  width:8px;
-  height:100%;
-  border-radius:8px;
-  background: rgba(255,255,255,.08);
+  width:10px;
+  height: calc(100% - 20px);
+  top:10px;
+  border-radius:10px;
+  background: rgba(255,255,255,.10);
+  z-index: 2;
 }
 
 /* Vela */
@@ -190,11 +224,13 @@ button:hover, .btn:hover{
   position:absolute;
   left:50%;
   transform:translateX(-50%);
-  bottom:0;
-  width:26px;
+  bottom:10px;
+  width:30px;
   height:50%;
   border-radius:14px;
   border:1px solid rgba(255,255,255,.18);
+  z-index: 3;
+  box-shadow: inset 0 0 18px rgba(0,0,0,.25);
   transition: height .45s ease, background .2s ease, border-color .2s ease;
 }
 
@@ -204,30 +240,56 @@ button:hover, .btn:hover{
   left:50%;
   transform:translate(-50%, 50%);
   bottom:50%;
-  width:14px;
-  height:14px;
+  width:16px;
+  height:16px;
   border-radius:999px;
-  border:1px solid rgba(255,255,255,.35);
-  background: rgba(255,255,255,.9);
-  box-shadow: 0 0 14px rgba(255,255,255,.25);
+  border:1px solid rgba(255,255,255,.55);
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 0 18px rgba(255,255,255,.22);
+  z-index: 6;
   transition: bottom .45s ease;
 }
 
-/* Precio flotante lateral */
+/* Precio flotante */
 .live-card .price-float{
   position:absolute;
-  left: calc(50% + 20px);
+  right:-6px;                 /* ✅ sale fuera */
+  left:auto;
   transform: translateY(50%);
   bottom:50%;
-  padding:4px 6px;
+  padding:5px 8px;
   border-radius:8px;
-  border:1px solid var(--border);
-  background: rgba(0,0,0,.25);
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.55);
+  box-shadow: 0 10px 24px rgba(0,0,0,.35);
   font-weight:800;
   font-size:12px;
   font-variant-numeric: tabular-nums;
   transition: bottom .45s ease;
   white-space:nowrap;
+  z-index: 7;
+}
+
+/* Barra progreso (si está en HTML) */
+.live-card .c-progress{
+  position:absolute;
+  left:50%;
+  transform: translateX(-50%);
+  bottom: 10px;
+  width: 34px;
+  height: 6px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  overflow:hidden;
+  z-index: 8;
+}
+.live-card .c-progress::before{
+  content:"";
+  display:block;
+  height:100%;
+  width: var(--prog, 0%);
+  background: rgba(255,255,255,.40);
 }
 
 /* Stats */
@@ -258,118 +320,15 @@ button:hover, .btn:hover{
   .live-row-wrap{ grid-template-columns: 1fr; }
   .live-card .live-body{ grid-template-columns: 1fr; }
   .live-card .thermo{ width:100%; height:160px; }
-  .live-card .price-float{ left: 12px; transform: translateY(50%); }
+  .live-card .price-float{ right: 10px; }
 }
 
 /* Colores vela */
 .c-up{
-  background: rgba(70, 255, 160, .18);
-  border-color: rgba(70, 255, 160, .25);
+  background: rgba(70, 255, 160, .26);
+  border-color: rgba(70, 255, 160, .35);
 }
 .c-down{
-  background: rgba(255, 90, 110, .18);
-  border-color: rgba(255, 90, 110, .25);
-}
-
-/* =========================
-   REFINO VISUAL LIVE CARDS
-   ========================= */
-
-/* tarjeta un pelín más “pro” */
-.asset-card{
-  box-shadow: 0 10px 30px rgba(0,0,0,.25);
-}
-
-/* título y reloj mejor definidos */
-.asset-title{
-  font-size: 13px;
-}
-.asset-clock{
-  font-size: 12px;
-  opacity: .95;
-}
-
-/* contenedor del tubo: más contraste, marco y “profundidad” */
-.c-wick{
-  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.10));
-  border-color: rgba(255,255,255,.16);
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
-}
-
-/* añade un “rail” interno para que no se vea plano */
-.c-wick::before{
-  content:"";
-  position:absolute;
-  inset:10px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.08);
-  background: rgba(0,0,0,.12);
-  pointer-events:none;
-}
-
-/* vela más nítida y centrada */
-.c-body{
-  width: 28px;
-  border-radius: 16px;
-  box-shadow: inset 0 -8px 14px rgba(0,0,0,.20);
-}
-
-/* progreso (tiempo) más sutil, que no “mate” la vela */
-.c-progress{
-  background: rgba(255,255,255,.06);
-  mix-blend-mode: screen;
-}
-
-/* precio flotante: mejor legibilidad */
-.c-float{
-  font-size: 12px;
-  padding: 5px 7px;
-  border-color: rgba(255,255,255,.20);
-  box-shadow: 0 8px 18px rgba(0,0,0,.25);
-}
-
-/* panel de precios a la derecha: estilo tabla */
-.asset-prices{
-  border-color: rgba(255,255,255,.14);
-  background: rgba(0,0,0,.12);
-}
-
-.asset-prices .row{
-  padding: 6px 8px;
-  border-radius: 10px;
-  background: rgba(255,255,255,.03);
-}
-
-.asset-prices .row span{
-  font-size: 12px;
-  letter-spacing: .2px;
-}
-
-.asset-prices .row b{
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-}
-
-/* mejora alineación (números todos a la derecha) */
-.asset-prices .row{
-  align-items:center;
-}
-.asset-prices .row b{
-  text-align:right;
-  min-width: 86px;
-}
-
-/* separa visualmente cada fila */
-.asset-prices{
-  gap: 8px;
-}
-
-/* colores vela: un pelín más “claros” */
-.c-up{
-  background: rgba(70, 255, 160, .22);
-  border-color: rgba(70, 255, 160, .32);
-}
-.c-down{
-  background: rgba(255, 90, 110, .22);
-  border-color: rgba(255, 90, 110, .32);
+  background: rgba(255, 90, 110, .26);
+  border-color: rgba(255, 90, 110, .35);
 }
