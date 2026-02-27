@@ -339,3 +339,5 @@ button:hover, .btn:hover{
   background: rgba(255, 90, 110, .26);
   border-color: rgba(255, 90, 110, .35);
 }
+
+.btn.is-loading { opacity:.7; pointer-events:none; }
