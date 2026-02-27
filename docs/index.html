@@ -206,19 +206,18 @@ function tfToMinutes(tf){
 
 // calcula progreso vela 0..1 usando candle_ts si existe; si no, aproximación por redondeo
 function candleStartMs(last, tfMin){
+  // si viene candle_ts, perfecto
   if (last?.candle_ts){
     const ms = new Date(last.candle_ts).getTime();
     if (!Number.isNaN(ms)) return ms;
   }
 
-  const t = new Date(last?.ts || Date.now());
-  const ms = t.getTime();
-
-  // aproximación: redondeo hacia abajo al bloque tfMin
+  // ✅ mejor: usa el tiempo actual para “vela en curso”
+  const now = Date.now();
   const block = tfMin * 60 * 1000;
-  return Math.floor(ms / block) * block;
+  return Math.floor(now / block) * block;
 }
-
+ 
 function updateTimeLeftUI(tfMin, startMs){
   const endMs = startMs + tfMin*60*1000;
   const leftMs = Math.max(0, endMs - Date.now());
@@ -267,12 +266,11 @@ function updateLiveRowFromCache(){
   document.querySelectorAll(".live-card .tf").forEach(el => el.textContent = tf);
   updateTimeLeftUI(tfMin, startMs);
 
-  // Mapa de assets (decimales)
   const map = {
-    gold:   { key:"gold",   label:"GOLD",   atrKey:"atr",        decimals:1 },
-    dxy:    { key:"dxy",    label:"DXY",    atrKey:null,         decimals:3 },
-    tnx:    { key:"tnx",    label:"TNX",    atrKey:null,         decimals:3 },
-    nasdaq: { key:"nasdaq", label:"NASDAQ", atrKey:null,         decimals:1 },
+    gold:   { key:"gold",   atrKey:"atr",  decimals:1 },
+    dxy:    { key:"dxy",    atrKey:null,   decimals:3 },
+    tnx:    { key:"tnx",    atrKey:null,   decimals:3 },
+    nasdaq: { key:"nasdaq", atrKey:null,   decimals:1 },
   };
 
   document.querySelectorAll(".live-card").forEach(card => {
@@ -283,42 +281,39 @@ function updateLiveRowFromCache(){
     const price = last?.[cfg.key];
     if (price == null) return;
 
-    const open = findOpen(series, last, cfg.key, startMs);
+    // Open + fallback al punto anterior si sale igual
+    let open = findOpen(series, last, cfg.key, startMs);
+    const prev = series.length >= 2 ? series[series.length - 2] : null;
+    if (prev && (open == null || Math.abs(price - open) < 1e-12)) {
+      open = prev[cfg.key];
+    }
     const delta = price - open;
 
-    // escala (ATR para oro; para otros un rango relativo simple)
+    // escala
     let scale = 1;
     if (cfg.atrKey && last?.[cfg.atrKey] != null) {
       scale = Math.max(Number(last[cfg.atrKey]) || 25, 0.00001);
     } else {
-      // rango relativo: 0.2% del valor (mínimo)
-      scale = Math.max(Math.abs(price) * 0.002, 0.00001);
+      const tail = series.slice(-20)
+        .map(x => Number(x?.[cfg.key]))
+        .filter(n => Number.isFinite(n));
+      const minV = tail.length ? Math.min(...tail) : price;
+      const maxV = tail.length ? Math.max(...tail) : price;
+      const range = Math.max(maxV - minV, Math.abs(price) * 0.001);
+      scale = Math.max(range, 0.00001);
     }
 
-   // pos 0..1 centrado
-const pos = clamp(0.5 + (delta / (2 * scale)), 0, 1);
+    const pos = clamp(0.5 + (delta / (2 * scale)), 0, 1);
 
-const thermo = card.querySelector(".thermo");
-const candle = card.querySelector(".candle");
-const marker = card.querySelector(".marker");
-const floatP = card.querySelector(".price-float");
-const stats  = card.querySelector(".live-stats");
-const progBar = card.querySelector(".c-progress");
+    const candle = card.querySelector(".candle");
+    const marker = card.querySelector(".marker");
+    const floatP = card.querySelector(".price-float");
+    const stats  = card.querySelector(".live-stats");
+    const progBar = card.querySelector(".c-progress"); // solo existe en GOLD
 
-if (!thermo || !candle || !marker || !floatP || !stats) return;
+    if (!candle || !marker || !floatP || !stats) return;
 
-// vela + marcador + precio
-candle.style.height = `${clamp(pos*100, 6, 100)}%`;
-marker.style.bottom = `${pos*100}%`;
-floatP.style.bottom = `${pos*100}%`;
-floatP.textContent = fmt(price, cfg.decimals);
-
-// ✅ progreso de tiempo
-if (progBar){
-  progBar.style.height = `${prog * 100}%`;
-}
-
-    // altura vela + marcador + precio flotante
+    // vela + marcador + precio
     candle.style.height = `${clamp(pos*100, 6, 100)}%`;
     marker.style.bottom = `${pos*100}%`;
     floatP.style.bottom = `${pos*100}%`;
@@ -327,7 +322,11 @@ if (progBar){
     candle.classList.remove("c-up","c-down");
     candle.classList.add(delta >= 0 ? "c-up" : "c-down");
 
-    // stats: Open/Last + delta + progreso
+    // progreso del tiempo (vertical) si existe
+    if (progBar){
+      progBar.style.height = `${prog * 100}%`;
+    }
+
     stats.innerHTML = `
       <div class="live-row"><span class="k">Open</span><span class="v">${fmt(open, cfg.decimals)}</span></div>
       <div class="live-row"><span class="k">Last</span><span class="v">${fmt(price, cfg.decimals)}</span></div>
