@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <link rel="stylesheet" href="./style.css">
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Macro Dashboard (Oro)</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="./style.css">
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 
 <body>
@@ -28,164 +28,99 @@
     </div>
   </div>
 
-  <!-- WIDGET VELA-TERMÓMETRO + RELOJ -->
   <!-- WIDGETS LIVE (4 velas en fila) -->
-<!-- LIVE 4 VELAS -->
-<div class="live-grid">
+  <div class="live-row-wrap" id="liveRow">
 
-  <div class="asset-card" id="cGold">
-    <div class="asset-head">
-      <div class="asset-title">GOLD</div>
-      <div class="c-clock">--:--</div>
-    </div>
-    <div class="asset-body">
-      <div class="c-wick">
-        <div class="c-body"></div>
-        <div class="c-progress"></div>
+    <div class="live-card" data-asset="gold" data-label="GOLD">
+      <div class="live-header">
+        <div class="live-title">GOLD · <span class="tf">--</span></div>
+        <div class="live-clock">
+          <span class="now">--:--:--</span>
+          <span class="sep">·</span>
+          <span class="left">--:--</span>
+        </div>
       </div>
-      <div class="asset-prices">
-        <div class="c-open">—</div>
-        <div class="c-close">—</div>
+
+      <div class="live-body">
+        <div class="thermo">
+          <div class="wick"></div>
+          <div class="candle"></div>
+          <div class="marker"></div>
+          <div class="price-float">--</div>
+        </div>
+        <div class="live-stats"></div>
       </div>
     </div>
+
+    <div class="live-card" data-asset="dxy" data-label="DXY">
+      <div class="live-header">
+        <div class="live-title">DXY · <span class="tf">--</span></div>
+        <div class="live-clock">
+          <span class="now">--:--:--</span>
+          <span class="sep">·</span>
+          <span class="left">--:--</span>
+        </div>
+      </div>
+
+      <div class="live-body">
+        <div class="thermo">
+          <div class="wick"></div>
+          <div class="candle"></div>
+          <div class="marker"></div>
+          <div class="price-float">--</div>
+        </div>
+        <div class="live-stats"></div>
+      </div>
+    </div>
+
+    <div class="live-card" data-asset="tnx" data-label="TNX">
+      <div class="live-header">
+        <div class="live-title">TNX · <span class="tf">--</span></div>
+        <div class="live-clock">
+          <span class="now">--:--:--</span>
+          <span class="sep">·</span>
+          <span class="left">--:--</span>
+        </div>
+      </div>
+
+      <div class="live-body">
+        <div class="thermo">
+          <div class="wick"></div>
+          <div class="candle"></div>
+          <div class="marker"></div>
+          <div class="price-float">--</div>
+        </div>
+        <div class="live-stats"></div>
+      </div>
+    </div>
+
+    <div class="live-card" data-asset="nasdaq" data-label="NASDAQ">
+      <div class="live-header">
+        <div class="live-title">NASDAQ · <span class="tf">--</span></div>
+        <div class="live-clock">
+          <span class="now">--:--:--</span>
+          <span class="sep">·</span>
+          <span class="left">--:--</span>
+        </div>
+      </div>
+
+      <div class="live-body">
+        <div class="thermo">
+          <div class="wick"></div>
+          <div class="candle"></div>
+          <div class="marker"></div>
+          <div class="price-float">--</div>
+        </div>
+        <div class="live-stats"></div>
+      </div>
+    </div>
+
   </div>
-
-  <div class="asset-card" id="cDxy">
-    <div class="asset-head">
-      <div class="asset-title">DXY</div>
-      <div class="c-clock">--:--</div>
-    </div>
-    <div class="asset-body">
-      <div class="c-wick">
-        <div class="c-body"></div>
-        <div class="c-progress"></div>
-      </div>
-      <div class="asset-prices">
-        <div class="c-open">—</div>
-        <div class="c-close">—</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="asset-card" id="cTnx">
-    <div class="asset-head">
-      <div class="asset-title">TNX</div>
-      <div class="c-clock">--:--</div>
-    </div>
-    <div class="asset-body">
-      <div class="c-wick">
-        <div class="c-body"></div>
-        <div class="c-progress"></div>
-      </div>
-      <div class="asset-prices">
-        <div class="c-open">—</div>
-        <div class="c-close">—</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="asset-card" id="cNas">
-    <div class="asset-head">
-      <div class="asset-title">NASDAQ</div>
-      <div class="c-clock">--:--</div>
-    </div>
-    <div class="asset-body">
-      <div class="c-wick">
-        <div class="c-body"></div>
-        <div class="c-progress"></div>
-      </div>
-      <div class="asset-prices">
-        <div class="c-open">—</div>
-        <div class="c-close">—</div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-    <div class="live-body">
-      <div class="thermo">
-        <div class="wick"></div>
-        <div class="candle"></div>
-        <div class="marker"></div>
-        <div class="price-float">--</div>
-      </div>
-
-      <div class="live-stats"></div>
-    </div>
-  </div>
-
-  <div class="live-card" data-asset="dxy" data-label="DXY">
-    <div class="live-header">
-      <div class="live-title">DXY · <span class="tf">--</span></div>
-      <div class="live-clock">
-        <span class="now">--:--:--</span>
-        <span class="sep">·</span>
-        <span class="left">--:--</span>
-      </div>
-    </div>
-
-    <div class="live-body">
-      <div class="thermo">
-        <div class="wick"></div>
-        <div class="candle"></div>
-        <div class="marker"></div>
-        <div class="price-float">--</div>
-      </div>
-
-      <div class="live-stats"></div>
-    </div>
-  </div>
-
-  <div class="live-card" data-asset="tnx" data-label="TNX">
-    <div class="live-header">
-      <div class="live-title">TNX · <span class="tf">--</span></div>
-      <div class="live-clock">
-        <span class="now">--:--:--</span>
-        <span class="sep">·</span>
-        <span class="left">--:--</span>
-      </div>
-    </div>
-
-    <div class="live-body">
-      <div class="thermo">
-        <div class="wick"></div>
-        <div class="candle"></div>
-        <div class="marker"></div>
-        <div class="price-float">--</div>
-      </div>
-
-      <div class="live-stats"></div>
-    </div>
-  </div>
-
-  <div class="live-card" data-asset="nasdaq" data-label="NASDAQ">
-    <div class="live-header">
-      <div class="live-title">NASDAQ · <span class="tf">--</span></div>
-      <div class="live-clock">
-        <span class="now">--:--:--</span>
-        <span class="sep">·</span>
-        <span class="left">--:--</span>
-      </div>
-    </div>
-
-    <div class="live-body">
-      <div class="thermo">
-        <div class="wick"></div>
-        <div class="candle"></div>
-        <div class="marker"></div>
-        <div class="price-float">--</div>
-      </div>
-
-      <div class="live-stats"></div>
-    </div>
-  </div>
-</div>
 
   <!-- CONTENIDO (SCROLL INTERNO) -->
   <div class="main">
 
-    <!-- ✅ PANEL DE SEÑALES -->
+    <!-- PANEL DE SEÑALES -->
     <div id="signalsPanel" class="card">
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
         <div>
@@ -226,170 +161,173 @@
 
   </div> <!-- /main -->
 
-  <script>
+<script>
 let goldChartInstance = null;
 let scoreChartInstance = null;
 
 let clockTimer = null;
+let liveTicker = null;
+let lastDataCache = null;
 
-// ===== helpers =====
+// ======= helpers =======
 function fmt(n, d=2){
   if (n === undefined || n === null || Number.isNaN(n)) return "—";
   return Number(n).toFixed(d);
 }
-function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
 
-function startClock(){
+// ===== reloj (todas las cards) =====
+function startClockAll(){
+  if (clockTimer) clearInterval(clockTimer);
+
   const tick = () => {
     const now = new Date();
-    // reloj general si existe
-    const g = document.getElementById("liveClock");
-    if (g){
-      g.textContent = now.toLocaleTimeString("es-ES", {
-        timeZone:"Europe/Madrid", hour12:false
-      });
-    }
-    // relojes por vela (si existen)
-    document.querySelectorAll(".c-clock").forEach(el=>{
-      el.textContent = now.toLocaleTimeString("es-ES", {
-        timeZone:"Europe/Madrid", hour12:false
-      });
+    const t = now.toLocaleTimeString("es-ES", {
+      timeZone: "Europe/Madrid",
+      hour12: false
     });
+    document.querySelectorAll(".live-card .now").forEach(el => el.textContent = t);
   };
+
   tick();
-  if (clockTimer) clearInterval(clockTimer);
   clockTimer = setInterval(tick, 1000);
 }
 
-// ---- timeframe -> minutos (para floor correcto) ----
+// timeframe string -> minutes
 function tfToMinutes(tf){
-  const s = String(tf || "").trim().toLowerCase();
-  if (s.endsWith("m")) return parseInt(s,10);
-  if (s.endsWith("h")) return parseInt(s,10) * 60;
-  if (s.endsWith("d")) return parseInt(s,10) * 60 * 24;
+  if (!tf || typeof tf !== "string") return 60;
+  const s = tf.trim().toLowerCase();
+  if (s.endsWith("m")) return parseInt(s,10) || 60;
+  if (s.endsWith("h")) return (parseInt(s,10) || 1) * 60;
+  if (s.endsWith("d")) return (parseInt(s,10) || 1) * 1440;
   return 60;
 }
-function floorToTfISO(tsIso, tfMinutes){
-  const d = new Date(tsIso);
-  const ms = d.getTime();
-  const step = tfMinutes * 60 * 1000;
-  const floored = new Date(Math.floor(ms/step)*step);
-  return floored.toISOString().replace(".000Z","+00:00");
-}
 
-// ---- busca OPEN de la vela actual por candle_ts ----
-function getOpenFor(series, candleTs, field, fallbackLast){
-  if (!series.length) return fallbackLast;
-  // 1) intenta con candle_ts exacto
-  const first = series.find(x => x.candle_ts === candleTs && x[field] != null);
-  if (first) return first[field];
-
-  // 2) fallback: primer valor que encuentre del campo
-  const any = series.find(x => x[field] != null);
-  return any ? any[field] : fallbackLast;
-}
-
-function setCard(cardId, payload){
-  const root = document.getElementById(cardId);
-  if (!root) return;
-
-  const elOpen  = root.querySelector(".c-open");
-  const elClose = root.querySelector(".c-close");
-  const elBody  = root.querySelector(".c-body");
-  const elWick  = root.querySelector(".c-wick");
-
-  const {open, close, high, low, dir, progress, labelTop, labelBottom} = payload;
-
-  if (elOpen)  elOpen.textContent  = labelTop;
-  if (elClose) elClose.textContent = labelBottom;
-
-  // cuerpo: tamaño según rango (si no hay high/low reales, usamos delta)
-  const range = (high != null && low != null) ? Math.max(0.000001, high-low) : Math.max(0.000001, Math.abs(close-open));
-  const bodyPct = clamp(Math.abs(close-open) / range, 0.08, 1) * 100;
-
-  // wick: altura total 100%
-  if (elWick) elWick.style.height = "100%";
-  if (elBody){
-    elBody.style.height = `${bodyPct}%`;
-
-    // color dirección (verde/rojo)
-    elBody.style.background = dir >= 0 ? "rgba(120,255,170,.22)" : "rgba(255,120,140,.20)";
-    elBody.style.borderColor = dir >= 0 ? "rgba(120,255,170,.35)" : "rgba(255,120,140,.35)";
-    elBody.style.bottom = dir >= 0 ? "0" : "0";
+// calcula progreso vela 0..1 usando candle_ts si existe; si no, aproximación por redondeo
+function candleStartMs(last, tfMin){
+  if (last?.candle_ts){
+    const ms = new Date(last.candle_ts).getTime();
+    if (!Number.isNaN(ms)) return ms;
   }
 
-  // progreso lateral (si en CSS lo dibujas como pseudo o barra aparte)
-  // Si tienes un div .c-progress dentro:
-  const elProg = root.querySelector(".c-progress");
-  if (elProg){
-    elProg.style.height = `${clamp(progress,0,1)*100}%`;
-  }
+  const t = new Date(last?.ts || Date.now());
+  const ms = t.getTime();
+
+  // aproximación: redondeo hacia abajo al bloque tfMin
+  const block = tfMin * 60 * 1000;
+  return Math.floor(ms / block) * block;
 }
 
-function update4Candles(data){
+function updateTimeLeftUI(tfMin, startMs){
+  const endMs = startMs + tfMin*60*1000;
+  const leftMs = Math.max(0, endMs - Date.now());
+  const leftMin = Math.floor(leftMs / 60000);
+  const leftSec = Math.floor((leftMs % 60000) / 1000);
+
+  const mm = String(leftMin).padStart(2,"0");
+  const ss = String(leftSec).padStart(2,"0");
+
+  document.querySelectorAll(".live-card .left").forEach(el => el.textContent = `-${mm}:${ss}`);
+}
+
+function findOpen(series, last, key, startMs){
+  // 1) ideal: buscar primer punto de esa vela por candle_ts
+  if (last?.candle_ts){
+    const row = series.find(x => x.candle_ts === last.candle_ts);
+    if (row && row[key] != null) return row[key];
+  }
+
+  // 2) buscar el primer dato cuyo ts esté dentro de la vela actual (>= start)
+  const row2 = series.find(x => {
+    const ms = new Date(x.ts).getTime();
+    return !Number.isNaN(ms) && ms >= startMs;
+  });
+  if (row2 && row2[key] != null) return row2[key];
+
+  // 3) fallback
+  return series[0]?.[key] ?? last?.[key];
+}
+
+function updateLiveRowFromCache(){
+  if (!lastDataCache) return;
+
+  const data = lastDataCache;
   const series = data.series || [];
   if (!series.length) return;
-
   const last = series[series.length - 1];
+
   const tf = data?.meta?.timeframe || "60m";
   const tfMin = tfToMinutes(tf);
-
-  // candle_ts: si no viene, lo calculamos
-  const candleTs = last.candle_ts || floorToTfISO(last.ts, tfMin);
-
-  // OPEN por activo (primera lectura dentro de esa candle_ts)
-  const openGold = getOpenFor(series, candleTs, "gold", last.gold);
-  const openDxy  = getOpenFor(series, candleTs, "dxy", last.dxy);
-  const openTnx  = getOpenFor(series, candleTs, "tnx", last.tnx);
-  const openNas  = getOpenFor(series, candleTs, "nasdaq", last.nasdaq);
-
-  // CLOSE = el último valor
-  const closeGold = last.gold;
-  const closeDxy  = last.dxy;
-  const closeTnx  = last.tnx;
-  const closeNas  = last.nasdaq;
-
-  // progreso de la vela (por tiempo dentro del timeframe)
-  const startMs = new Date(candleTs.replace("+00:00","Z")).getTime();
-  const nowMs = Date.now();
+  const startMs = candleStartMs(last, tfMin);
   const endMs = startMs + tfMin*60*1000;
-  const progress = clamp((nowMs - startMs) / (endMs - startMs), 0, 1);
+  const prog = clamp((Date.now() - startMs) / (endMs - startMs), 0, 1);
 
-  // Labels: arriba = close, abajo = open (como tú quieres)
-  setCard("cGold", {
-    open: openGold, close: closeGold,
-    dir: closeGold - openGold,
-    progress,
-    labelTop: fmt(closeGold,1),
-    labelBottom: fmt(openGold,1)
-  });
+  // UI: tf y time-left
+  document.querySelectorAll(".live-card .tf").forEach(el => el.textContent = tf);
+  updateTimeLeftUI(tfMin, startMs);
 
-  setCard("cDxy", {
-    open: openDxy, close: closeDxy,
-    dir: closeDxy - openDxy,
-    progress,
-    labelTop: fmt(closeDxy,3),
-    labelBottom: fmt(openDxy,3)
-  });
+  // Mapa de assets (ajusta decimales si quieres)
+  const map = {
+    gold:   { key:"gold",   label:"GOLD",   atrKey:"atr",        decimals:1 },
+    dxy:    { key:"dxy",    label:"DXY",    atrKey:null,         decimals:3 },
+    tnx:    { key:"tnx",    label:"TNX",    atrKey:null,         decimals:3 },
+    nasdaq: { key:"nasdaq", label:"NASDAQ", atrKey:null,         decimals:1 },
+  };
 
-  setCard("cTnx", {
-    open: openTnx, close: closeTnx,
-    dir: closeTnx - openTnx,
-    progress,
-    labelTop: fmt(closeTnx,3),
-    labelBottom: fmt(openTnx,3)
-  });
+  document.querySelectorAll(".live-card").forEach(card => {
+    const asset = card.dataset.asset;
+    const cfg = map[asset];
+    if (!cfg) return;
 
-  setCard("cNas", {
-    open: openNas, close: closeNas,
-    dir: closeNas - openNas,
-    progress,
-    labelTop: fmt(closeNas,2),
-    labelBottom: fmt(openNas,2)
+    const price = last?.[cfg.key];
+    if (price == null) return;
+
+    const open = findOpen(series, last, cfg.key, startMs);
+    const delta = price - open;
+
+    // escala (ATR para oro; para otros un rango relativo simple)
+    let scale = 1;
+    if (cfg.atrKey && last?.[cfg.atrKey] != null) {
+      scale = Math.max(Number(last[cfg.atrKey]) || 25, 0.00001);
+    } else {
+      // rango relativo: 0.2% del valor (mínimo)
+      scale = Math.max(Math.abs(price) * 0.002, 0.00001);
+    }
+
+    // pos 0..1 centrado
+    const pos = clamp(0.5 + (delta / (2 * scale)), 0, 1);
+
+    const candle = card.querySelector(".candle");
+    const marker = card.querySelector(".marker");
+    const floatP = card.querySelector(".price-float");
+    const stats  = card.querySelector(".live-stats");
+    if (!candle || !marker || !floatP || !stats) return;
+
+    // altura vela + marcador + precio flotante
+    candle.style.height = `${clamp(pos*100, 6, 100)}%`;
+    marker.style.bottom = `${pos*100}%`;
+    floatP.style.bottom = `${pos*100}%`;
+    floatP.textContent = fmt(price, cfg.decimals);
+
+    candle.classList.remove("c-up","c-down");
+    candle.classList.add(delta >= 0 ? "c-up" : "c-down");
+
+    // stats: Open/Close + progreso
+    stats.innerHTML = `
+      <div class="live-row"><span class="k">Open</span><span class="v">${fmt(open, cfg.decimals)}</span></div>
+      <div class="live-row"><span class="k">Last</span><span class="v">${fmt(price, cfg.decimals)}</span></div>
+      <div class="live-row"><span class="k">Δ</span><span class="v">${delta>=0?"+":""}${fmt(delta, cfg.decimals)}</span></div>
+      <div class="live-row"><span class="k">Progreso</span><span class="v">${Math.round(prog*100)}%</span></div>
+    `;
   });
 }
 
-// ===== main fetch/render =====
+function startLiveTicker(){
+  if (liveTicker) clearInterval(liveTicker);
+  liveTicker = setInterval(updateLiveRowFromCache, 1000); // “corre” cada segundo
+}
+
+// ======= main fetch/render =======
 async function loadData() {
   const res = await fetch('./macro_data.json', { cache: 'no-store' });
   const data = await res.json();
@@ -399,6 +337,9 @@ async function loadData() {
     document.getElementById("updated").innerText = "Sin datos aún…";
     return;
   }
+
+  // cache para animación del widget cada segundo
+  lastDataCache = data;
 
   const last = series[series.length - 1];
 
@@ -420,10 +361,10 @@ async function loadData() {
 
   document.getElementById("gold").innerText = last.gold;
 
-  // ✅ NUEVO WIDGET 4 VELAS
-  update4Candles(data);
+  // LIVE 4 VELAS (pinta una vez y luego el ticker lo anima)
+  updateLiveRowFromCache();
 
-  // ===== SEÑALES (igual que antes) =====
+  // SEÑALES
   const signals = (data.signals || []).slice(-10).reverse();
   const lastSignalText = document.getElementById("lastSignalText");
   const signalsList = document.getElementById("signalsList");
@@ -455,7 +396,7 @@ async function loadData() {
     `).join("");
   }
 
-  // ===== GRÁFICOS (igual que antes) =====
+  // GRÁFICOS
   const labels = series.map(x =>
     new Date(x.ts).toLocaleString("es-ES", { timeZone: "Europe/Madrid" })
   );
@@ -484,10 +425,11 @@ async function loadData() {
 }
 
 // Arranque
-startClock();
+startClockAll();
+startLiveTicker();
 loadData();
 setInterval(loadData, 30000);
 </script>
- 
+
 </body>
 </html>
