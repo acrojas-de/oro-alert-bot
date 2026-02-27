@@ -20,6 +20,10 @@
     </div>
 
     <div class="right">
+      <button id="btnRefresh" class="btn" type="button" title="Refrescar ahora">
+        🔄 Refrescar
+      </button>
+      
       <div class="card" style="margin:0; padding:8px 10px;">
         Score: <span id="score"></span> |
         Bias: <span id="bias" class="badge mix"></span> |
@@ -212,7 +216,7 @@ function candleStartMs(last, tfMin){
     if (!Number.isNaN(ms)) return ms;
   }
 
-  // ✅ mejor: usa el tiempo actual para “vela en curso”
+  // fallback: vela en curso según hora actual
   const now = Date.now();
   const block = tfMin * 60 * 1000;
   return Math.floor(now / block) * block;
@@ -305,11 +309,17 @@ function updateLiveRowFromCache(){
 
     const pos = clamp(0.5 + (delta / (2 * scale)), 0, 1);
 
-    const candle = card.querySelector(".candle");
-    const marker = card.querySelector(".marker");
-    const floatP = card.querySelector(".price-float");
-    const stats  = card.querySelector(".live-stats");
-    const progBar = card.querySelector(".c-progress"); // solo existe en GOLD
+const thermo = card.querySelector(".thermo");
+const candle = card.querySelector(".candle");
+const marker = card.querySelector(".marker");
+const floatP = card.querySelector(".price-float");
+const stats  = card.querySelector(".live-stats");
+const progBar = card.querySelector(".c-progress"); // solo existe en GOLD
+
+if (!thermo || !candle || !marker || !floatP || !stats) return;
+
+// ✅ Línea de nivel horizontal (la usa thermo::after en el CSS)
+thermo.style.setProperty("--lvl", `${pos * 100}%`);
 
     if (!candle || !marker || !floatP || !stats) return;
 
@@ -438,9 +448,27 @@ async function loadData() {
   });
 }
 
+function hookRefreshButton(){
+  const btn = document.getElementById("btnRefresh");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
+    try{
+      btn.classList.add("is-loading");
+      await loadData();          // trae JSON + repinta todo
+      updateLiveRowFromCache();  // fuerza repaint live por si acaso
+    } catch (e){
+      console.error("Refresh error:", e);
+    } finally {
+      btn.classList.remove("is-loading");
+    }
+  });
+}
+  
 // Arranque
 startClockAll();
 startLiveTicker();
+hookRefreshButton();
 loadData();
 setInterval(loadData, 30000);
 </script>
