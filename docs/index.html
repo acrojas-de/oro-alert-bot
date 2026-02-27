@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Macro Dashboard (Oro)</title>
 
-  <link rel="stylesheet" href="./style.css?v=7">
+  <!-- Sube v= cuando cambies CSS para evitar caché -->
+  <link rel="stylesheet" href="./style.css?v=9">
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
@@ -23,7 +24,7 @@
       <button id="btnRefresh" class="btn" type="button" title="Refrescar ahora">
         🔄 Refrescar
       </button>
-      
+
       <div class="card" style="margin:0; padding:8px 10px;">
         Score: <span id="score"></span> |
         Bias: <span id="bias" class="badge mix"></span> |
@@ -35,7 +36,7 @@
   <!-- WIDGETS LIVE (4 velas en fila) -->
   <div class="live-row-wrap" id="liveRow">
 
-    <div class="live-card" data-asset="gold" data-label="GOLD">
+    <div class="live-card" data-asset="gold">
       <div class="live-header">
         <div class="live-title">GOLD · <span class="tf">--</span></div>
         <div class="live-clock">
@@ -57,7 +58,7 @@
       </div>
     </div>
 
-    <div class="live-card" data-asset="dxy" data-label="DXY">
+    <div class="live-card" data-asset="dxy">
       <div class="live-header">
         <div class="live-title">DXY · <span class="tf">--</span></div>
         <div class="live-clock">
@@ -78,7 +79,7 @@
       </div>
     </div>
 
-    <div class="live-card" data-asset="tnx" data-label="TNX">
+    <div class="live-card" data-asset="tnx">
       <div class="live-header">
         <div class="live-title">TNX · <span class="tf">--</span></div>
         <div class="live-clock">
@@ -99,7 +100,7 @@
       </div>
     </div>
 
-    <div class="live-card" data-asset="nasdaq" data-label="NASDAQ">
+    <div class="live-card" data-asset="nasdaq">
       <div class="live-header">
         <div class="live-title">NASDAQ · <span class="tf">--</span></div>
         <div class="live-clock">
@@ -164,9 +165,12 @@
       </div>
     </div>
 
-  </div> <!-- /main -->
+  </div>
 
 <script>
+/* =========================
+   ESTADO GLOBAL
+   ========================= */
 let goldChartInstance = null;
 let scoreChartInstance = null;
 
@@ -174,20 +178,50 @@ let clockTimer = null;
 let liveTicker = null;
 let lastDataCache = null;
 
-// ======= helpers =======
+/* =========================
+   HELPERS
+   ========================= */
 function fmt(n, d=2){
   if (n === undefined || n === null || Number.isNaN(n)) return "—";
   return Number(n).toFixed(d);
 }
 function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
 
-// ===== reloj (todas las cards) =====
+function tfToMinutes(tf){
+  if (!tf || typeof tf !== "string") return 60;
+  const s = tf.trim().toLowerCase();
+  if (s.endsWith("m")) return parseInt(s,10) || 60;
+  if (s.endsWith("h")) return (parseInt(s,10) || 1) * 60;
+  if (s.endsWith("d")) return (parseInt(s,10) || 1) * 1440;
+  return 60;
+}
+
+/* vela actual (inicio) */
+function candleStartMs(last, tfMin){
+  if (last?.candle_ts){
+    const ms = new Date(last.candle_ts).getTime();
+    if (!Number.isNaN(ms)) return ms;
+  }
+  const now = Date.now();
+  const block = tfMin * 60 * 1000;
+  return Math.floor(now / block) * block;
+}
+
+function updateTimeLeftUI(tfMin, startMs){
+  const endMs = startMs + tfMin*60*1000;
+  const leftMs = Math.max(0, endMs - Date.now());
+  const leftMin = Math.floor(leftMs / 60000);
+  const leftSec = Math.floor((leftMs % 60000) / 1000);
+  const mm = String(leftMin).padStart(2,"0");
+  const ss = String(leftSec).padStart(2,"0");
+  document.querySelectorAll(".live-card .left").forEach(el => el.textContent = `-${mm}:${ss}`);
+}
+
 function startClockAll(){
   if (clockTimer) clearInterval(clockTimer);
 
   const tick = () => {
-    const now = new Date();
-    const t = now.toLocaleTimeString("es-ES", {
+    const t = new Date().toLocaleTimeString("es-ES", {
       timeZone: "Europe/Madrid",
       hour12: false
     });
@@ -198,66 +232,32 @@ function startClockAll(){
   clockTimer = setInterval(tick, 1000);
 }
 
-// timeframe string -> minutes
-function tfToMinutes(tf){
-  if (!tf || typeof tf !== "string") return 60;
-  const s = tf.trim().toLowerCase();
-  if (s.endsWith("m")) return parseInt(s,10) || 60;
-  if (s.endsWith("h")) return (parseInt(s,10) || 1) * 60;
-  if (s.endsWith("d")) return (parseInt(s,10) || 1) * 1440;
-  return 60;
-}
-
-// calcula progreso vela 0..1 usando candle_ts si existe; si no, aproximación por redondeo
-function candleStartMs(last, tfMin){
-  // si viene candle_ts, perfecto
-  if (last?.candle_ts){
-    const ms = new Date(last.candle_ts).getTime();
-    if (!Number.isNaN(ms)) return ms;
-  }
-
-  // fallback: vela en curso según hora actual
-  const now = Date.now();
-  const block = tfMin * 60 * 1000;
-  return Math.floor(now / block) * block;
-}
- 
-function updateTimeLeftUI(tfMin, startMs){
-  const endMs = startMs + tfMin*60*1000;
-  const leftMs = Math.max(0, endMs - Date.now());
-  const leftMin = Math.floor(leftMs / 60000);
-  const leftSec = Math.floor((leftMs % 60000) / 1000);
-
-  const mm = String(leftMin).padStart(2,"0");
-  const ss = String(leftSec).padStart(2,"0");
-
-  document.querySelectorAll(".live-card .left").forEach(el => el.textContent = `-${mm}:${ss}`);
-}
-
+/* open de la vela */
 function findOpen(series, last, key, startMs){
-  // 1) ideal: buscar primer punto de esa vela por candle_ts
   if (last?.candle_ts){
     const row = series.find(x => x.candle_ts === last.candle_ts);
     if (row && row[key] != null) return row[key];
   }
 
-  // 2) buscar el primer dato cuyo ts esté dentro de la vela actual (>= start)
   const row2 = series.find(x => {
     const ms = new Date(x.ts).getTime();
     return !Number.isNaN(ms) && ms >= startMs;
   });
   if (row2 && row2[key] != null) return row2[key];
 
-  // 3) fallback
   return series[0]?.[key] ?? last?.[key];
 }
 
+/* =========================
+   LIVE WIDGETS
+   ========================= */
 function updateLiveRowFromCache(){
   if (!lastDataCache) return;
 
   const data = lastDataCache;
   const series = data.series || [];
   if (!series.length) return;
+
   const last = series[series.length - 1];
 
   const tf = data?.meta?.timeframe || "60m";
@@ -266,7 +266,6 @@ function updateLiveRowFromCache(){
   const endMs = startMs + tfMin*60*1000;
   const prog = clamp((Date.now() - startMs) / (endMs - startMs), 0, 1);
 
-  // UI: tf y time-left
   document.querySelectorAll(".live-card .tf").forEach(el => el.textContent = tf);
   updateTimeLeftUI(tfMin, startMs);
 
@@ -285,7 +284,6 @@ function updateLiveRowFromCache(){
     const price = last?.[cfg.key];
     if (price == null) return;
 
-    // Open + fallback al punto anterior si sale igual
     let open = findOpen(series, last, cfg.key, startMs);
     const prev = series.length >= 2 ? series[series.length - 2] : null;
     if (prev && (open == null || Math.abs(price - open) < 1e-12)) {
@@ -293,7 +291,6 @@ function updateLiveRowFromCache(){
     }
     const delta = price - open;
 
-    // escala
     let scale = 1;
     if (cfg.atrKey && last?.[cfg.atrKey] != null) {
       scale = Math.max(Number(last[cfg.atrKey]) || 25, 0.00001);
@@ -309,21 +306,18 @@ function updateLiveRowFromCache(){
 
     const pos = clamp(0.5 + (delta / (2 * scale)), 0, 1);
 
-const thermo = card.querySelector(".thermo");
-const candle = card.querySelector(".candle");
-const marker = card.querySelector(".marker");
-const floatP = card.querySelector(".price-float");
-const stats  = card.querySelector(".live-stats");
-const progBar = card.querySelector(".c-progress"); // solo existe en GOLD
+    const thermo = card.querySelector(".thermo");
+    const candle = card.querySelector(".candle");
+    const marker = card.querySelector(".marker");
+    const floatP = card.querySelector(".price-float");
+    const stats  = card.querySelector(".live-stats");
+    const progBar = card.querySelector(".c-progress"); // solo en GOLD
 
-if (!thermo || !candle || !marker || !floatP || !stats) return;
+    if (!thermo || !candle || !marker || !floatP || !stats) return;
 
-// ✅ Línea de nivel horizontal (la usa thermo::after en el CSS)
-thermo.style.setProperty("--lvl", `${pos * 100}%`);
+    // línea de nivel para thermo::after
+    thermo.style.setProperty("--lvl", `${pos * 100}%`);
 
-    if (!candle || !marker || !floatP || !stats) return;
-
-    // vela + marcador + precio
     candle.style.height = `${clamp(pos*100, 6, 100)}%`;
     marker.style.bottom = `${pos*100}%`;
     floatP.style.bottom = `${pos*100}%`;
@@ -332,7 +326,6 @@ thermo.style.setProperty("--lvl", `${pos * 100}%`);
     candle.classList.remove("c-up","c-down");
     candle.classList.add(delta >= 0 ? "c-up" : "c-down");
 
-    // progreso del tiempo (vertical) si existe
     if (progBar){
       progBar.style.height = `${prog * 100}%`;
     }
@@ -348,11 +341,15 @@ thermo.style.setProperty("--lvl", `${pos * 100}%`);
 
 function startLiveTicker(){
   if (liveTicker) clearInterval(liveTicker);
-  liveTicker = setInterval(updateLiveRowFromCache, 1000); // corre cada segundo
+  liveTicker = setInterval(updateLiveRowFromCache, 1000);
 }
 
-// ======= main fetch/render =======
+/* =========================
+   RENDER PRINCIPAL
+   ========================= */
 async function loadData() {
+  // console.log("loadData()", new Date().toLocaleTimeString()); // DEBUG opcional
+
   const res = await fetch(`./macro_data.json?ts=${Date.now()}`, { cache: "no-store" });
   const data = await res.json();
   const series = data.series || [];
@@ -362,12 +359,9 @@ async function loadData() {
     return;
   }
 
-  // cache para animación del widget cada segundo
   lastDataCache = data;
-
   const last = series[series.length - 1];
 
-  // CABECERA
   document.getElementById("updated").innerText =
     "Actualizado: " + new Date(data.meta.updated_utc)
       .toLocaleString("es-ES", { timeZone: "Europe/Madrid" });
@@ -385,7 +379,6 @@ async function loadData() {
 
   document.getElementById("gold").innerText = last.gold;
 
-  // LIVE 4 VELAS
   updateLiveRowFromCache();
 
   // SEÑALES
@@ -448,35 +441,33 @@ async function loadData() {
   });
 }
 
+/* =========================
+   BOTÓN REFRESCAR
+   ========================= */
 function hookRefreshButton(){
   window.addEventListener("DOMContentLoaded", () => {
-
     const btn = document.getElementById("btnRefresh");
-    if (!btn) {
-      console.warn("No existe btnRefresh");
-      return;
-    }
+    if (!btn) return;
 
     btn.addEventListener("click", async () => {
-      console.log("Manual refresh");
-
       try{
+        btn.disabled = true;
         btn.classList.add("is-loading");
-
         await loadData();
         updateLiveRowFromCache();
-
       }catch(e){
         console.error(e);
       }finally{
         btn.classList.remove("is-loading");
+        btn.disabled = false;
       }
     });
-
   });
 }
-  
-// Arranque
+
+/* =========================
+   ARRANQUE
+   ========================= */
 startClockAll();
 startLiveTicker();
 hookRefreshButton();
