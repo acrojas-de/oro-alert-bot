@@ -198,12 +198,21 @@ function tfToMinutes(tf){
 
 /* vela actual (inicio) */
 function candleStartMs(last, tfMin){
-  if (last?.candle_ts){
-    const ms = new Date(last.candle_ts).getTime();
-    if (!Number.isNaN(ms)) return ms;
-  }
   const now = Date.now();
   const block = tfMin * 60 * 1000;
+
+  // Si candle_ts existe, úsalo SOLO si está dentro de esta vela (no viejo)
+  if (last?.candle_ts){
+    const ms = new Date(last.candle_ts).getTime();
+    if (!Number.isNaN(ms)) {
+      const startGuess = Math.floor(ms / block) * block;
+
+      // ✅ si el startGuess está razonablemente cerca (<= 2 velas), OK
+      if (now - startGuess <= 2 * block) return startGuess;
+    }
+  }
+
+  // ✅ fallback robusto: vela en curso por hora actual
   return Math.floor(now / block) * block;
 }
 
