@@ -2,7 +2,7 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-02-26T23:59:00+00:00"
+    "updated_utc": "2026-02-27T02:09:33+00:00"
   },
   "series": [
     {
@@ -1032,6 +1032,33 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-02-27T02:09:33+00:00",
+      "candle_ts": "2026-02-27T00:00:00+00:00",
+      "score": 50,
+      "bias": "MIXTO_ESPERAR",
+      "gold": 5191.6,
+      "gold_ema21": 5198.11,
+      "gold_ema50": 5194.24,
+      "gold_rsi14": 47.41,
+      "gold_rsi14_prev": 50.91,
+      "dxy": 97.769,
+      "dxy_ema21": 97.7556,
+      "tnx": 4.025,
+      "tnx_ema21": 4.0372,
+      "nasdaq": 22833.67,
+      "nasdaq_ema21": 22880.85,
+      "ema_spread_pct": 0.000744,
+      "atr": 22.9615,
+      "atr_pct": 0.004423,
+      "ema21_slope_pct": -0.000125,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -1160,15 +1187,37 @@
       "exec_timeframe": "5m",
       "warmup_bars": 1,
       "p_base": 5212.3
+    },
+    {
+      "ts": "2026-02-27T00:00:00+00:00",
+      "asset": "GOLD",
+      "type": "SELL",
+      "reason": "Cruce bajista: precio cae por debajo de EMA21",
+      "strength": 2,
+      "price": 5191.6,
+      "ema21": 5198.11,
+      "stop_price": 5199.39,
+      "confirm_pct": 0.003
+    },
+    {
+      "ts": "2026-02-27T02:09:33+00:00",
+      "asset": "GOLD",
+      "type": "STOP_HIT",
+      "reason": "Stop tocado (SELL): 5207.80 > 5199.39",
+      "strength": 4,
+      "price": 5207.8,
+      "from_price": 5191.6,
+      "stop_price": 5199.39,
+      "source_ts": "2026-02-27T00:00:00+00:00"
     }
   ],
   "state": {
     "metrics": {
-      "ema_spread": 4.4614,
-      "ema_spread_pct": 0.000858,
-      "atr": 23.3069,
-      "atr_pct": 0.004481,
-      "ema21_slope_pct": 5.7e-05,
+      "ema_spread": 3.8649,
+      "ema_spread_pct": 0.000744,
+      "atr": 22.9615,
+      "atr_pct": 0.004423,
+      "ema21_slope_pct": -0.000125,
       "thresholds": {
         "COMP_EMA_PCT": 0.0015,
         "COMP_ATR_PCT": 0.0018,
