@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Macro Dashboard (Oro)</title>
 
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./style.css?v=7">
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
@@ -353,7 +353,7 @@ function startLiveTicker(){
 
 // ======= main fetch/render =======
 async function loadData() {
-  const res = await fetch('./macro_data.json', { cache: 'no-store' });
+  const res = await fetch(`./macro_data.json?ts=${Date.now()}`, { cache: "no-store" });
   const data = await res.json();
   const series = data.series || [];
 
