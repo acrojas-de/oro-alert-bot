@@ -278,13 +278,11 @@ button:hover, .btn:hover{
   bottom: 10px;
   height: 0%;
   border-radius: 14px;
-
   background: linear-gradient(
     to top,
-    rgba(255,255,255,.08),
-    rgba(255,255,255,.02)
+    rgba(255,255,255,.14),
+    rgba(255,255,255,.03)
   );
-
   border: 1px solid rgba(255,255,255,.08);
   pointer-events:none;
   z-index: 2;          /* detrás de candle/marker */
@@ -341,3 +339,13 @@ button:hover, .btn:hover{
 }
 
 .btn.is-loading { opacity:.7; pointer-events:none; }
+
+.live-card .thermo{ position:relative; }
+
+.live-card .thermo::before{ z-index:1; }  /* el cristal detrás */
+.live-card .wick{ z-index:2; }
+.live-card .c-progress{ z-index:2; }      /* barra detrás de vela */
+.live-card .candle{ z-index:3; }
+.live-card .marker{ z-index:6; }
+.live-card .price-float{ z-index:7; }
+.live-card .thermo::after{ z-index:8; }   /* línea de nivel por encima */
