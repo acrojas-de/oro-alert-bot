@@ -323,6 +323,67 @@ function flashUpdated(){
   setTimeout(()=> upd.style.color = "", 800);
 }
 
+  function flashUpdated(){
+  const upd = document.getElementById("updated");
+  if (!upd) return;
+  upd.style.color = "#4cff9a";
+  setTimeout(()=> upd.style.color = "", 800);
+}
+
+// 👇👇👇 AQUÍ PEGAS ESTO 👇👇👇
+function updateTrigger(last){
+  const trigEl = document.getElementById("trigger");
+  if (!trigEl || !last) return;
+
+  const score = Number(last.score ?? 0);
+  const bias  = last.bias;
+
+  const price = Number(last.gold ?? NaN);
+  const ema21 = Number(last.gold_ema21 ?? NaN);
+  const ema50 = Number(last.gold_ema50 ?? NaN);
+
+  if (!Number.isFinite(price) || !Number.isFinite(ema21) || !Number.isFinite(ema50)){
+    trigEl.innerText = "—";
+    trigEl.className = "badge mix";
+    return;
+  }
+
+  const delta = price - ema21;
+
+  let trigger = null;
+
+  if (
+    score >= 70 &&
+    bias === "LONG_FAVORABLE" &&
+    price > ema21 &&
+    ema21 >= ema50 &&
+    delta > 0
+  ){
+    trigger = "BUY";
+  }
+
+  if (
+    score <= 40 &&
+    bias === "SHORT_CUIDADO" &&
+    price < ema21 &&
+    ema21 <= ema50 &&
+    delta < 0
+  ){
+    trigger = "SELL";
+  }
+
+  if (trigger === "BUY"){
+    trigEl.innerText = "🟢🚀 BUY";
+    trigEl.className = "badge long";
+  }else if (trigger === "SELL"){
+    trigEl.innerText = "🔴⚡ SELL";
+    trigEl.className = "badge short";
+  }else{
+    trigEl.innerText = "—";
+    trigEl.className = "badge mix";
+  }
+}
+  
 async function loadData() {
   try{
     const res = await fetch(`./macro_data.json?ts=${Date.now()}`, { cache: "no-store" });
@@ -354,6 +415,7 @@ async function loadData() {
     biasEl.className = "badge " + cls;
 
     document.getElementById("gold").innerText = fmt(last.gold, 1);
+    updateTrigger(last);
 
     updateLiveRowFromCache();
 
