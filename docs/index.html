@@ -419,6 +419,45 @@ async function loadData() {
 
     updateLiveRowFromCache();
 
+    <!-- TERMÓMETROS (vela actual) -->
+<div class="thermo-grid card">
+  <div class="thermo" id="thermoGOLD">
+    <div class="thermo-title">GOLD</div>
+    <div class="tube">
+      <div class="fill"></div>
+      <div class="cap"></div>
+    </div>
+    <div class="thermo-meta" id="metaGOLD">—</div>
+  </div>
+
+  <div class="thermo" id="thermoDXY">
+    <div class="thermo-title">DXY</div>
+    <div class="tube">
+      <div class="fill"></div>
+      <div class="cap"></div>
+    </div>
+    <div class="thermo-meta" id="metaDXY">—</div>
+  </div>
+
+  <div class="thermo" id="thermoTNX">
+    <div class="thermo-title">TNX</div>
+    <div class="tube">
+      <div class="fill"></div>
+      <div class="cap"></div>
+    </div>
+    <div class="thermo-meta" id="metaTNX">—</div>
+  </div>
+
+  <div class="thermo" id="thermoNAS">
+    <div class="thermo-title">NASDAQ</div>
+    <div class="tube">
+      <div class="fill"></div>
+      <div class="cap"></div>
+    </div>
+    <div class="thermo-meta" id="metaNAS">—</div>
+  </div>
+</div>
+    
     // señales
     const signals = (data.signals || []).slice(-10).reverse();
     const lastSignalText = document.getElementById("lastSignalText");
