@@ -1,70 +1,26 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Premium Terminal V1</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
-    }
-
-    header {
-      padding: 15px;
-      background: #1e293b;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    select {
-      padding: 6px 10px;
-      background: #0f172a;
-      color: white;
-      border: 1px solid #334155;
-      border-radius: 6px;
-    }
-
-    .content {
-      padding: 20px;
-    }
-
-    .card {
-      background: #1e293b;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-    }
-  </style>
-</head>
-<body>
-
-<header>
-  <h2>Premium Terminal V1 (1H)</h2>
-  <select id="assetSelect"></select>
-</header>
-
-<div class="content">
-  <div class="card">
-    <h3 id="assetName">Selecciona un activo</h3>
-    <p>Timeframe fijo: 1H</p>
-  </div>
-</div>
-
 <script>
-async function loadWatchlist() {
-  const response = await fetch('watchlist.json');
-  const data = await response.json();
+let watchlistData = {};
+let macroData = {};
+let currentAsset = null;
 
+async function loadData() {
+  const w = await fetch('watchlist.json');
+  watchlistData = await w.json();
+
+  const m = await fetch('macro_data.json');
+  macroData = await m.json();
+
+  buildSelector();
+}
+
+function buildSelector() {
   const select = document.getElementById("assetSelect");
 
-  for (const category in data) {
+  for (const category in watchlistData) {
     const group = document.createElement("optgroup");
     group.label = category;
 
-    data[category].forEach(asset => {
+    watchlistData[category].forEach(asset => {
       const option = document.createElement("option");
       option.value = asset.symbol;
       option.textContent = asset.name;
@@ -75,13 +31,26 @@ async function loadWatchlist() {
   }
 
   select.addEventListener("change", () => {
-    document.getElementById("assetName").textContent =
-      select.options[select.selectedIndex].text;
+    currentAsset = select.value;
+    updateAssetView();
   });
+
+  currentAsset = select.value;
+  updateAssetView();
 }
 
-loadWatchlist();
-</script>
+function updateAssetView() {
+  const assetName =
+    document.getElementById("assetSelect").selectedOptions[0].text;
 
-</body>
-</html>
+  document.getElementById("assetName").textContent = assetName;
+
+  const assetData = macroData.assets[currentAsset];
+
+  if (!assetData) {
+    document.getElementById("assetName").textContent += " (sin datos aún)";
+  }
+}
+
+loadData();
+</script>
