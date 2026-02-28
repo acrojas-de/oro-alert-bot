@@ -1,7 +1,20 @@
 {
   "meta": {
-    "updated_utc": "",
+    "updated_utc": "2026-02-28T13:00:00Z",
     "timeframe": "1h"
   },
-  "assets": {}
+  "assets": {
+    "BTC-USD": {
+      "score": 82,
+      "trend": "bullish",
+      "volatility": "high",
+      "signal": "explosion_up"
+    },
+    "XRP-USD": {
+      "score": 35,
+      "trend": "bearish",
+      "volatility": "low",
+      "signal": "neutral"
+    }
+  }
 }
