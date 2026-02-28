@@ -1,43 +1,89 @@
 {
   "meta": {
-    "updated_utc": "2026-02-28T20:59:35+00:00",
-    "timeframe": "1h",
-    "source": "macro_bot.py"
+    "updated_utc": "2026-02-28T13:00:00Z",
+    "timeframe": "1h"
   },
   "assets": {
-    "GC=F": {
-      "score": 100,
+    "BTC-USD": {
+      "score": 82,
       "trend": "bullish",
       "volatility": "high",
-      "signal": "explosion_up",
-      "price": 5281.3,
-      "ema21": 5231.29,
-      "ema50": 5213.32,
-      "atr_pct": 0.004001
+      "signal": "explosion_up"
     },
-    "DX-Y.NYB": {
+    "ETH-USD": {
       "score": 50,
-      "trend": "bearish",
+      "trend": "neutral",
       "volatility": "medium",
-      "signal": "neutral",
-      "price": 97.651,
-      "ema21": 97.7027
+      "signal": "neutral"
     },
-    "^TNX": {
+    "SOL-USD": {
       "score": 50,
-      "trend": "bearish",
+      "trend": "neutral",
       "volatility": "medium",
-      "signal": "neutral",
-      "price": 3.958,
-      "ema21": 4.0075
+      "signal": "neutral"
     },
+    "XRP-USD": {
+      "score": 35,
+      "trend": "bearish",
+      "volatility": "low",
+      "signal": "neutral"
+    },
+    "BNB-USD": {
+      "score": 50,
+      "trend": "neutral",
+      "volatility": "medium",
+      "signal": "neutral"
+    },
+
+    "GC=F": {
+      "score": 61,
+      "trend": "bullish",
+      "volatility": "medium",
+      "signal": "explosion_up"
+    },
+    "SI=F": {
+      "score": 55,
+      "trend": "bearish",
+      "volatility": "high",
+      "signal": "neutral"
+    },
+
     "^IXIC": {
       "score": 50,
-      "trend": "bearish",
+      "trend": "neutral",
       "volatility": "medium",
-      "signal": "neutral",
-      "price": 22652.11,
-      "ema21": 22774.96
+      "signal": "neutral"
+    },
+
+    "MSFT": {
+      "score": 50,
+      "trend": "neutral",
+      "volatility": "medium",
+      "signal": "neutral"
+    },
+    "GOOGL": {
+      "score": 50,
+      "trend": "neutral",
+      "volatility": "medium",
+      "signal": "neutral"
+    },
+    "NVDA": {
+      "score": 50,
+      "trend": "neutral",
+      "volatility": "medium",
+      "signal": "neutral"
+    },
+    "AMD": {
+      "score": 50,
+      "trend": "neutral",
+      "volatility": "medium",
+      "signal": "neutral"
+    },
+    "AAPL": {
+      "score": 50,
+      "trend": "neutral",
+      "volatility": "medium",
+      "signal": "neutral"
     }
   }
 }
