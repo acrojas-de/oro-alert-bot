@@ -173,6 +173,32 @@
 .statePill.up{ border-color: rgba(34,197,94,0.45); }
 .statePill.down{ border-color: rgba(239,68,68,0.45); }
 .statePill.neutral{ border-color: rgba(148,163,184,0.45); }
+
+  /* ===== TOAST ALERT ===== */
+.toast{
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 13px;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.toast.show{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast.up{ background: #22c55e; }
+.toast.down{ background: #ef4444; }  
+    
   </style>
 
 </head>
@@ -380,10 +406,18 @@ function updateAssetView() {
 
   // Aviso si cambia señal
   const prevSig = lastSignal[currentAsset];
+
   if (prevSig && prevSig !== sig) {
-    console.log(`[ALERTA] ${currentAsset}: ${prevSig} -> ${sig}`);
-    beep();
+  console.log(`[ALERTA] ${currentAsset}: ${prevSig} -> ${sig}`);
+  beep();
+
+  if (sig === "explosion_up") {
+    showToast(`${assetName} – EXPLOSION UP`, "up");
   }
+  if (sig === "explosion_down") {
+    showToast(`${assetName} – EXPLOSION DOWN`, "down");
+  }
+}
   lastSignal[currentAsset] = sig;
 
   if (uiTrend) uiTrend.textContent = trend;
@@ -435,6 +469,20 @@ function startAutoRefresh() {
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(loadData, REFRESH_MS);
 }
+
+ function showToast(message, type){
+  const t = document.createElement("div");
+  t.className = `toast ${type}`;
+  t.textContent = message;
+  document.body.appendChild(t);
+
+  setTimeout(() => t.classList.add("show"), 50);
+
+  setTimeout(() => {
+    t.classList.remove("show");
+    setTimeout(() => t.remove(), 300);
+  }, 4000);
+} 
 
 document.addEventListener("DOMContentLoaded", () => {
   loadData();
