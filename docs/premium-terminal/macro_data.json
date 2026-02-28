@@ -1,6 +1,6 @@
 {
   "meta": {
-    "updated_utc": "2026-02-28T22:24:00+00:00",
+    "updated_utc": "2026-02-28T22:44:14+00:00",
     "timeframe": "1h",
     "source": "macro_bot.py"
   },
@@ -38,6 +38,116 @@
       "signal": "neutral",
       "price": 22652.11,
       "ema21": 22774.96
+    },
+    "SI=F": {
+      "score": 65,
+      "trend": "bullish",
+      "volatility": "high",
+      "signal": "explosion_up",
+      "price": 94.415,
+      "ema21": 91.9171,
+      "ema50": 90.4705,
+      "atr_pct": 0.011664
+    },
+    "MSFT": {
+      "score": 35,
+      "trend": "bearish",
+      "volatility": "high",
+      "signal": "explosion_down",
+      "price": 393.8,
+      "ema21": 396.06,
+      "ema50": 396.73,
+      "atr_pct": 0.007922
+    },
+    "GOOGL": {
+      "score": 35,
+      "trend": "bearish",
+      "volatility": "high",
+      "signal": "explosion_down",
+      "price": 308.1,
+      "ema21": 308.34,
+      "ema50": 309.39,
+      "atr_pct": 0.008778
+    },
+    "NVDA": {
+      "score": 35,
+      "trend": "bearish",
+      "volatility": "high",
+      "signal": "explosion_down",
+      "price": 178.9,
+      "ema21": 185.45,
+      "ema50": 187.66,
+      "atr_pct": 0.011839
+    },
+    "AMD": {
+      "score": 35,
+      "trend": "bearish",
+      "volatility": "high",
+      "signal": "explosion_down",
+      "price": 199.45,
+      "ema21": 203.1,
+      "ema50": 204.64,
+      "atr_pct": 0.013035
+    },
+    "AAPL": {
+      "score": 35,
+      "trend": "bearish",
+      "volatility": "high",
+      "signal": "neutral",
+      "price": 266.64,
+      "ema21": 269.76,
+      "ema50": 269.08,
+      "atr_pct": 0.007211
+    },
+    "BTC-USD": {
+      "score": 65,
+      "trend": "bullish",
+      "volatility": "high",
+      "signal": "neutral",
+      "price": 66758.2,
+      "ema21": 65445.75,
+      "ema50": 65766.67,
+      "atr_pct": 0.009666
+    },
+    "ETH-USD": {
+      "score": 65,
+      "trend": "bullish",
+      "volatility": "high",
+      "signal": "neutral",
+      "price": 1960.05,
+      "ema21": 1918.4,
+      "ema50": 1937.03,
+      "atr_pct": 0.011873
+    },
+    "SOL-USD": {
+      "score": 65,
+      "trend": "bullish",
+      "volatility": "high",
+      "signal": "neutral",
+      "price": 84.4619,
+      "ema21": 81.6525,
+      "ema50": 82.394,
+      "atr_pct": 0.012107
+    },
+    "XRP-USD": {
+      "score": 65,
+      "trend": "bullish",
+      "volatility": "high",
+      "signal": "neutral",
+      "price": 1.3778,
+      "ema21": 1.3403,
+      "ema50": 1.3558,
+      "atr_pct": 0.01125
+    },
+    "BNB-USD": {
+      "score": 65,
+      "trend": "bullish",
+      "volatility": "high",
+      "signal": "neutral",
+      "price": 616.42,
+      "ema21": 607.67,
+      "ema50": 610.53,
+      "atr_pct": 0.006954
     }
   }
 }
