@@ -88,7 +88,69 @@
       color:#94a3b8;
       font-size:12px;
     }
+
+    /* ===== UI PRO (chips + KPIs) ===== */
+.rowTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+}
+
+.badges{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:10px 0 14px;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border:1px solid #334155;
+  border-radius:999px;
+  background: rgba(15,23,42,0.55);
+  font-size:12px;
+  color:#e2e8f0;
+}
+
+.badge b{ font-weight:700; color:#94a3b8; }
+
+.dot{
+  width:8px; height:8px; border-radius:50%;
+  background:#94a3b8;
+  box-shadow: 0 0 0 3px rgba(148,163,184,0.15);
+}
+
+.dot.up{
+  background:#22c55e;
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.15);
+}
+.dot.down{
+  background:#ef4444;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
+}
+
+.kpi{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:12px;
+  margin-top:12px;
+}
+
+.kpiCard{
+  padding:12px;
+  border:1px solid #334155;
+  border-radius:12px;
+  background: rgba(15,23,42,0.35);
+}
+
+.kpiCard .lbl{ font-size:12px; color:#94a3b8; margin-bottom:6px; }
+.kpiCard .val{ font-size:16px; font-weight:800; }
   </style>
+  
 </head>
 <body>
 
@@ -99,9 +161,20 @@
 
 <div class="content">
   <div class="card">
+   <div class="rowTop">
+  <div>
     <h3 id="assetName">Selecciona un activo</h3>
-    <p>Timeframe fijo: 1H</p>
 
+    <div class="badges">
+      <span class="badge"><span id="sigDot" class="dot"></span><b>Señal</b> <span id="uiSignal">—</span></span>
+      <span class="badge"><b>Tendencia</b> <span id="uiTrend">—</span></span>
+      <span class="badge"><b>Volatilidad</b> <span id="uiVol">—</span></span>
+      <span class="badge"><b>Updated</b> <span id="uiUpdated">—</span></span>
+      <span class="badge"><b>TF</b> 1H</span>
+    </div>
+  </div>
+</div>
+    
     <div id="assetDetails" style="margin-top:15px;">
       <div class="gaugeWrap">
         <svg id="scoreGauge" viewBox="0 0 200 120" class="gauge">
@@ -237,6 +310,14 @@ function updateAssetView() {
   }
 }
 
+  // dot según señal (chips)
+const sigDot = document.getElementById("sigDot");
+if (sigDot) {
+  sigDot.className = "dot";
+  if (assetData.signal === "explosion_up") sigDot.classList.add("up");
+  if (assetData.signal === "explosion_down") sigDot.classList.add("down");
+}
+  
 document.addEventListener("DOMContentLoaded", loadData);
 </script>
 
