@@ -122,6 +122,32 @@
   <!-- MAIN -->
   <div class="main">
 
+    <div class="thermo-grid card">
+  <div class="thermo" id="thermoGOLD">
+    <div class="thermo-title">GOLD</div>
+    <div class="tube"><div class="fill"></div><div class="cap"></div></div>
+    <div class="thermo-meta" id="metaGOLD">—</div>
+  </div>
+
+  <div class="thermo" id="thermoDXY">
+    <div class="thermo-title">DXY</div>
+    <div class="tube"><div class="fill"></div><div class="cap"></div></div>
+    <div class="thermo-meta" id="metaDXY">—</div>
+  </div>
+
+  <div class="thermo" id="thermoTNX">
+    <div class="thermo-title">TNX</div>
+    <div class="tube"><div class="fill"></div><div class="cap"></div></div>
+    <div class="thermo-meta" id="metaTNX">—</div>
+  </div>
+
+  <div class="thermo" id="thermoNAS">
+    <div class="thermo-title">NASDAQ</div>
+    <div class="tube"><div class="fill"></div><div class="cap"></div></div>
+    <div class="thermo-meta" id="metaNAS">—</div>
+  </div>
+</div>
+    
     <div id="signalsPanel" class="card">
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
         <div>
@@ -220,7 +246,6 @@ function findOpen(series, last, key, startMs){
     const row = series.find(x => x.candle_ts === last.candle_ts);
     if (row && row[key] != null) return row[key];
   }
-
   const row2 = series.find(x => {
     const ms = new Date(x.ts).getTime();
     return !Number.isNaN(ms) && ms >= startMs;
@@ -323,14 +348,6 @@ function flashUpdated(){
   setTimeout(()=> upd.style.color = "", 800);
 }
 
-  function flashUpdated(){
-  const upd = document.getElementById("updated");
-  if (!upd) return;
-  upd.style.color = "#4cff9a";
-  setTimeout(()=> upd.style.color = "", 800);
-}
-
-// 👇👇👇 AQUÍ PEGAS ESTO 👇👇👇
 function updateTrigger(last){
   const trigEl = document.getElementById("trigger");
   if (!trigEl || !last) return;
@@ -352,23 +369,11 @@ function updateTrigger(last){
 
   let trigger = null;
 
-  if (
-    score >= 70 &&
-    bias === "LONG_FAVORABLE" &&
-    price > ema21 &&
-    ema21 >= ema50 &&
-    delta > 0
-  ){
+  if (score >= 70 && bias === "LONG_FAVORABLE" && price > ema21 && ema21 >= ema50 && delta > 0){
     trigger = "BUY";
   }
 
-  if (
-    score <= 40 &&
-    bias === "SHORT_CUIDADO" &&
-    price < ema21 &&
-    ema21 <= ema50 &&
-    delta < 0
-  ){
+  if (score <= 40 && bias === "SHORT_CUIDADO" && price < ema21 && ema21 <= ema50 && delta < 0){
     trigger = "SELL";
   }
 
@@ -383,7 +388,49 @@ function updateTrigger(last){
     trigEl.className = "badge mix";
   }
 }
-  
+
+// === Termómetros “tubo” (los pequeños de la thermo-grid) ===
+function setTube(rootId, metaId, price, lo, hi, decimals){
+  const root = document.getElementById(rootId);
+  const meta = document.getElementById(metaId);
+  if (!root || !meta) return;
+
+  const fill = root.querySelector(".fill");
+  if (!fill) return;
+
+  let pct = (price - lo) / (hi - lo);
+  if (!Number.isFinite(pct)) pct = 0.5;
+  pct = clamp(pct, 0, 1);
+
+  fill.style.height = (pct * 100).toFixed(1) + "%";
+  meta.textContent = `P:${fmt(price, decimals)} | R:${fmt(lo, decimals)}–${fmt(hi, decimals)}`;
+}
+
+function updateTubeThermos(series, last){
+  if (!series?.length || !last) return;
+
+  function rangeFromTail(key){
+    const tail = series.slice(-40).map(x => Number(x?.[key])).filter(Number.isFinite);
+    const mn = tail.length ? Math.min(...tail) : Number(last[key]);
+    const mx = tail.length ? Math.max(...tail) : Number(last[key]);
+    if (!Number.isFinite(mn) || !Number.isFinite(mx) || mn === mx){
+      const v = Number(last[key]);
+      return [v - Math.abs(v)*0.001, v + Math.abs(v)*0.001];
+    }
+    return [mn, mx];
+  }
+
+  const [gLo,gHi] = rangeFromTail("gold");
+  const [dLo,dHi] = rangeFromTail("dxy");
+  const [tLo,tHi] = rangeFromTail("tnx");
+  const [nLo,nHi] = rangeFromTail("nasdaq");
+
+  setTube("thermoGOLD","metaGOLD", Number(last.gold),   gLo, gHi, 1);
+  setTube("thermoDXY","metaDXY",   Number(last.dxy),    dLo, dHi, 3);
+  setTube("thermoTNX","metaTNX",   Number(last.tnx),    tLo, tHi, 3);
+  setTube("thermoNAS","metaNAS",   Number(last.nasdaq), nLo, nHi, 1);
+}
+
 async function loadData() {
   try{
     const res = await fetch(`./macro_data.json?ts=${Date.now()}`, { cache: "no-store" });
@@ -391,7 +438,6 @@ async function loadData() {
 
     const data = await res.json();
     const series = data.series || [];
-
     if (!series.length) {
       document.getElementById("updated").innerText = "Sin datos aún… (series vacía)";
       return;
@@ -415,49 +461,11 @@ async function loadData() {
     biasEl.className = "badge " + cls;
 
     document.getElementById("gold").innerText = fmt(last.gold, 1);
+
     updateTrigger(last);
-
     updateLiveRowFromCache();
+    updateTubeThermos(series, last);
 
-    <!-- TERMÓMETROS (vela actual) -->
-<div class="thermo-grid card">
-  <div class="thermo" id="thermoGOLD">
-    <div class="thermo-title">GOLD</div>
-    <div class="tube">
-      <div class="fill"></div>
-      <div class="cap"></div>
-    </div>
-    <div class="thermo-meta" id="metaGOLD">—</div>
-  </div>
-
-  <div class="thermo" id="thermoDXY">
-    <div class="thermo-title">DXY</div>
-    <div class="tube">
-      <div class="fill"></div>
-      <div class="cap"></div>
-    </div>
-    <div class="thermo-meta" id="metaDXY">—</div>
-  </div>
-
-  <div class="thermo" id="thermoTNX">
-    <div class="thermo-title">TNX</div>
-    <div class="tube">
-      <div class="fill"></div>
-      <div class="cap"></div>
-    </div>
-    <div class="thermo-meta" id="metaTNX">—</div>
-  </div>
-
-  <div class="thermo" id="thermoNAS">
-    <div class="thermo-title">NASDAQ</div>
-    <div class="tube">
-      <div class="fill"></div>
-      <div class="cap"></div>
-    </div>
-    <div class="thermo-meta" id="metaNAS">—</div>
-  </div>
-</div>
-    
     // señales
     const signals = (data.signals || []).slice(-10).reverse();
     const lastSignalText = document.getElementById("lastSignalText");
@@ -529,7 +537,6 @@ function hookRefreshButton(){
     try{
       btn.classList.add("is-loading");
       await loadData();
-      updateLiveRowFromCache();
       flashUpdated();
     }catch(e){
       console.error(e);
@@ -538,12 +545,6 @@ function hookRefreshButton(){
     }
   });
 }
-
-window.forceRefresh = async function(){
-  await loadData();
-  updateLiveRowFromCache();
-  flashUpdated();
-};
 
 startClockAll();
 startLiveTicker();
