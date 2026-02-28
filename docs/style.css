@@ -8,11 +8,7 @@
 }
 
 *{ box-sizing:border-box; }
-
-html, body{
-  height:100%;
-  margin:0;
-}
+html, body{ height:100%; margin:0; }
 
 body{
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -24,29 +20,25 @@ body{
   min-height:100vh;
 }
 
-/* ============ TOPBAR ============ */
+/* TOPBAR */
 .topbar{
   height: var(--topbar-h);
   flex: 0 0 var(--topbar-h);
-
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:12px;
-
   padding: 10px 14px;
   border-bottom:1px solid var(--border);
   background: rgba(0,0,0,.18);
   backdrop-filter: blur(8px);
 }
-
 .topbar .left, .topbar .right{
   display:flex;
   align-items:center;
   gap:10px;
 }
 
-/* badges */
 .badge{
   padding:2px 8px;
   border-radius:999px;
@@ -58,7 +50,7 @@ body{
 .badge.short{ background: rgba(255,90,110,.10); }
 .badge.mix{ background: rgba(255,255,255,.06); }
 
-/* ============ MAIN ============ */
+/* MAIN */
 .main{
   height: calc(100vh - var(--topbar-h));
   flex: 1 1 auto;
@@ -67,7 +59,6 @@ body{
 }
 .main > *{ max-width:100%; }
 
-/* ============ TARJETAS ============ */
 .card{
   background: var(--card);
   border:1px solid var(--border);
@@ -75,14 +66,12 @@ body{
   padding:12px;
 }
 
-/* grid charts */
 .grid{
   display:grid;
   grid-template-columns: 1fr;
   gap: var(--gap);
 }
 
-/* charts */
 .chart-card{
   background: var(--card);
   border:1px solid var(--border);
@@ -110,14 +99,11 @@ button, .btn{
   background: rgba(255,255,255,.06);
   color: var(--text);
 }
-button:hover, .btn:hover{
-  background: rgba(255,255,255,.10);
-}
+button:hover, .btn:hover{ background: rgba(255,255,255,.10); }
+
 .btn.is-loading { opacity:.7; pointer-events:none; }
 
-/* ===========================
-   LIVE ROW
-   =========================== */
+/* LIVE ROW */
 .live-row-wrap{
   margin: var(--gap);
   display:grid;
@@ -134,7 +120,6 @@ button:hover, .btn:hover{
   box-shadow: 0 8px 24px rgba(0,0,0,.30) inset;
 }
 
-/* header */
 .live-card .live-header{
   display:flex;
   align-items:center;
@@ -142,12 +127,10 @@ button:hover, .btn:hover{
   gap:10px;
   margin-bottom:10px;
 }
-
 .live-card .live-title{
   font-weight:800;
   letter-spacing:.3px;
 }
-
 .live-card .live-clock{
   font-variant-numeric: tabular-nums;
   font-weight:800;
@@ -161,7 +144,6 @@ button:hover, .btn:hover{
 }
 .live-card .live-clock .sep{ opacity:.6; }
 
-/* body */
 .live-card .live-body{
   display:grid;
   grid-template-columns: 90px 1fr;
@@ -181,7 +163,7 @@ button:hover, .btn:hover{
   padding: 10px;
 }
 
-/* cristal interior (SIEMPRE detrás) */
+/* cristal */
 .live-card .thermo::before{
   content:"";
   position:absolute;
@@ -194,7 +176,7 @@ button:hover, .btn:hover{
   z-index:1;
 }
 
-/* línea horizontal (depende de --lvl desde JS) */
+/* línea nivel */
 .live-card .thermo::after{
   content:"";
   position:absolute;
@@ -204,11 +186,10 @@ button:hover, .btn:hover{
   height: 2px;
   background: rgba(255,255,255,.22);
   box-shadow: 0 0 10px rgba(255,255,255,.12);
-  pointer-events:none;
   z-index:8;
+  pointer-events:none;
 }
 
-/* mecha */
 .live-card .wick{
   position:absolute;
   left:50%;
@@ -221,7 +202,6 @@ button:hover, .btn:hover{
   z-index:2;
 }
 
-/* progreso vertical (rellena desde abajo) */
 .live-card .c-progress{
   position:absolute;
   left: 14px;
@@ -229,18 +209,13 @@ button:hover, .btn:hover{
   bottom: 10px;
   height: 0%;
   border-radius: 14px;
-  background: linear-gradient(
-    to top,
-    rgba(255,255,255,.14),
-    rgba(255,255,255,.03)
-  );
+  background: linear-gradient(to top, rgba(255,255,255,.14), rgba(255,255,255,.03));
   border: 1px solid rgba(255,255,255,.08);
   pointer-events:none;
+  z-index:2;
   transition: height .35s ease;
-  z-index:2; /* detrás de candle */
 }
 
-/* vela */
 .live-card .candle{
   position:absolute;
   left:50%;
@@ -250,12 +225,11 @@ button:hover, .btn:hover{
   height:50%;
   border-radius:14px;
   border:1px solid rgba(255,255,255,.18);
+  z-index:3;
   box-shadow: inset 0 0 18px rgba(0,0,0,.25);
   transition: height .45s ease, background .2s ease, border-color .2s ease;
-  z-index:3;
 }
 
-/* marcador */
 .live-card .marker{
   position:absolute;
   left:50%;
@@ -267,15 +241,13 @@ button:hover, .btn:hover{
   border:1px solid rgba(255,255,255,.55);
   background: rgba(255,255,255,.92);
   box-shadow: 0 0 18px rgba(255,255,255,.22);
-  transition: bottom .45s ease;
   z-index:6;
+  transition: bottom .45s ease;
 }
 
-/* precio flotante */
 .live-card .price-float{
   position:absolute;
   right:-6px;
-  left:auto;
   transform: translateY(50%);
   bottom:50%;
   padding:5px 8px;
@@ -291,7 +263,6 @@ button:hover, .btn:hover{
   z-index:7;
 }
 
-/* stats */
 .live-card .live-stats{
   border:1px solid var(--border);
   background: rgba(255,255,255,.04);
@@ -311,7 +282,9 @@ button:hover, .btn:hover{
 .live-row .k{ opacity:.8; }
 .live-row .v{ font-weight:800; }
 
-/* responsive */
+.c-up{ background: rgba(70, 255, 160, .26); border-color: rgba(70, 255, 160, .35); }
+.c-down{ background: rgba(255, 90, 110, .26); border-color: rgba(255, 90, 110, .35); }
+
 @media (max-width: 1100px){
   .live-row-wrap{ grid-template-columns: repeat(2, minmax(220px, 1fr)); }
 }
@@ -320,14 +293,4 @@ button:hover, .btn:hover{
   .live-card .live-body{ grid-template-columns: 1fr; }
   .live-card .thermo{ width:100%; height:160px; }
   .live-card .price-float{ right: 10px; }
-}
-
-/* colores vela */
-.c-up{
-  background: rgba(70, 255, 160, .26);
-  border-color: rgba(70, 255, 160, .35);
-}
-.c-down{
-  background: rgba(255, 90, 110, .26);
-  border-color: rgba(255, 90, 110, .35);
 }
