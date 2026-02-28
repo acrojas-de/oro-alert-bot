@@ -48,9 +48,30 @@
 
 <div class="content">
   <div class="card">
-    <div id="assetDetails" style="margin-top:15px;"></div>
-    <h3 id="assetName">Selecciona un activo</h3>
-    <p>Timeframe fijo: 1H</p>
+  <h3 id="assetName">Selecciona un activo</h3>
+  <p>Timeframe fijo: 1H</p>
+
+  <div id="assetDetails" style="margin-top:15px;">
+    <div class="gaugeWrap">
+      <svg id="scoreGauge" viewBox="0 0 200 120" class="gauge">
+        <!-- fondo -->
+        <path id="gBg" d="M 20 100 A 80 80 0 0 1 180 100" class="gBg"></path>
+        <!-- progreso -->
+        <path id="gFg" d="M 20 100 A 80 80 0 0 1 180 100" class="gFg"></path>
+
+        <text id="gScore" x="100" y="78" text-anchor="middle" class="gScore">—</text>
+        <text id="gLabel" x="100" y="98" text-anchor="middle" class="gLabel">Score</text>
+      </svg>
+
+      <div class="metaBox">
+        <div><strong>Tendencia:</strong> <span id="uiTrend">—</span></div>
+        <div><strong>Volatilidad:</strong> <span id="uiVol">—</span></div>
+        <div><strong>Señal:</strong> <span id="uiSignal">—</span></div>
+        <div class="muted" style="margin-top:8px;">
+          <strong>Updated:</strong> <span id="uiUpdated">—</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
