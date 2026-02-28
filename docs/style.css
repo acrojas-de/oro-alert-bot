@@ -113,9 +113,10 @@ button, .btn{
 button:hover, .btn:hover{
   background: rgba(255,255,255,.10);
 }
+.btn.is-loading { opacity:.7; pointer-events:none; }
 
 /* ===========================
-   LIVE ROW (4 velas en fila)
+   LIVE ROW
    =========================== */
 .live-row-wrap{
   margin: var(--gap);
@@ -176,11 +177,11 @@ button:hover, .btn:hover{
   border-radius:18px;
   border:1px solid var(--border);
   background: rgba(255,255,255,.04);
-  overflow: visible;          /* ✅ NO recorta el price-float */
+  overflow: visible;
   padding: 10px;
 }
 
-/* “Cristal” interior */
+/* cristal interior (SIEMPRE detrás) */
 .live-card .thermo::before{
   content:"";
   position:absolute;
@@ -190,9 +191,10 @@ button:hover, .btn:hover{
   border:1px solid rgba(255,255,255,.08);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
   pointer-events:none;
+  z-index:1;
 }
 
-/* Línea de nivel (depende de --lvl desde JS) */
+/* línea horizontal (depende de --lvl desde JS) */
 .live-card .thermo::after{
   content:"";
   position:absolute;
@@ -202,11 +204,11 @@ button:hover, .btn:hover{
   height: 2px;
   background: rgba(255,255,255,.22);
   box-shadow: 0 0 10px rgba(255,255,255,.12);
-  z-index: 5;
   pointer-events:none;
+  z-index:8;
 }
 
-/* Mecha */
+/* mecha */
 .live-card .wick{
   position:absolute;
   left:50%;
@@ -216,61 +218,10 @@ button:hover, .btn:hover{
   top:10px;
   border-radius:10px;
   background: rgba(255,255,255,.10);
-  z-index: 2;
+  z-index:2;
 }
 
-/* Vela */
-.live-card .candle{
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
-  bottom:10px;
-  width:30px;
-  height:50%;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.18);
-  z-index: 3;
-  box-shadow: inset 0 0 18px rgba(0,0,0,.25);
-  transition: height .45s ease, background .2s ease, border-color .2s ease;
-}
-
-/* Marcador */
-.live-card .marker{
-  position:absolute;
-  left:50%;
-  transform:translate(-50%, 50%);
-  bottom:50%;
-  width:16px;
-  height:16px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.55);
-  background: rgba(255,255,255,.92);
-  box-shadow: 0 0 18px rgba(255,255,255,.22);
-  z-index: 6;
-  transition: bottom .45s ease;
-}
-
-/* Precio flotante */
-.live-card .price-float{
-  position:absolute;
-  right:-6px;                 /* ✅ sale fuera */
-  left:auto;
-  transform: translateY(50%);
-  bottom:50%;
-  padding:5px 8px;
-  border-radius:8px;
-  border:1px solid rgba(255,255,255,.18);
-  background: rgba(0,0,0,.55);
-  box-shadow: 0 10px 24px rgba(0,0,0,.35);
-  font-weight:800;
-  font-size:12px;
-  font-variant-numeric: tabular-nums;
-  transition: bottom .45s ease;
-  white-space:nowrap;
-  z-index: 7;
-}
-
-/* Progreso vertical (tiempo) dentro del tubo */
+/* progreso vertical (rellena desde abajo) */
 .live-card .c-progress{
   position:absolute;
   left: 14px;
@@ -285,19 +236,62 @@ button:hover, .btn:hover{
   );
   border: 1px solid rgba(255,255,255,.08);
   pointer-events:none;
-  z-index: 2;          /* detrás de candle/marker */
   transition: height .35s ease;
+  z-index:2; /* detrás de candle */
 }
 
-.live-card .c-progress::before{
-  content:"";
-  display:block;
-  height:100%;
-  width: var(--prog, 0%);
-  background: rgba(255,255,255,.40);
+/* vela */
+.live-card .candle{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:10px;
+  width:30px;
+  height:50%;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow: inset 0 0 18px rgba(0,0,0,.25);
+  transition: height .45s ease, background .2s ease, border-color .2s ease;
+  z-index:3;
 }
 
-/* Stats */
+/* marcador */
+.live-card .marker{
+  position:absolute;
+  left:50%;
+  transform:translate(-50%, 50%);
+  bottom:50%;
+  width:16px;
+  height:16px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.55);
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 0 18px rgba(255,255,255,.22);
+  transition: bottom .45s ease;
+  z-index:6;
+}
+
+/* precio flotante */
+.live-card .price-float{
+  position:absolute;
+  right:-6px;
+  left:auto;
+  transform: translateY(50%);
+  bottom:50%;
+  padding:5px 8px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.55);
+  box-shadow: 0 10px 24px rgba(0,0,0,.35);
+  font-weight:800;
+  font-size:12px;
+  font-variant-numeric: tabular-nums;
+  transition: bottom .45s ease;
+  white-space:nowrap;
+  z-index:7;
+}
+
+/* stats */
 .live-card .live-stats{
   border:1px solid var(--border);
   background: rgba(255,255,255,.04);
@@ -328,7 +322,7 @@ button:hover, .btn:hover{
   .live-card .price-float{ right: 10px; }
 }
 
-/* Colores vela */
+/* colores vela */
 .c-up{
   background: rgba(70, 255, 160, .26);
   border-color: rgba(70, 255, 160, .35);
@@ -337,15 +331,3 @@ button:hover, .btn:hover{
   background: rgba(255, 90, 110, .26);
   border-color: rgba(255, 90, 110, .35);
 }
-
-.btn.is-loading { opacity:.7; pointer-events:none; }
-
-.live-card .thermo{ position:relative; }
-
-.live-card .thermo::before{ z-index:1; }  /* el cristal detrás */
-.live-card .wick{ z-index:2; }
-.live-card .c-progress{ z-index:2; }      /* barra detrás de vela */
-.live-card .candle{ z-index:3; }
-.live-card .marker{ z-index:6; }
-.live-card .price-float{ z-index:7; }
-.live-card .thermo::after{ z-index:8; }   /* línea de nivel por encima */
