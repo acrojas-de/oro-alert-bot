@@ -207,10 +207,9 @@
 <header>
   <h2>Premium Terminal V1 (1H)</h2>
   <select id="assetSelect"></select>
+<div id="dataHealth" style="opacity:.8;font-size:12px;margin:8px 0 0 0;"></div>
 </header>
-
-
-  
+ 
 <div class="content">
   <div class="card">
 
@@ -264,13 +263,37 @@ let watchlistLoaded = false;
 let lastSignal = {}; // por símbolo
 
 const REFRESH_MS = 60000; // 60s (cambia a 15000 si quieres 15s)
+const JSON_URL = "macro_data.json";
+const FREEZE_WARN_MS = 10 * 60_000; // 10 min
 
-async function fetchJson(url) {
+let lastUpdatedISO = null;
+let lastUpdatedSeenAt = null; // timestamp local cuando vimos ese updated por última vez
+
+  async function fetchJson(url) {
   const r = await fetch(url + '?v=' + Date.now());
   if (!r.ok) throw new Error(url + " HTTP " + r.status);
   return await r.json();
 }
 
+function setHealth(text){
+  const el = document.getElementById("dataHealth");
+  if (el) el.textContent = text;
+}
+
+function fmtAge(ms){
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return m <= 0 ? `${s}s` : `${m}m ${r}s`;
+}
+
+function parseUpdatedTs(macro){
+  const iso = macro?.meta?.updated_utc || macro?.meta?.updated || macro?.updated || null;
+  if (!iso) return { iso: null, ts: null };
+  const ts = Date.parse(iso);
+  return { iso, ts: Number.isFinite(ts) ? ts : null };
+}  
+  
 async function loadData() {
   try {
     // watchlist solo una vez (para no resetear selector)
@@ -281,8 +304,30 @@ async function loadData() {
     }
 
     // macro siempre
-    macroData = await fetchJson('macro_data.json');
+   macroData = await fetchJson(JSON_URL);
 
+// ===== HEALTH CHECK =====
+const { iso, ts } = parseUpdatedTs(macroData);
+const now = Date.now();
+
+if (iso && ts){
+  const age = now - ts;
+
+  if (lastUpdatedISO && iso === lastUpdatedISO && lastUpdatedSeenAt && (now - lastUpdatedSeenAt) > FREEZE_WARN_MS){
+    setHealth(`⚠️ Datos congelados: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`);
+  } else {
+    setHealth(`✅ OK: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`);
+  }
+
+  if (iso !== lastUpdatedISO){
+    lastUpdatedISO = iso;
+    lastUpdatedSeenAt = now;
+  } else if (!lastUpdatedSeenAt) {
+    lastUpdatedSeenAt = now;
+  }
+} else {
+  setHealth(`⚠️ No encuentro updated en JSON | Fuente: ${JSON_URL}`);
+}
     if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {} };
     if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
 
@@ -294,6 +339,7 @@ async function loadData() {
 
   } catch (err) {
     console.error(err);
+    setHealth(`❌ Error cargando JSON | Fuente: ${JSON_URL}`);
     const title = document.getElementById("assetName");
     if (title) title.textContent = "ERROR: " + err.message;
   }
