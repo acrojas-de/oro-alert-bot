@@ -19,13 +19,13 @@ PERIOD = os.getenv("PERIOD", "30d")
 EXEC_TIMEFRAME = os.getenv("EXEC_TIMEFRAME", "5m")
 EXEC_PERIOD = os.getenv("EXEC_PERIOD", "7d")
 
-# Tickers
+# Tickers macro
 GOLD_TICKER = os.getenv("GOLD_TICKER", "GC=F")
 DXY_TICKER = os.getenv("DXY_TICKER", "DX-Y.NYB")
 TNX_TICKER = os.getenv("TNX_TICKER", "^TNX")
 NASDAQ_TICKER = os.getenv("NASDAQ_TICKER", "^IXIC")
 
-# Output
+# Output macro dashboard (antiguo)
 DATA_PATH = os.getenv("MACRO_DATA_PATH", "docs/macro_data.json")
 MAX_POINTS = int(os.getenv("MAX_POINTS", "500"))
 
@@ -133,78 +133,7 @@ def save_data(path: str, data: dict) -> None:
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-def load_watchlist_symbols(path: str) -> list[str]:
-    if not os.path.exists(path):
-        return []
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            wl = json.load(f)
-        symbols = []
-        if isinstance(wl, dict):
-            for _, items in wl.items():
-                if isinstance(items, list):
-                    for it in items:
-                        if isinstance(it, dict) and it.get("symbol"):
-                            symbols.append(str(it["symbol"]).strip())
-        # únicos, conservando orden
-        seen = set()
-        out = []
-        for s in symbols:
-            if s and s not in seen:
-                seen.add(s)
-                out.append(s)
-        return out
-    except Exception:
-        return []
 
-
-def classify_volatility(atr_pct: float) -> str:
-    if atr_pct <= 0.0018:
-        return "low"
-    if atr_pct >= 0.003:
-        return "high"
-    return "medium"
-
-
-def build_asset_metrics(symbol: str, period: str, timeframe: str) -> dict | None:
-    try:
-        df = fetch_ohlc(symbol, period, timeframe)
-        close = df["close"]
-        i = last_closed_index(close)
-
-        price = float(close.iloc[i])
-        ema21_v = float(ema(close, 21).iloc[i])
-        ema50_v = float(ema(close, 50).iloc[i])
-
-        a = atr(df, ATR_LEN)
-        atr_v = float(a.iloc[i])
-        atr_pct = (atr_v / price) if price else 0.0
-
-        trend = "bullish" if ema21_v >= ema50_v else "bearish"
-        signal = (
-            "explosion_up" if (price > ema21_v and ema21_v > ema50_v)
-            else ("explosion_down" if (price < ema21_v and ema21_v < ema50_v) else "neutral")
-        )
-
-        # score simple (0/50/100) para empezar
-        score = 50
-        if price > ema21_v and ema21_v > ema50_v:
-            score = 80
-        elif price < ema21_v and ema21_v < ema50_v:
-            score = 20
-
-        return {
-            "score": int(score),
-            "trend": trend,
-            "volatility": classify_volatility(atr_pct),
-            "signal": signal,
-            "price": round(price, 2),
-            "ema21": round(ema21_v, 2),
-            "ema50": round(ema50_v, 2),
-            "atr_pct": round(atr_pct, 6),
-        }
-    except Exception:
-        return None
 # ==============
 # SIGNALS
 # ==============
@@ -233,6 +162,101 @@ def pct_move(now: float, base: float) -> float:
     if not base:
         return 0.0
     return (now - base) / base
+
+
+# ==========================
+# PREMIUM TERMINAL HELPERS
+# ==========================
+def load_watchlist_symbols(path: str) -> list[str]:
+    """
+    Lee docs/premium-terminal/watchlist.json y devuelve lista plana de símbolos.
+    Formato esperado:
+    {
+      "Stocks": [{"symbol":"AAPL"}, ...],
+      "Crypto": [{"symbol":"BTC-USD"}, ...],
+      ...
+    }
+    """
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            w = json.load(f)
+        out = []
+        if isinstance(w, dict):
+            for _, items in w.items():
+                if isinstance(items, list):
+                    for it in items:
+                        if isinstance(it, dict):
+                            sym = it.get("symbol")
+                            if sym and isinstance(sym, str):
+                                out.append(sym.strip())
+        # elimina duplicados manteniendo orden
+        seen = set()
+        unique = []
+        for s in out:
+            if s not in seen:
+                unique.append(s)
+                seen.add(s)
+        return unique
+    except Exception:
+        return []
+
+
+def classify_volatility(atr_pct_val: float) -> str:
+    # simple y robusto
+    if atr_pct_val is None:
+        return "medium"
+    if atr_pct_val <= 0.0018:
+        return "low"
+    if atr_pct_val >= 0.0030:
+        return "high"
+    return "medium"
+
+
+def build_asset_metrics(symbol: str, period: str, interval: str) -> dict | None:
+    """
+    Métricas básicas para cualquier símbolo de watchlist.
+    No rompe si un símbolo falla, devuelve None.
+    """
+    try:
+        df = fetch_ohlc(symbol, period, interval)
+        close = df["close"]
+        i = last_closed_index(close)
+        price = float(close.iloc[i])
+
+        e21 = float(ema(close, 21).iloc[i])
+        # ema50 opcional si hay datos suficientes
+        e50_series = ema(close, 50)
+        e50 = float(e50_series.iloc[i]) if len(e50_series) else e21
+
+        a = float(atr(df, ATR_LEN).iloc[i])
+        atr_pct_val = (a / price) if price else 0.0
+
+        # score simple (para no inventar macro)
+        score = 65 if price > e21 else 35
+        trend = "bullish" if price > e21 else "bearish"
+
+        # señal simple
+        if price > e21 and e21 > e50:
+            signal = "explosion_up"
+        elif price < e21 and e21 < e50:
+            signal = "explosion_down"
+        else:
+            signal = "neutral"
+
+        return {
+            "score": int(score),
+            "trend": trend,
+            "volatility": classify_volatility(atr_pct_val),
+            "signal": signal,
+            "price": round(price, 4) if price < 100 else round(price, 2),
+            "ema21": round(e21, 4) if e21 < 100 else round(e21, 2),
+            "ema50": round(e50, 4) if e50 < 100 else round(e50, 2),
+            "atr_pct": round(atr_pct_val, 6),
+        }
+    except Exception:
+        return None
 
 
 # ==============
@@ -294,7 +318,7 @@ def main():
     ema_spread = abs(g_ema21 - g_ema50)
     ema_spread_pct = (ema_spread / g) if g else 0.0
 
-    # ========== 2) Cargar JSON ==========
+    # ========== 2) Cargar JSON macro dashboard ==========
     data = load_data(DATA_PATH)
     series = data.get("series", [])
     signals = data.get("signals", [])
@@ -483,7 +507,7 @@ def main():
     if DEBUG_TEST_SIGNAL:
         add_signal(signals, now_ts, "GOLD", "WARN", "TEST SIGNAL", 1, g)
 
-    # ========== 7) Guardar todo ==========
+    # ========== 7) Guardar macro dashboard ==========
     series.append(row)
     if len(series) > MAX_POINTS:
         series = series[-MAX_POINTS:]
@@ -493,12 +517,15 @@ def main():
     data["signals"] = signals
     data["state"] = state
 
+    save_data(DATA_PATH, data)
+    print(f"Saved dashboard data: {DATA_PATH} (points={len(series)}) | signals={len(signals)}")
+
     # ==========================
     # EXPORT para Premium Terminal (assets)
     # ==========================
     premium_path = "docs/premium-terminal/macro_data.json"
 
-    # construimos assets SOLO con lo que ya calculas aquí
+    # construimos assets SOLO con lo que ya calculas aquí (macro base)
     premium_assets = {
         GOLD_TICKER: {
             "score": score,
@@ -536,18 +563,29 @@ def main():
         },
     }
 
+    # ========= Añadir watchlist (BTC, acciones, etc.) =========
+    watchlist_path = "docs/premium-terminal/watchlist.json"
+    symbols = load_watchlist_symbols(watchlist_path)
+
+    for sym in symbols:
+        # si ya existe (por ejemplo GC=F), no lo machacamos
+        if sym in premium_assets:
+            continue
+
+        m = build_asset_metrics(sym, PERIOD, TIMEFRAME)
+        if m:
+            premium_assets[sym] = m
+
     premium_out = {
         "meta": {"updated_utc": now_ts, "timeframe": "1h", "source": "macro_bot.py"},
         "assets": premium_assets
     }
 
-    # guardamos el json para el terminal
     os.makedirs(os.path.dirname(premium_path), exist_ok=True)
     with open(premium_path, "w", encoding="utf-8") as f:
         json.dump(premium_out, f, ensure_ascii=False, indent=2)
-    
-    save_data(DATA_PATH, data)
-    print(f"Saved dashboard data: {DATA_PATH} (points={len(series)}) | signals={len(signals)}")
+
+    print(f"Saved premium terminal data: {premium_path} | assets={len(premium_assets)}")
 
 
 if __name__ == "__main__":
