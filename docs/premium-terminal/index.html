@@ -36,6 +36,7 @@
       margin-bottom: 20px;
     }
 
+    /* ===== Velocímetro ===== */
     .gaugeWrap{
       display:flex;
       gap:18px;
@@ -79,78 +80,55 @@
       text-transform:uppercase;
     }
 
-    .metaBox{
-      min-width:220px;
-      line-height:1.6;
+    /* ===== UI PRO (chips) ===== */
+    .rowTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+    }
+
+    .badges{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin:10px 0 14px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border:1px solid #334155;
+      border-radius:999px;
+      background: rgba(15,23,42,0.55);
+      font-size:12px;
+      color:#e2e8f0;
+    }
+
+    .badge b{ font-weight:700; color:#94a3b8; }
+
+    .dot{
+      width:8px; height:8px; border-radius:50%;
+      background:#94a3b8;
+      box-shadow: 0 0 0 3px rgba(148,163,184,0.15);
+    }
+
+    .dot.up{
+      background:#22c55e;
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.15);
+    }
+    .dot.down{
+      background:#ef4444;
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
     }
 
     .muted{
       color:#94a3b8;
       font-size:12px;
     }
-
-    /* ===== UI PRO (chips + KPIs) ===== */
-.rowTop{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:16px;
-}
-
-.badges{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin:10px 0 14px;
-}
-
-.badge{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:6px 10px;
-  border:1px solid #334155;
-  border-radius:999px;
-  background: rgba(15,23,42,0.55);
-  font-size:12px;
-  color:#e2e8f0;
-}
-
-.badge b{ font-weight:700; color:#94a3b8; }
-
-.dot{
-  width:8px; height:8px; border-radius:50%;
-  background:#94a3b8;
-  box-shadow: 0 0 0 3px rgba(148,163,184,0.15);
-}
-
-.dot.up{
-  background:#22c55e;
-  box-shadow: 0 0 0 3px rgba(34,197,94,0.15);
-}
-.dot.down{
-  background:#ef4444;
-  box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
-}
-
-.kpi{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:12px;
-  margin-top:12px;
-}
-
-.kpiCard{
-  padding:12px;
-  border:1px solid #334155;
-  border-radius:12px;
-  background: rgba(15,23,42,0.35);
-}
-
-.kpiCard .lbl{ font-size:12px; color:#94a3b8; margin-bottom:6px; }
-.kpiCard .val{ font-size:16px; font-weight:800; }
   </style>
-  
 </head>
 <body>
 
@@ -161,21 +139,25 @@
 
 <div class="content">
   <div class="card">
-   <div class="rowTop">
-  <div>
-    <h3 id="assetName">Selecciona un activo</h3>
 
-    <div class="badges">
-      <span class="badge"><span id="sigDot" class="dot"></span><b>Señal</b> <span id="uiSignal">—</span></span>
-      <span class="badge"><b>Tendencia</b> <span id="uiTrend">—</span></span>
-      <span class="badge"><b>Volatilidad</b> <span id="uiVol">—</span></span>
-      <span class="badge"><b>Updated</b> <span id="uiUpdated">—</span></span>
-      <span class="badge"><b>TF</b> 1H</span>
+    <div class="rowTop">
+      <div>
+        <h3 id="assetName">Selecciona un activo</h3>
+
+        <div class="badges">
+          <span class="badge">
+            <span id="sigDot" class="dot"></span>
+            <b>Señal</b> <span id="uiSignal">—</span>
+          </span>
+          <span class="badge"><b>Tendencia</b> <span id="uiTrend">—</span></span>
+          <span class="badge"><b>Volatilidad</b> <span id="uiVol">—</span></span>
+          <span class="badge"><b>Updated</b> <span id="uiUpdated">—</span></span>
+          <span class="badge"><b>TF</b> 1H</span>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-    
-    <div id="assetDetails" style="margin-top:15px;">
+
+    <div id="assetDetails" style="margin-top:10px;">
       <div class="gaugeWrap">
         <svg id="scoreGauge" viewBox="0 0 200 120" class="gauge">
           <path id="gBg" d="M 20 100 A 80 80 0 0 1 180 100" class="gBg"></path>
@@ -184,15 +166,6 @@
           <text id="gScore" x="100" y="78" text-anchor="middle" class="gScore">—</text>
           <text id="gLabel" x="100" y="98" text-anchor="middle" class="gLabel">Score</text>
         </svg>
-
-        <div class="metaBox">
-          <div><strong>Tendencia:</strong> <span id="uiTrend">—</span></div>
-          <div><strong>Volatilidad:</strong> <span id="uiVol">—</span></div>
-          <div><strong>Señal:</strong> <span id="uiSignal">—</span></div>
-          <div class="muted" style="margin-top:8px;">
-            <strong>Updated:</strong> <span id="uiUpdated">—</span>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -266,6 +239,8 @@ function updateAssetView() {
   const gScore = document.getElementById("gScore");
   const gFg    = document.getElementById("gFg");
 
+  const sigDot = document.getElementById("sigDot");
+
   if (!select || !title) return;
 
   const assetName = select.selectedOptions?.[0]?.textContent || "Activo";
@@ -273,6 +248,10 @@ function updateAssetView() {
 
   const assetData = macroData.assets?.[currentAsset];
 
+  // Reset dot
+  if (sigDot) sigDot.className = "dot";
+
+  // Si no hay datos
   if (!assetData) {
     title.textContent += " (sin datos aún)";
     if (uiTrend) uiTrend.textContent = "—";
@@ -287,11 +266,19 @@ function updateAssetView() {
     return;
   }
 
+  // Texto chips
   if (uiTrend) uiTrend.textContent = assetData.trend ?? "—";
   if (uiVol) uiVol.textContent = assetData.volatility ?? "—";
   if (uiSignal) uiSignal.textContent = assetData.signal ?? "—";
   if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
 
+  // Dot color por señal
+  if (sigDot) {
+    if (assetData.signal === "explosion_up") sigDot.classList.add("up");
+    if (assetData.signal === "explosion_down") sigDot.classList.add("down");
+  }
+
+  // Score + gauge
   const score = Number(assetData.score ?? 0);
   const clamped = Math.max(0, Math.min(100, score));
   if (gScore) gScore.textContent = String(clamped);
@@ -310,14 +297,6 @@ function updateAssetView() {
   }
 }
 
-  // dot según señal (chips)
-const sigDot = document.getElementById("sigDot");
-if (sigDot) {
-  sigDot.className = "dot";
-  if (assetData.signal === "explosion_up") sigDot.classList.add("up");
-  if (assetData.signal === "explosion_down") sigDot.classList.add("down");
-}
-  
 document.addEventListener("DOMContentLoaded", loadData);
 </script>
 
