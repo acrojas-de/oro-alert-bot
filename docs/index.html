@@ -436,18 +436,26 @@ function hookRefreshButton(){
     const btn = document.getElementById("btnRefresh");
     if (!btn) return;
 
-    btn.addEventListener("click", async () => {
-      try{
-        btn.classList.add("is-loading");
-        await loadData();
-        updateLiveRowFromCache();
-      }catch(e){
-        console.error(e);
-      }finally{
-        btn.classList.remove("is-loading");
-      }
-    });
-  };
+btn.addEventListener("click", async () => {
+  try{
+    btn.classList.add("is-loading");
+
+    await loadData();
+    updateLiveRowFromCache();
+
+    // ✅ feedback visual refresh
+    const upd = document.getElementById("updated");
+    if (upd){
+      upd.style.color = "#4cff9a";
+      setTimeout(()=> upd.style.color = "", 800);
+    }
+
+  }catch(e){
+    console.error(e);
+  }finally{
+    btn.classList.remove("is-loading");
+  }
+});
 
   if (document.readyState === "loading") {
     window.addEventListener("DOMContentLoaded", bind, { once:true });
