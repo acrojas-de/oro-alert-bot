@@ -1,26 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Premium Terminal V1</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    header {
+      padding: 15px;
+      background: #1e293b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    select {
+      padding: 6px 10px;
+      background: #0f172a;
+      color: white;
+      border: 1px solid #334155;
+      border-radius: 6px;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h2>Premium Terminal V1 (1H)</h2>
+  <select id="assetSelect"></select>
+</header>
+
+<div class="content">
+  <div class="card">
+    <h3 id="assetName">Selecciona un activo</h3>
+    <p>Timeframe fijo: 1H</p>
+  </div>
+</div>
+
 <script>
 let watchlistData = {};
-let macroData = {};
+let macroData = { meta: {}, assets: {} };
 let currentAsset = null;
 
 async function loadData() {
-  const w = await fetch('watchlist.json');
-  watchlistData = await w.json();
+  try {
+    const w = await fetch('watchlist.json?v=' + Date.now());
+    if (!w.ok) throw new Error("watchlist.json HTTP " + w.status);
+    watchlistData = await w.json();
 
-  const m = await fetch('macro_data.json');
-  macroData = await m.json();
+    const m = await fetch('macro_data.json?v=' + Date.now());
+    if (!m.ok) throw new Error("macro_data.json HTTP " + m.status);
+    macroData = await m.json();
 
-  buildSelector();
+    // blindaje
+    if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {} };
+    if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
+
+    buildSelector();
+  } catch (err) {
+    console.error(err);
+    const title = document.getElementById("assetName");
+    if (title) title.textContent = "ERROR: " + err.message;
+  }
 }
 
 function buildSelector() {
   const select = document.getElementById("assetSelect");
+  if (!select) {
+    console.error("No encuentro #assetSelect en el HTML");
+    const title = document.getElementById("assetName");
+    if (title) title.textContent = "ERROR: falta <select id='assetSelect'>";
+    return;
+  }
+
+  select.innerHTML = "";
 
   for (const category in watchlistData) {
     const group = document.createElement("optgroup");
     group.label = category;
 
-    watchlistData[category].forEach(asset => {
+    (watchlistData[category] || []).forEach(asset => {
       const option = document.createElement("option");
       option.value = asset.symbol;
       option.textContent = asset.name;
@@ -40,17 +115,23 @@ function buildSelector() {
 }
 
 function updateAssetView() {
-  const assetName =
-    document.getElementById("assetSelect").selectedOptions[0].text;
+  const select = document.getElementById("assetSelect");
+  const title = document.getElementById("assetName");
+  if (!select || !title) return;
 
-  document.getElementById("assetName").textContent = assetName;
+  const assetName = select.selectedOptions?.[0]?.textContent || "Activo";
+  title.textContent = assetName;
 
-  const assetData = macroData.assets[currentAsset];
+  const assetData = macroData.assets?.[currentAsset];
 
   if (!assetData) {
-    document.getElementById("assetName").textContent += " (sin datos aún)";
+    title.textContent += " (sin datos aún)";
   }
 }
 
-loadData();
+// Ejecutar cuando el DOM esté listo (evita null)
+document.addEventListener("DOMContentLoaded", loadData);
 </script>
+
+</body>
+</html>
