@@ -422,6 +422,59 @@ def main():
     data["signals"] = signals
     data["state"] = state
 
+    # ==========================
+    # EXPORT para Premium Terminal (assets)
+    # ==========================
+    premium_path = "docs/premium-terminal/macro_data.json"
+
+    # construimos assets SOLO con lo que ya calculas aquí
+    premium_assets = {
+        GOLD_TICKER: {
+            "score": score,
+            "trend": "bullish" if g_ema21 > g_ema50 else "bearish",
+            "volatility": "low" if atr_pct <= COMP_ATR_PCT else ("high" if atr_pct >= 0.003 else "medium"),
+            "signal": "explosion_up" if (g > g_ema21 and g_ema21 > g_ema50) else ("explosion_down" if (g < g_ema21 and g_ema21 < g_ema50) else "neutral"),
+            "price": round(g, 2),
+            "ema21": round(g_ema21, 2),
+            "ema50": round(g_ema50, 2),
+            "atr_pct": round(atr_pct, 6),
+        },
+        DXY_TICKER: {
+            "score": 50,
+            "trend": "bullish" if d > d_ema21 else "bearish",
+            "volatility": "medium",
+            "signal": "neutral",
+            "price": round(d, 4),
+            "ema21": round(d_ema21, 4),
+        },
+        TNX_TICKER: {
+            "score": 50,
+            "trend": "bullish" if t > t_ema21 else "bearish",
+            "volatility": "medium",
+            "signal": "neutral",
+            "price": round(t, 4),
+            "ema21": round(t_ema21, 4),
+        },
+        NASDAQ_TICKER: {
+            "score": 50,
+            "trend": "bullish" if n > n_ema21 else "bearish",
+            "volatility": "medium",
+            "signal": "neutral",
+            "price": round(n, 2),
+            "ema21": round(n_ema21, 2),
+        },
+    }
+
+    premium_out = {
+        "meta": {"updated_utc": now_ts, "timeframe": "1h", "source": "macro_bot.py"},
+        "assets": premium_assets
+    }
+
+    # guardamos el json para el terminal
+    os.makedirs(os.path.dirname(premium_path), exist_ok=True)
+    with open(premium_path, "w", encoding="utf-8") as f:
+        json.dump(premium_out, f, ensure_ascii=False, indent=2)
+    
     save_data(DATA_PATH, data)
     print(f"Saved dashboard data: {DATA_PATH} (points={len(series)}) | signals={len(signals)}")
 
