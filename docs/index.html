@@ -217,15 +217,13 @@ function tfToMinutes(tf){
 
 // inicio de vela actual (fallback por reloj del navegador)
 function candleStartMs(last, tfMin){
-  if (last?.candle_ts){
-    const ms = new Date(last.candle_ts).getTime();
-    if (!Number.isNaN(ms)) return ms;
-  }
+  // ⚠️ IMPORTANTE:
+  // usamos SIEMPRE reloj actual para la vela en curso
   const now = Date.now();
   const block = tfMin * 60 * 1000;
+
   return Math.floor(now / block) * block;
 }
-
 function updateTimeLeftUI(tfMin, startMs){
   const endMs = startMs + tfMin*60*1000;
   const leftMs = Math.max(0, endMs - Date.now());
