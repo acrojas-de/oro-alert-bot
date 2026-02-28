@@ -275,9 +275,12 @@ let lastUpdatedSeenAt = null; // timestamp local cuando vimos ese updated por ú
   return await r.json();
 }
 
-function setHealth(text){
+function setHealth(text, level="good"){
   const el = document.getElementById("dataHealth");
-  if (el) el.textContent = text;
+  if (!el) return;
+  el.textContent = text;
+  el.classList.remove("good","warn","bad");
+  el.classList.add(level);
 }
 
 function fmtAge(ms){
@@ -312,9 +315,16 @@ const now = Date.now();
 
 if (iso && ts){
   const age = now - ts;
+  let level = "good";
+if (age > 10*60_000) level = "bad";
+else if (age > 5*60_000) level = "warn";
 
   if (lastUpdatedISO && iso === lastUpdatedISO && lastUpdatedSeenAt && (now - lastUpdatedSeenAt) > FREEZE_WARN_MS){
-    setHealth(`⚠️ Datos congelados: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`);
+  setHealth(`⚠️ Datos congelados: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`, "bad");
+} 
+  else {
+  setHealth(`✅ OK: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`, level);
+}
   } else {
     setHealth(`✅ OK: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`);
   }
@@ -326,7 +336,7 @@ if (iso && ts){
     lastUpdatedSeenAt = now;
   }
 } else {
-  setHealth(`⚠️ No encuentro updated en JSON | Fuente: ${JSON_URL}`);
+  setHealth(`⚠️ No encuentro updated en JSON | Fuente: ${JSON_URL}`, "warn");
 }
     if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {} };
     if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
@@ -339,7 +349,7 @@ if (iso && ts){
 
   } catch (err) {
     console.error(err);
-    setHealth(`❌ Error cargando JSON | Fuente: ${JSON_URL}`);
+    setHealth(`❌ Error cargando JSON | Fuente: ${JSON_URL}`, "bad");
     const title = document.getElementById("assetName");
     if (title) title.textContent = "ERROR: " + err.message;
   }
