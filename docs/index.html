@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Macro Dashboard (Oro)</title>
 
-  <!-- Sube v= cuando cambies CSS para evitar caché -->
-  <link rel="stylesheet" href="./style.css?v=9">
+  <!-- cache-bust (sube v cuando cambies CSS) -->
+  <link rel="stylesheet" href="./style.css?v=10">
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 
 <body>
 
-  <!-- TOPBAR FIJA -->
+  <!-- TOPBAR -->
   <div class="topbar">
     <div class="left">
       <div style="font-weight:800;">📡 Macro Dashboard</div>
@@ -33,10 +33,11 @@
     </div>
   </div>
 
-  <!-- WIDGETS LIVE (4 velas en fila) -->
+  <!-- LIVE ROW -->
   <div class="live-row-wrap" id="liveRow">
 
-    <div class="live-card" data-asset="gold">
+    <!-- GOLD -->
+    <div class="live-card" data-asset="gold" data-label="GOLD">
       <div class="live-header">
         <div class="live-title">GOLD · <span class="tf">--</span></div>
         <div class="live-clock">
@@ -49,16 +50,17 @@
       <div class="live-body">
         <div class="thermo">
           <div class="wick"></div>
+          <div class="c-progress"></div>
           <div class="candle"></div>
           <div class="marker"></div>
-          <div class="c-progress"></div>
           <div class="price-float">--</div>
         </div>
         <div class="live-stats"></div>
       </div>
     </div>
 
-    <div class="live-card" data-asset="dxy">
+    <!-- DXY -->
+    <div class="live-card" data-asset="dxy" data-label="DXY">
       <div class="live-header">
         <div class="live-title">DXY · <span class="tf">--</span></div>
         <div class="live-clock">
@@ -71,6 +73,7 @@
       <div class="live-body">
         <div class="thermo">
           <div class="wick"></div>
+          <div class="c-progress"></div>
           <div class="candle"></div>
           <div class="marker"></div>
           <div class="price-float">--</div>
@@ -79,7 +82,8 @@
       </div>
     </div>
 
-    <div class="live-card" data-asset="tnx">
+    <!-- TNX -->
+    <div class="live-card" data-asset="tnx" data-label="TNX">
       <div class="live-header">
         <div class="live-title">TNX · <span class="tf">--</span></div>
         <div class="live-clock">
@@ -92,6 +96,7 @@
       <div class="live-body">
         <div class="thermo">
           <div class="wick"></div>
+          <div class="c-progress"></div>
           <div class="candle"></div>
           <div class="marker"></div>
           <div class="price-float">--</div>
@@ -100,7 +105,8 @@
       </div>
     </div>
 
-    <div class="live-card" data-asset="nasdaq">
+    <!-- NASDAQ -->
+    <div class="live-card" data-asset="nasdaq" data-label="NASDAQ">
       <div class="live-header">
         <div class="live-title">NASDAQ · <span class="tf">--</span></div>
         <div class="live-clock">
@@ -113,6 +119,7 @@
       <div class="live-body">
         <div class="thermo">
           <div class="wick"></div>
+          <div class="c-progress"></div>
           <div class="candle"></div>
           <div class="marker"></div>
           <div class="price-float">--</div>
@@ -123,10 +130,10 @@
 
   </div>
 
-  <!-- CONTENIDO (SCROLL INTERNO) -->
+  <!-- MAIN -->
   <div class="main">
 
-    <!-- PANEL DE SEÑALES -->
+    <!-- SIGNALS -->
     <div id="signalsPanel" class="card">
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
         <div>
@@ -150,7 +157,7 @@
       <div id="signalsList" style="margin-top:10px; display:grid; gap:8px;"></div>
     </div>
 
-    <!-- GRÁFICOS -->
+    <!-- CHARTS -->
     <div class="grid">
       <div class="chart-card">
         <div class="chart-wrap">
@@ -168,9 +175,6 @@
   </div>
 
 <script>
-/* =========================
-   ESTADO GLOBAL
-   ========================= */
 let goldChartInstance = null;
 let scoreChartInstance = null;
 
@@ -178,54 +182,14 @@ let clockTimer = null;
 let liveTicker = null;
 let lastDataCache = null;
 
-/* =========================
-   HELPERS
-   ========================= */
+// ===== helpers =====
 function fmt(n, d=2){
   if (n === undefined || n === null || Number.isNaN(n)) return "—";
   return Number(n).toFixed(d);
 }
 function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
 
-function tfToMinutes(tf){
-  if (!tf || typeof tf !== "string") return 60;
-  const s = tf.trim().toLowerCase();
-  if (s.endsWith("m")) return parseInt(s,10) || 60;
-  if (s.endsWith("h")) return (parseInt(s,10) || 1) * 60;
-  if (s.endsWith("d")) return (parseInt(s,10) || 1) * 1440;
-  return 60;
-}
-
-/* vela actual (inicio) */
-function candleStartMs(last, tfMin){
-  const now = Date.now();
-  const block = tfMin * 60 * 1000;
-
-  // Si candle_ts existe, úsalo SOLO si está dentro de esta vela (no viejo)
-  if (last?.candle_ts){
-    const ms = new Date(last.candle_ts).getTime();
-    if (!Number.isNaN(ms)) {
-      const startGuess = Math.floor(ms / block) * block;
-
-      // ✅ si el startGuess está razonablemente cerca (<= 2 velas), OK
-      if (now - startGuess <= 2 * block) return startGuess;
-    }
-  }
-
-  // ✅ fallback robusto: vela en curso por hora actual
-  return Math.floor(now / block) * block;
-}
-
-function updateTimeLeftUI(tfMin, startMs){
-  const endMs = startMs + tfMin*60*1000;
-  const leftMs = Math.max(0, endMs - Date.now());
-  const leftMin = Math.floor(leftMs / 60000);
-  const leftSec = Math.floor((leftMs % 60000) / 1000);
-  const mm = String(leftMin).padStart(2,"0");
-  const ss = String(leftSec).padStart(2,"0");
-  document.querySelectorAll(".live-card .left").forEach(el => el.textContent = `-${mm}:${ss}`);
-}
-
+// ===== reloj =====
 function startClockAll(){
   if (clockTimer) clearInterval(clockTimer);
 
@@ -241,7 +205,38 @@ function startClockAll(){
   clockTimer = setInterval(tick, 1000);
 }
 
-/* open de la vela */
+// timeframe -> minutes
+function tfToMinutes(tf){
+  if (!tf || typeof tf !== "string") return 60;
+  const s = tf.trim().toLowerCase();
+  if (s.endsWith("m")) return parseInt(s,10) || 60;
+  if (s.endsWith("h")) return (parseInt(s,10) || 1) * 60;
+  if (s.endsWith("d")) return (parseInt(s,10) || 1) * 1440;
+  return 60;
+}
+
+// inicio de vela actual (fallback por reloj del navegador)
+function candleStartMs(last, tfMin){
+  if (last?.candle_ts){
+    const ms = new Date(last.candle_ts).getTime();
+    if (!Number.isNaN(ms)) return ms;
+  }
+  const now = Date.now();
+  const block = tfMin * 60 * 1000;
+  return Math.floor(now / block) * block;
+}
+
+function updateTimeLeftUI(tfMin, startMs){
+  const endMs = startMs + tfMin*60*1000;
+  const leftMs = Math.max(0, endMs - Date.now());
+  const leftMin = Math.floor(leftMs / 60000);
+  const leftSec = Math.floor((leftMs % 60000) / 1000);
+  const mm = String(leftMin).padStart(2,"0");
+  const ss = String(leftSec).padStart(2,"0");
+
+  document.querySelectorAll(".live-card .left").forEach(el => el.textContent = `-${mm}:${ss}`);
+}
+
 function findOpen(series, last, key, startMs){
   if (last?.candle_ts){
     const row = series.find(x => x.candle_ts === last.candle_ts);
@@ -257,9 +252,7 @@ function findOpen(series, last, key, startMs){
   return series[0]?.[key] ?? last?.[key];
 }
 
-/* =========================
-   LIVE WIDGETS
-   ========================= */
+// ===== LIVE UI =====
 function updateLiveRowFromCache(){
   if (!lastDataCache) return;
 
@@ -286,8 +279,7 @@ function updateLiveRowFromCache(){
   };
 
   document.querySelectorAll(".live-card").forEach(card => {
-    const asset = card.dataset.asset;
-    const cfg = map[asset];
+    const cfg = map[card.dataset.asset];
     if (!cfg) return;
 
     const price = last?.[cfg.key];
@@ -295,18 +287,16 @@ function updateLiveRowFromCache(){
 
     let open = findOpen(series, last, cfg.key, startMs);
     const prev = series.length >= 2 ? series[series.length - 2] : null;
-    if (prev && (open == null || Math.abs(price - open) < 1e-12)) {
-      open = prev[cfg.key];
-    }
+    if (prev && (open == null || Math.abs(price - open) < 1e-12)) open = prev[cfg.key];
+
     const delta = price - open;
 
+    // escala
     let scale = 1;
     if (cfg.atrKey && last?.[cfg.atrKey] != null) {
       scale = Math.max(Number(last[cfg.atrKey]) || 25, 0.00001);
     } else {
-      const tail = series.slice(-20)
-        .map(x => Number(x?.[cfg.key]))
-        .filter(n => Number.isFinite(n));
+      const tail = series.slice(-20).map(x => Number(x?.[cfg.key])).filter(Number.isFinite);
       const minV = tail.length ? Math.min(...tail) : price;
       const maxV = tail.length ? Math.max(...tail) : price;
       const range = Math.max(maxV - minV, Math.abs(price) * 0.001);
@@ -315,18 +305,19 @@ function updateLiveRowFromCache(){
 
     const pos = clamp(0.5 + (delta / (2 * scale)), 0, 1);
 
-    const thermo = card.querySelector(".thermo");
-    const candle = card.querySelector(".candle");
-    const marker = card.querySelector(".marker");
-    const floatP = card.querySelector(".price-float");
-    const stats  = card.querySelector(".live-stats");
-    const progBar = card.querySelector(".c-progress"); // solo en GOLD
+    const thermo  = card.querySelector(".thermo");
+    const candle  = card.querySelector(".candle");
+    const marker  = card.querySelector(".marker");
+    const floatP  = card.querySelector(".price-float");
+    const stats   = card.querySelector(".live-stats");
+    const progBar = card.querySelector(".c-progress");
 
     if (!thermo || !candle || !marker || !floatP || !stats) return;
 
-    // línea de nivel para thermo::after
+    // línea horizontal (nivel)
     thermo.style.setProperty("--lvl", `${pos * 100}%`);
 
+    // vela + marcador + precio
     candle.style.height = `${clamp(pos*100, 6, 100)}%`;
     marker.style.bottom = `${pos*100}%`;
     floatP.style.bottom = `${pos*100}%`;
@@ -335,9 +326,8 @@ function updateLiveRowFromCache(){
     candle.classList.remove("c-up","c-down");
     candle.classList.add(delta >= 0 ? "c-up" : "c-down");
 
-    if (progBar){
-      progBar.style.height = `${prog * 100}%`;
-    }
+    // progreso vertical
+    if (progBar) progBar.style.height = `${prog * 100}%`;
 
     stats.innerHTML = `
       <div class="live-row"><span class="k">Open</span><span class="v">${fmt(open, cfg.decimals)}</span></div>
@@ -353,12 +343,8 @@ function startLiveTicker(){
   liveTicker = setInterval(updateLiveRowFromCache, 1000);
 }
 
-/* =========================
-   RENDER PRINCIPAL
-   ========================= */
+// ===== DATA LOAD =====
 async function loadData() {
-  // console.log("loadData()", new Date().toLocaleTimeString()); // DEBUG opcional
-
   const res = await fetch(`./macro_data.json?ts=${Date.now()}`, { cache: "no-store" });
   const data = await res.json();
   const series = data.series || [];
@@ -372,25 +358,24 @@ async function loadData() {
   const last = series[series.length - 1];
 
   document.getElementById("updated").innerText =
-    "Actualizado: " + new Date(data.meta.updated_utc)
-      .toLocaleString("es-ES", { timeZone: "Europe/Madrid" });
+    "Actualizado: " + new Date(data.meta.updated_utc).toLocaleString("es-ES", { timeZone: "Europe/Madrid" });
 
-  document.getElementById("score").innerText = last.score + "/100";
+  document.getElementById("score").innerText = (last.score ?? "—") + "/100";
 
   let biasText = "🟡 Mixto";
   let cls = "mix";
   if (last.bias === "LONG_FAVORABLE") { biasText = "🟢 LONG"; cls = "long"; }
-  if (last.bias === "SHORT_CUIDADO") { biasText = "🔴 SHORT"; cls = "short"; }
+  if (last.bias === "SHORT_CUIDADO")  { biasText = "🔴 SHORT"; cls = "short"; }
 
   const biasEl = document.getElementById("bias");
   biasEl.innerText = biasText;
   biasEl.className = "badge " + cls;
 
-  document.getElementById("gold").innerText = last.gold;
+  document.getElementById("gold").innerText = fmt(last.gold, 1);
 
   updateLiveRowFromCache();
 
-  // SEÑALES
+  // señales
   const signals = (data.signals || []).slice(-10).reverse();
   const lastSignalText = document.getElementById("lastSignalText");
   const signalsList = document.getElementById("signalsList");
@@ -408,8 +393,7 @@ async function loadData() {
     signalsList.innerHTML = "";
   } else {
     const lastSig = signals[0];
-    lastSignalText.textContent =
-      `${iconFor(lastSig.type)} ${lastSig.asset} — ${lastSig.type} — ${lastSig.reason}`;
+    lastSignalText.textContent = `${iconFor(lastSig.type)} ${lastSig.asset} — ${lastSig.type} — ${lastSig.reason}`;
 
     signalsList.innerHTML = signals.map(s => `
       <div class="card" style="padding:10px;">
@@ -422,10 +406,8 @@ async function loadData() {
     `).join("");
   }
 
-  // GRÁFICOS
-  const labels = series.map(x =>
-    new Date(x.ts).toLocaleString("es-ES", { timeZone: "Europe/Madrid" })
-  );
+  // charts
+  const labels = series.map(x => new Date(x.ts).toLocaleString("es-ES", { timeZone: "Europe/Madrid" }));
 
   if (goldChartInstance) goldChartInstance.destroy();
   if (scoreChartInstance) scoreChartInstance.destroy();
@@ -435,7 +417,7 @@ async function loadData() {
     data: {
       labels,
       datasets: [
-        { label: "Gold", data: series.map(x => x.gold) },
+        { label: "Gold",  data: series.map(x => x.gold) },
         { label: "EMA21", data: series.map(x => x.gold_ema21) },
         { label: "EMA50", data: series.map(x => x.gold_ema50) }
       ]
@@ -450,17 +432,14 @@ async function loadData() {
   });
 }
 
-/* =========================
-   BOTÓN REFRESCAR
-   ========================= */
+// ===== REFRESH BUTTON (funciona SIEMPRE) =====
 function hookRefreshButton(){
-  window.addEventListener("DOMContentLoaded", () => {
+  const bind = () => {
     const btn = document.getElementById("btnRefresh");
     if (!btn) return;
 
     btn.addEventListener("click", async () => {
       try{
-        btn.disabled = true;
         btn.classList.add("is-loading");
         await loadData();
         updateLiveRowFromCache();
@@ -468,15 +447,24 @@ function hookRefreshButton(){
         console.error(e);
       }finally{
         btn.classList.remove("is-loading");
-        btn.disabled = false;
       }
     });
-  });
+  };
+
+  if (document.readyState === "loading") {
+    window.addEventListener("DOMContentLoaded", bind, { once:true });
+  } else {
+    bind();
+  }
 }
 
-/* =========================
-   ARRANQUE
-   ========================= */
+// útil para probar desde consola: forceRefresh()
+window.forceRefresh = async function(){
+  await loadData();
+  updateLiveRowFromCache();
+};
+
+// ARRANQUE
 startClockAll();
 startLiveTicker();
 hookRefreshButton();
