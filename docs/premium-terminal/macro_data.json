@@ -9,12 +9,25 @@
       "trend": "bullish",
       "volatility": "high",
       "signal": "explosion_up"
-    },
+  },
     "XRP-USD": {
       "score": 35,
       "trend": "bearish",
       "volatility": "low",
       "signal": "neutral"
+   },
+      "GC=F": {
+  "score": 61,
+  "trend": "bullish",
+  "volatility": "medium",
+  "signal": "explosion_up"
+   },
+"SI=F": {
+  "score": 55,
+  "trend": "bearish",
+  "volatility": "high",
+  "signal": "neutral"
+     }
     }
   }
 }
