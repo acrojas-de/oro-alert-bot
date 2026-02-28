@@ -1,18 +1,19 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <link rel="stylesheet" href="./style.css">
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Macro Dashboard (Oro)</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- cache-bust CSS -->
+  <link rel="stylesheet" href="./style.css?v=12">
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 
 <body>
 
-  <!-- TOPBAR FIJA -->
+  <!-- TOPBAR -->
   <div class="topbar">
     <div class="left">
       <div style="font-weight:800;">📡 Macro Dashboard</div>
@@ -20,17 +21,107 @@
     </div>
 
     <div class="right">
+      <button id="btnRefresh" class="btn" type="button" title="Refrescar ahora">
+        🔄 Refrescar
+      </button>
+
       <div class="card" style="margin:0; padding:8px 10px;">
-        Score: <span id="score"></span> |
-        Bias: <span id="bias" class="badge mix"></span> |
-        Oro: <span id="gold"></span>
+        Score: <span id="score">—</span> |
+        Bias: <span id="bias" class="badge mix">—</span> |
+        Oro: <span id="gold">—</span>
       </div>
     </div>
   </div>
 
-  <!-- CONTENIDO (SCROLL INTERNO) -->
+  <!-- LIVE ROW -->
+  <div class="live-row-wrap" id="liveRow">
+
+    <div class="live-card" data-asset="gold">
+      <div class="live-header">
+        <div class="live-title">GOLD · <span class="tf">--</span></div>
+        <div class="live-clock">
+          <span class="now">--:--:--</span>
+          <span class="sep">·</span>
+          <span class="left">--:--</span>
+        </div>
+      </div>
+      <div class="live-body">
+        <div class="thermo">
+          <div class="wick"></div>
+          <div class="candle"></div>
+          <div class="marker"></div>
+          <div class="c-progress"></div>
+          <div class="price-float">--</div>
+        </div>
+        <div class="live-stats"></div>
+      </div>
+    </div>
+
+    <div class="live-card" data-asset="dxy">
+      <div class="live-header">
+        <div class="live-title">DXY · <span class="tf">--</span></div>
+        <div class="live-clock">
+          <span class="now">--:--:--</span>
+          <span class="sep">·</span>
+          <span class="left">--:--</span>
+        </div>
+      </div>
+      <div class="live-body">
+        <div class="thermo">
+          <div class="wick"></div>
+          <div class="candle"></div>
+          <div class="marker"></div>
+          <div class="price-float">--</div>
+        </div>
+        <div class="live-stats"></div>
+      </div>
+    </div>
+
+    <div class="live-card" data-asset="tnx">
+      <div class="live-header">
+        <div class="live-title">TNX · <span class="tf">--</span></div>
+        <div class="live-clock">
+          <span class="now">--:--:--</span>
+          <span class="sep">·</span>
+          <span class="left">--:--</span>
+        </div>
+      </div>
+      <div class="live-body">
+        <div class="thermo">
+          <div class="wick"></div>
+          <div class="candle"></div>
+          <div class="marker"></div>
+          <div class="price-float">--</div>
+        </div>
+        <div class="live-stats"></div>
+      </div>
+    </div>
+
+    <div class="live-card" data-asset="nasdaq">
+      <div class="live-header">
+        <div class="live-title">NASDAQ · <span class="tf">--</span></div>
+        <div class="live-clock">
+          <span class="now">--:--:--</span>
+          <span class="sep">·</span>
+          <span class="left">--:--</span>
+        </div>
+      </div>
+      <div class="live-body">
+        <div class="thermo">
+          <div class="wick"></div>
+          <div class="candle"></div>
+          <div class="marker"></div>
+          <div class="price-float">--</div>
+        </div>
+        <div class="live-stats"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MAIN -->
   <div class="main">
-    <!-- ✅ PANEL DE SEÑALES -->
+
     <div id="signalsPanel" class="card">
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
         <div>
@@ -54,7 +145,6 @@
       <div id="signalsList" style="margin-top:10px; display:grid; gap:8px;"></div>
     </div>
 
-    <!-- GRÁFICOS -->
     <div class="grid">
       <div class="chart-card">
         <div class="chart-wrap">
@@ -68,117 +158,358 @@
         </div>
       </div>
     </div>
+
   </div>
 
-  <script>
+<script>
 let goldChartInstance = null;
 let scoreChartInstance = null;
 
-async function loadData() {
-  const res = await fetch('./macro_data.json', { cache: 'no-store' });
-  const data = await res.json();
-  const series = data.series || [];
+let clockTimer = null;
+let liveTicker = null;
+let lastDataCache = null;
 
-  // ✅ si no hay datos, salimos sin romper
-  if (!series.length) {
-    document.getElementById("updated").innerText = "Sin datos aún…";
+function fmt(n, d=2){
+  if (n === undefined || n === null || Number.isNaN(n)) return "—";
+  return Number(n).toFixed(d);
+}
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+
+function startClockAll(){
+  if (clockTimer) clearInterval(clockTimer);
+
+  const tick = () => {
+    const t = new Date().toLocaleTimeString("es-ES", {
+      timeZone: "Europe/Madrid",
+      hour12: false
+    });
+    document.querySelectorAll(".live-card .now").forEach(el => el.textContent = t);
+  };
+
+  tick();
+  clockTimer = setInterval(tick, 1000);
+}
+
+function tfToMinutes(tf){
+  if (!tf || typeof tf !== "string") return 60;
+  const s = tf.trim().toLowerCase();
+  if (s.endsWith("m")) return parseInt(s,10) || 60;
+  if (s.endsWith("h")) return (parseInt(s,10) || 1) * 60;
+  if (s.endsWith("d")) return (parseInt(s,10) || 1) * 1440;
+  return 60;
+}
+
+function candleStartMs(tfMin){
+  const now = Date.now();
+  const block = tfMin * 60 * 1000;
+  return Math.floor(now / block) * block;
+}
+
+function updateTimeLeftUI(tfMin, startMs){
+  const endMs = startMs + tfMin*60*1000;
+  const leftMs = Math.max(0, endMs - Date.now());
+  const leftMin = Math.floor(leftMs / 60000);
+  const leftSec = Math.floor((leftMs % 60000) / 1000);
+  const mm = String(leftMin).padStart(2,"0");
+  const ss = String(leftSec).padStart(2,"0");
+  document.querySelectorAll(".live-card .left").forEach(el => el.textContent = `-${mm}:${ss}`);
+}
+
+function findOpen(series, last, key, startMs){
+  if (last?.candle_ts){
+    const row = series.find(x => x.candle_ts === last.candle_ts);
+    if (row && row[key] != null) return row[key];
+  }
+
+  const row2 = series.find(x => {
+    const ms = new Date(x.ts).getTime();
+    return !Number.isNaN(ms) && ms >= startMs;
+  });
+  if (row2 && row2[key] != null) return row2[key];
+
+  return series[0]?.[key] ?? last?.[key];
+}
+
+function updateLiveRowFromCache(){
+  if (!lastDataCache) return;
+
+  const data = lastDataCache;
+  const series = data.series || [];
+  if (!series.length) return;
+
+  const last = series[series.length - 1];
+  const tf = data?.meta?.timeframe || "60m";
+  const tfMin = tfToMinutes(tf);
+
+  const startMs = candleStartMs(tfMin);
+  const endMs = startMs + tfMin*60*1000;
+  const prog = clamp((Date.now() - startMs) / (endMs - startMs), 0, 1);
+
+  document.querySelectorAll(".live-card .tf").forEach(el => el.textContent = tf);
+  updateTimeLeftUI(tfMin, startMs);
+
+  const map = {
+    gold:   { key:"gold",   atrKey:"atr",  decimals:1 },
+    dxy:    { key:"dxy",    atrKey:null,   decimals:3 },
+    tnx:    { key:"tnx",    atrKey:null,   decimals:3 },
+    nasdaq: { key:"nasdaq", atrKey:null,   decimals:1 },
+  };
+
+  document.querySelectorAll(".live-card").forEach(card => {
+    const cfg = map[card.dataset.asset];
+    if (!cfg) return;
+
+    const price = last?.[cfg.key];
+    if (price == null) return;
+
+    let open = findOpen(series, last, cfg.key, startMs);
+    const prev = series.length >= 2 ? series[series.length - 2] : null;
+    if (prev && (open == null || Math.abs(price - open) < 1e-12)) open = prev[cfg.key];
+
+    const delta = price - open;
+
+    let scale = 1;
+    if (cfg.atrKey && last?.[cfg.atrKey] != null) {
+      scale = Math.max(Number(last[cfg.atrKey]) || 25, 0.00001);
+    } else {
+      const tail = series.slice(-20).map(x => Number(x?.[cfg.key])).filter(Number.isFinite);
+      const minV = tail.length ? Math.min(...tail) : price;
+      const maxV = tail.length ? Math.max(...tail) : price;
+      const range = Math.max(maxV - minV, Math.abs(price) * 0.001);
+      scale = Math.max(range, 0.00001);
+    }
+
+    const pos = clamp(0.5 + (delta / (2 * scale)), 0, 1);
+
+    const thermo  = card.querySelector(".thermo");
+    const candle  = card.querySelector(".candle");
+    const marker  = card.querySelector(".marker");
+    const floatP  = card.querySelector(".price-float");
+    const stats   = card.querySelector(".live-stats");
+    const progBar = card.querySelector(".c-progress");
+
+    if (!thermo || !candle || !marker || !floatP || !stats) return;
+
+    thermo.style.setProperty("--lvl", `${pos * 100}%`);
+
+    candle.style.height = `${clamp(pos*100, 6, 100)}%`;
+    marker.style.bottom = `${pos*100}%`;
+    floatP.style.bottom = `${pos*100}%`;
+    floatP.textContent = fmt(price, cfg.decimals);
+
+    candle.classList.remove("c-up","c-down");
+    candle.classList.add(delta >= 0 ? "c-up" : "c-down");
+
+    if (progBar) progBar.style.height = `${prog * 100}%`;
+
+    stats.innerHTML = `
+      <div class="live-row"><span class="k">Open</span><span class="v">${fmt(open, cfg.decimals)}</span></div>
+      <div class="live-row"><span class="k">Last</span><span class="v">${fmt(price, cfg.decimals)}</span></div>
+      <div class="live-row"><span class="k">Δ</span><span class="v">${delta>=0?"+":""}${fmt(delta, cfg.decimals)}</span></div>
+      <div class="live-row"><span class="k">Progreso</span><span class="v">${Math.round(prog*100)}%</span></div>
+    `;
+  });
+}
+
+function startLiveTicker(){
+  if (liveTicker) clearInterval(liveTicker);
+  liveTicker = setInterval(updateLiveRowFromCache, 1000);
+}
+
+function flashUpdated(){
+  const upd = document.getElementById("updated");
+  if (!upd) return;
+  upd.style.color = "#4cff9a";
+  setTimeout(()=> upd.style.color = "", 800);
+}
+
+  function flashUpdated(){
+  const upd = document.getElementById("updated");
+  if (!upd) return;
+  upd.style.color = "#4cff9a";
+  setTimeout(()=> upd.style.color = "", 800);
+}
+
+// 👇👇👇 AQUÍ PEGAS ESTO 👇👇👇
+function updateTrigger(last){
+  const trigEl = document.getElementById("trigger");
+  if (!trigEl || !last) return;
+
+  const score = Number(last.score ?? 0);
+  const bias  = last.bias;
+
+  const price = Number(last.gold ?? NaN);
+  const ema21 = Number(last.gold_ema21 ?? NaN);
+  const ema50 = Number(last.gold_ema50 ?? NaN);
+
+  if (!Number.isFinite(price) || !Number.isFinite(ema21) || !Number.isFinite(ema50)){
+    trigEl.innerText = "—";
+    trigEl.className = "badge mix";
     return;
   }
 
-  const last = series[series.length - 1];
+  const delta = price - ema21;
 
-  // ======= CABECERA =======
-  document.getElementById("updated").innerText =
-    "Actualizado: " + new Date(data.meta.updated_utc)
-      .toLocaleString("es-ES", { timeZone: "Europe/Madrid" });
+  let trigger = null;
 
-  document.getElementById("score").innerText = last.score + "/100";
-
-  let biasText = "🟡 Mixto";
-  let cls = "mix";
-  if (last.bias === "LONG_FAVORABLE") { biasText = "🟢 LONG"; cls = "long"; }
-  if (last.bias === "SHORT_CUIDADO") { biasText = "🔴 SHORT"; cls = "short"; }
-
-  const biasEl = document.getElementById("bias");
-  biasEl.innerText = biasText;
-  biasEl.className = "badge " + cls;
-
-  document.getElementById("gold").innerText = last.gold;
-
-  // ======= SEÑALES =======
-  const signals = (data.signals || []).slice(-10).reverse();
-  const lastSignalText = document.getElementById("lastSignalText");
-  const signalsList = document.getElementById("signalsList");
-
-  function iconFor(t) {
-    if (t === "BUY") return "🟢⬆️";
-    if (t === "SELL") return "🔴⬇️";
-    return "🟠🚨";
+  if (
+    score >= 70 &&
+    bias === "LONG_FAVORABLE" &&
+    price > ema21 &&
+    ema21 >= ema50 &&
+    delta > 0
+  ){
+    trigger = "BUY";
   }
 
-  if (!signals.length) {
-    lastSignalText.textContent = "Sin señales.";
-    signalsList.innerHTML = "";
-  } else {
-    const lastSig = signals[0];
-    lastSignalText.textContent =
-      `${iconFor(lastSig.type)} ${lastSig.asset} — ${lastSig.type} — ${lastSig.reason}`;
-
-    signalsList.innerHTML = signals.map(s => `
-      <div class="card" style="padding:10px;">
-        <div style="font-weight:700;">
-          ${iconFor(s.type)} ${s.asset} — ${s.type} (fuerza ${s.strength})
-        </div>
-        <div style="opacity:.85">${s.reason}</div>
-        <div style="opacity:.6; font-size:12px">${new Date(s.ts).toLocaleString("es-ES")}</div>
-      </div>
-    `).join("");
+  if (
+    score <= 40 &&
+    bias === "SHORT_CUIDADO" &&
+    price < ema21 &&
+    ema21 <= ema50 &&
+    delta < 0
+  ){
+    trigger = "SELL";
   }
 
-  // ======= GRÁFICOS =======
-  const labels = series.map(x =>
-    new Date(x.ts).toLocaleString("es-ES", { timeZone: "Europe/Madrid" })
-  );
+  if (trigger === "BUY"){
+    trigEl.innerText = "🟢🚀 BUY";
+    trigEl.className = "badge long";
+  }else if (trigger === "SELL"){
+    trigEl.innerText = "🔴⚡ SELL";
+    trigEl.className = "badge short";
+  }else{
+    trigEl.innerText = "—";
+    trigEl.className = "badge mix";
+  }
+}
+  
+async function loadData() {
+  try{
+    const res = await fetch(`./macro_data.json?ts=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-  // ✅ destruir ANTES de crear nuevos (evita duplicados)
-  if (goldChartInstance) goldChartInstance.destroy();
-  if (scoreChartInstance) scoreChartInstance.destroy();
+    const data = await res.json();
+    const series = data.series || [];
 
-  goldChartInstance = new Chart(document.getElementById("goldChart"), {
-    type: "line",
-    data: {
-      labels,
-      datasets: [
-        { label: "Gold", data: series.map(x => x.gold) },
-        { label: "EMA21", data: series.map(x => x.gold_ema21) },
-        { label: "EMA50", data: series.map(x => x.gold_ema50) }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false
+    if (!series.length) {
+      document.getElementById("updated").innerText = "Sin datos aún… (series vacía)";
+      return;
     }
-  });
 
-  scoreChartInstance = new Chart(document.getElementById("scoreChart"), {
-    type: "line",
-    data: {
-      labels,
-      datasets: [
-        { label: "Score", data: series.map(x => x.score) }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false
+    lastDataCache = data;
+    const last = series[series.length - 1];
+
+    document.getElementById("updated").innerText =
+      "Actualizado: " + new Date(data.meta.updated_utc).toLocaleString("es-ES", { timeZone: "Europe/Madrid" });
+
+    document.getElementById("score").innerText = (last.score ?? "—") + "/100";
+
+    let biasText = "🟡 Mixto";
+    let cls = "mix";
+    if (last.bias === "LONG_FAVORABLE") { biasText = "🟢 LONG"; cls = "long"; }
+    if (last.bias === "SHORT_CUIDADO")  { biasText = "🔴 SHORT"; cls = "short"; }
+
+    const biasEl = document.getElementById("bias");
+    biasEl.innerText = biasText;
+    biasEl.className = "badge " + cls;
+
+    document.getElementById("gold").innerText = fmt(last.gold, 1);
+    updateTrigger(last);
+
+    updateLiveRowFromCache();
+
+    // señales
+    const signals = (data.signals || []).slice(-10).reverse();
+    const lastSignalText = document.getElementById("lastSignalText");
+    const signalsList = document.getElementById("signalsList");
+
+    function iconFor(t) {
+      if (t === "BUY") return "🟢⬆️";
+      if (t === "SELL") return "🔴⬇️";
+      if (t === "STOP_HIT") return "🟠🛑";
+      if (t === "CONFIRM_UP") return "🟦✅";
+      return "🟠🚨";
+    }
+
+    if (!signals.length) {
+      lastSignalText.textContent = "Sin señales.";
+      signalsList.innerHTML = "";
+    } else {
+      const lastSig = signals[0];
+      lastSignalText.textContent = `${iconFor(lastSig.type)} ${lastSig.asset} — ${lastSig.type} — ${lastSig.reason}`;
+
+      signalsList.innerHTML = signals.map(s => `
+        <div class="card" style="padding:10px;">
+          <div style="font-weight:700;">
+            ${iconFor(s.type)} ${s.asset} — ${s.type} (fuerza ${s.strength})
+          </div>
+          <div style="opacity:.85">${s.reason}</div>
+          <div style="opacity:.6; font-size:12px">${new Date(s.ts).toLocaleString("es-ES")}</div>
+        </div>
+      `).join("");
+    }
+
+    // charts
+    const labels = series.map(x => new Date(x.ts).toLocaleString("es-ES", { timeZone: "Europe/Madrid" }));
+
+    if (goldChartInstance) goldChartInstance.destroy();
+    if (scoreChartInstance) scoreChartInstance.destroy();
+
+    goldChartInstance = new Chart(document.getElementById("goldChart"), {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          { label: "Gold",  data: series.map(x => x.gold) },
+          { label: "EMA21", data: series.map(x => x.gold_ema21) },
+          { label: "EMA50", data: series.map(x => x.gold_ema50) }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    scoreChartInstance = new Chart(document.getElementById("scoreChart"), {
+      type: "line",
+      data: { labels, datasets: [{ label: "Score", data: series.map(x => x.score) }] },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+
+  }catch(e){
+    console.error("loadData ERROR:", e);
+    const upd = document.getElementById("updated");
+    if (upd) upd.innerText = "ERROR cargando macro_data.json (mira Console)";
+  }
+}
+
+function hookRefreshButton(){
+  const btn = document.getElementById("btnRefresh");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
+    try{
+      btn.classList.add("is-loading");
+      await loadData();
+      updateLiveRowFromCache();
+      flashUpdated();
+    }catch(e){
+      console.error(e);
+    }finally{
+      btn.classList.remove("is-loading");
     }
   });
 }
 
-// ✅ 1ª carga + refresco cada 30s
+window.forceRefresh = async function(){
+  await loadData();
+  updateLiveRowFromCache();
+  flashUpdated();
+};
+
+startClockAll();
+startLiveTicker();
+hookRefreshButton();
 loadData();
 setInterval(loadData, 30000);
-  </script>
+</script>
 
-</body>
-</html>
