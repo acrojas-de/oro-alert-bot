@@ -133,7 +133,78 @@ def save_data(path: str, data: dict) -> None:
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
+def load_watchlist_symbols(path: str) -> list[str]:
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            wl = json.load(f)
+        symbols = []
+        if isinstance(wl, dict):
+            for _, items in wl.items():
+                if isinstance(items, list):
+                    for it in items:
+                        if isinstance(it, dict) and it.get("symbol"):
+                            symbols.append(str(it["symbol"]).strip())
+        # únicos, conservando orden
+        seen = set()
+        out = []
+        for s in symbols:
+            if s and s not in seen:
+                seen.add(s)
+                out.append(s)
+        return out
+    except Exception:
+        return []
 
+
+def classify_volatility(atr_pct: float) -> str:
+    if atr_pct <= 0.0018:
+        return "low"
+    if atr_pct >= 0.003:
+        return "high"
+    return "medium"
+
+
+def build_asset_metrics(symbol: str, period: str, timeframe: str) -> dict | None:
+    try:
+        df = fetch_ohlc(symbol, period, timeframe)
+        close = df["close"]
+        i = last_closed_index(close)
+
+        price = float(close.iloc[i])
+        ema21_v = float(ema(close, 21).iloc[i])
+        ema50_v = float(ema(close, 50).iloc[i])
+
+        a = atr(df, ATR_LEN)
+        atr_v = float(a.iloc[i])
+        atr_pct = (atr_v / price) if price else 0.0
+
+        trend = "bullish" if ema21_v >= ema50_v else "bearish"
+        signal = (
+            "explosion_up" if (price > ema21_v and ema21_v > ema50_v)
+            else ("explosion_down" if (price < ema21_v and ema21_v < ema50_v) else "neutral")
+        )
+
+        # score simple (0/50/100) para empezar
+        score = 50
+        if price > ema21_v and ema21_v > ema50_v:
+            score = 80
+        elif price < ema21_v and ema21_v < ema50_v:
+            score = 20
+
+        return {
+            "score": int(score),
+            "trend": trend,
+            "volatility": classify_volatility(atr_pct),
+            "signal": signal,
+            "price": round(price, 2),
+            "ema21": round(ema21_v, 2),
+            "ema50": round(ema50_v, 2),
+            "atr_pct": round(atr_pct, 6),
+        }
+    except Exception:
+        return None
 # ==============
 # SIGNALS
 # ==============
