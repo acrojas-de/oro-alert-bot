@@ -48,6 +48,7 @@
 
 <div class="content">
   <div class="card">
+    <div id="assetDetails" style="margin-top:15px;"></div>
     <h3 id="assetName">Selecciona un activo</h3>
     <p>Timeframe fijo: 1H</p>
   </div>
@@ -117,7 +118,9 @@ function buildSelector() {
 function updateAssetView() {
   const select = document.getElementById("assetSelect");
   const title = document.getElementById("assetName");
-  if (!select || !title) return;
+  const details = document.getElementById("assetDetails");
+
+  if (!select || !title || !details) return;
 
   const assetName = select.selectedOptions?.[0]?.textContent || "Activo";
   title.textContent = assetName;
@@ -126,7 +129,25 @@ function updateAssetView() {
 
   if (!assetData) {
     title.textContent += " (sin datos aún)";
+    details.innerHTML = "";
+    return;
   }
+
+  // Color según señal
+  let color = "#94a3b8";
+  if (assetData.signal === "explosion_up") color = "#22c55e";
+  if (assetData.signal === "explosion_down") color = "#ef4444";
+
+  details.innerHTML = `
+    <div style="margin-top:10px;">
+      <div><strong>Score:</strong> ${assetData.score}</div>
+      <div><strong>Tendencia:</strong> ${assetData.trend}</div>
+      <div><strong>Volatilidad:</strong> ${assetData.volatility}</div>
+      <div style="margin-top:8px; font-weight:bold; color:${color};">
+        Señal: ${assetData.signal}
+      </div>
+    </div>
+  `;
 }
 
 // Ejecutar cuando el DOM esté listo (evita null)
