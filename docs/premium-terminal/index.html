@@ -37,6 +37,59 @@
       border-radius: 12px;
       margin-bottom: 20px;
     }
+
+    .gaugeWrap{
+  display:flex;
+  gap:18px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.gauge{
+  width:260px;
+  max-width:100%;
+  height:auto;
+}
+
+.gBg{
+  fill:none;
+  stroke:#334155;
+  stroke-width:14;
+  stroke-linecap:round;
+}
+
+.gFg{
+  fill:none;
+  stroke:#22c55e;
+  stroke-width:14;
+  stroke-linecap:round;
+  stroke-dasharray: 251.2;
+  stroke-dashoffset: 251.2;
+  transition: stroke-dashoffset 400ms ease, stroke 200ms ease;
+}
+
+.gScore{
+  font-size:28px;
+  font-weight:800;
+  fill:#e2e8f0;
+}
+
+.gLabel{
+  font-size:12px;
+  fill:#94a3b8;
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+}
+
+.metaBox{
+  min-width:220px;
+  line-height:1.6;
+}
+
+.muted{
+  color:#94a3b8;
+  font-size:12px;
+}
   </style>
 </head>
 <body>
