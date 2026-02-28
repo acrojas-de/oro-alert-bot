@@ -27,9 +27,7 @@
       border-radius: 6px;
     }
 
-    .content {
-      padding: 20px;
-    }
+    .content { padding: 20px; }
 
     .card {
       background: #1e293b;
@@ -39,57 +37,57 @@
     }
 
     .gaugeWrap{
-  display:flex;
-  gap:18px;
-  align-items:center;
-  flex-wrap:wrap;
-}
+      display:flex;
+      gap:18px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
 
-.gauge{
-  width:260px;
-  max-width:100%;
-  height:auto;
-}
+    .gauge{
+      width:260px;
+      max-width:100%;
+      height:auto;
+    }
 
-.gBg{
-  fill:none;
-  stroke:#334155;
-  stroke-width:14;
-  stroke-linecap:round;
-}
+    .gBg{
+      fill:none;
+      stroke:#334155;
+      stroke-width:14;
+      stroke-linecap:round;
+    }
 
-.gFg{
-  fill:none;
-  stroke:#22c55e;
-  stroke-width:14;
-  stroke-linecap:round;
-  stroke-dasharray: 251.2;
-  stroke-dashoffset: 251.2;
-  transition: stroke-dashoffset 400ms ease, stroke 200ms ease;
-}
+    .gFg{
+      fill:none;
+      stroke:#22c55e;
+      stroke-width:14;
+      stroke-linecap:round;
+      stroke-dasharray: 251.2;
+      stroke-dashoffset: 251.2;
+      transition: stroke-dashoffset 400ms ease, stroke 200ms ease;
+    }
 
-.gScore{
-  font-size:28px;
-  font-weight:800;
-  fill:#e2e8f0;
-}
+    .gScore{
+      font-size:28px;
+      font-weight:800;
+      fill:#e2e8f0;
+    }
 
-.gLabel{
-  font-size:12px;
-  fill:#94a3b8;
-  letter-spacing:0.5px;
-  text-transform:uppercase;
-}
+    .gLabel{
+      font-size:12px;
+      fill:#94a3b8;
+      letter-spacing:0.5px;
+      text-transform:uppercase;
+    }
 
-.metaBox{
-  min-width:220px;
-  line-height:1.6;
-}
+    .metaBox{
+      min-width:220px;
+      line-height:1.6;
+    }
 
-.muted{
-  color:#94a3b8;
-  font-size:12px;
-}
+    .muted{
+      color:#94a3b8;
+      font-size:12px;
+    }
   </style>
 </head>
 <body>
@@ -101,30 +99,30 @@
 
 <div class="content">
   <div class="card">
-  <h3 id="assetName">Selecciona un activo</h3>
-  <p>Timeframe fijo: 1H</p>
+    <h3 id="assetName">Selecciona un activo</h3>
+    <p>Timeframe fijo: 1H</p>
 
-  <div id="assetDetails" style="margin-top:15px;">
-    <div class="gaugeWrap">
-      <svg id="scoreGauge" viewBox="0 0 200 120" class="gauge">
-        <!-- fondo -->
-        <path id="gBg" d="M 20 100 A 80 80 0 0 1 180 100" class="gBg"></path>
-        <!-- progreso -->
-        <path id="gFg" d="M 20 100 A 80 80 0 0 1 180 100" class="gFg"></path>
+    <div id="assetDetails" style="margin-top:15px;">
+      <div class="gaugeWrap">
+        <svg id="scoreGauge" viewBox="0 0 200 120" class="gauge">
+          <path id="gBg" d="M 20 100 A 80 80 0 0 1 180 100" class="gBg"></path>
+          <path id="gFg" d="M 20 100 A 80 80 0 0 1 180 100" class="gFg"></path>
 
-        <text id="gScore" x="100" y="78" text-anchor="middle" class="gScore">—</text>
-        <text id="gLabel" x="100" y="98" text-anchor="middle" class="gLabel">Score</text>
-      </svg>
+          <text id="gScore" x="100" y="78" text-anchor="middle" class="gScore">—</text>
+          <text id="gLabel" x="100" y="98" text-anchor="middle" class="gLabel">Score</text>
+        </svg>
 
-      <div class="metaBox">
-        <div><strong>Tendencia:</strong> <span id="uiTrend">—</span></div>
-        <div><strong>Volatilidad:</strong> <span id="uiVol">—</span></div>
-        <div><strong>Señal:</strong> <span id="uiSignal">—</span></div>
-        <div class="muted" style="margin-top:8px;">
-          <strong>Updated:</strong> <span id="uiUpdated">—</span>
+        <div class="metaBox">
+          <div><strong>Tendencia:</strong> <span id="uiTrend">—</span></div>
+          <div><strong>Volatilidad:</strong> <span id="uiVol">—</span></div>
+          <div><strong>Señal:</strong> <span id="uiSignal">—</span></div>
+          <div class="muted" style="margin-top:8px;">
+            <strong>Updated:</strong> <span id="uiUpdated">—</span>
+          </div>
         </div>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -143,7 +141,6 @@ async function loadData() {
     if (!m.ok) throw new Error("macro_data.json HTTP " + m.status);
     macroData = await m.json();
 
-    // blindaje
     if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {} };
     if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
 
@@ -157,12 +154,7 @@ async function loadData() {
 
 function buildSelector() {
   const select = document.getElementById("assetSelect");
-  if (!select) {
-    console.error("No encuentro #assetSelect en el HTML");
-    const title = document.getElementById("assetName");
-    if (title) title.textContent = "ERROR: falta <select id='assetSelect'>";
-    return;
-  }
+  if (!select) return;
 
   select.innerHTML = "";
 
@@ -191,10 +183,17 @@ function buildSelector() {
 
 function updateAssetView() {
   const select = document.getElementById("assetSelect");
-  const title = document.getElementById("assetName");
-  const details = document.getElementById("assetDetails");
+  const title  = document.getElementById("assetName");
 
-  if (!select || !title || !details) return;
+  const uiTrend   = document.getElementById("uiTrend");
+  const uiVol     = document.getElementById("uiVol");
+  const uiSignal  = document.getElementById("uiSignal");
+  const uiUpdated = document.getElementById("uiUpdated");
+
+  const gScore = document.getElementById("gScore");
+  const gFg    = document.getElementById("gFg");
+
+  if (!select || !title) return;
 
   const assetName = select.selectedOptions?.[0]?.textContent || "Activo";
   title.textContent = assetName;
@@ -203,28 +202,41 @@ function updateAssetView() {
 
   if (!assetData) {
     title.textContent += " (sin datos aún)";
-    details.innerHTML = "";
+    if (uiTrend) uiTrend.textContent = "—";
+    if (uiVol) uiVol.textContent = "—";
+    if (uiSignal) uiSignal.textContent = "—";
+    if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
+    if (gScore) gScore.textContent = "—";
+    if (gFg) {
+      gFg.style.stroke = "#94a3b8";
+      gFg.style.strokeDashoffset = "251.2";
+    }
     return;
   }
 
-  // Color según señal
+  if (uiTrend) uiTrend.textContent = assetData.trend ?? "—";
+  if (uiVol) uiVol.textContent = assetData.volatility ?? "—";
+  if (uiSignal) uiSignal.textContent = assetData.signal ?? "—";
+  if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
+
+  const score = Number(assetData.score ?? 0);
+  const clamped = Math.max(0, Math.min(100, score));
+  if (gScore) gScore.textContent = String(clamped);
+
+  const total = 251.2;
+  const offset = total * (1 - clamped / 100);
+
   let color = "#94a3b8";
   if (assetData.signal === "explosion_up") color = "#22c55e";
   if (assetData.signal === "explosion_down") color = "#ef4444";
 
-  details.innerHTML = `
-    <div style="margin-top:10px;">
-      <div><strong>Score:</strong> ${assetData.score}</div>
-      <div><strong>Tendencia:</strong> ${assetData.trend}</div>
-      <div><strong>Volatilidad:</strong> ${assetData.volatility}</div>
-      <div style="margin-top:8px; font-weight:bold; color:${color};">
-        Señal: ${assetData.signal}
-      </div>
-    </div>
-  `;
+  if (gFg) {
+    gFg.style.stroke = color;
+    gFg.style.strokeDasharray = String(total);
+    gFg.style.strokeDashoffset = String(offset);
+  }
 }
 
-// Ejecutar cuando el DOM esté listo (evita null)
 document.addEventListener("DOMContentLoaded", loadData);
 </script>
 
