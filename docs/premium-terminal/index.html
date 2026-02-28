@@ -128,7 +128,53 @@
       color:#94a3b8;
       font-size:12px;
     }
+
+    /* ===== MARKET STATE (PRO) ===== */
+.stateBar{
+  margin: 10px 0 14px;
+  padding: 12px 14px;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  background: rgba(15,23,42,0.35);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.stateLeft{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.statePill{
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  border: 1px solid #334155;
+  background: rgba(2,6,23,0.35);
+}
+
+.stateText{
+  font-size: 14px;
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
+.stateHint{
+  font-size: 12px;
+  color:#94a3b8;
+}
+
+.statePill.up{ border-color: rgba(34,197,94,0.45); }
+.statePill.down{ border-color: rgba(239,68,68,0.45); }
+.statePill.neutral{ border-color: rgba(148,163,184,0.45); }
   </style>
+
 </head>
 <body>
 
@@ -137,6 +183,8 @@
   <select id="assetSelect"></select>
 </header>
 
+
+  
 <div class="content">
   <div class="card">
 
@@ -157,6 +205,14 @@
       </div>
     </div>
 
+    <div class="stateBar">
+      <div class="stateLeft">
+         <span id="uiStatePill" class="statePill neutral">ESTADO</span>
+         <span id="uiStateText" class="stateText">—</span>
+      </div>
+      <span id="uiStateHint" class="stateHint">—</span>
+    </div>
+    
     <div id="assetDetails" style="margin-top:10px;">
       <div class="gaugeWrap">
         <svg id="scoreGauge" viewBox="0 0 200 120" class="gauge">
@@ -177,20 +233,39 @@ let watchlistData = {};
 let macroData = { meta: {}, assets: {} };
 let currentAsset = null;
 
+let refreshTimer = null;
+let watchlistLoaded = false;
+let lastSignal = {}; // por símbolo
+
+const REFRESH_MS = 60000; // 60s (cambia a 15000 si quieres 15s)
+
+async function fetchJson(url) {
+  const r = await fetch(url + '?v=' + Date.now());
+  if (!r.ok) throw new Error(url + " HTTP " + r.status);
+  return await r.json();
+}
+
 async function loadData() {
   try {
-    const w = await fetch('watchlist.json?v=' + Date.now());
-    if (!w.ok) throw new Error("watchlist.json HTTP " + w.status);
-    watchlistData = await w.json();
+    // watchlist solo una vez (para no resetear selector)
+    if (!watchlistLoaded) {
+      watchlistData = await fetchJson('watchlist.json');
+      watchlistLoaded = true;
+      buildSelector();
+    }
 
-    const m = await fetch('macro_data.json?v=' + Date.now());
-    if (!m.ok) throw new Error("macro_data.json HTTP " + m.status);
-    macroData = await m.json();
+    // macro siempre
+    macroData = await fetchJson('macro_data.json');
 
     if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {} };
     if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
 
-    buildSelector();
+    // si aún no hay currentAsset, toma el del selector
+    const sel = document.getElementById("assetSelect");
+    if (!currentAsset && sel) currentAsset = sel.value;
+
+    updateAssetView();
+
   } catch (err) {
     console.error(err);
     const title = document.getElementById("assetName");
@@ -223,8 +298,22 @@ function buildSelector() {
     updateAssetView();
   });
 
+  // inicial
   currentAsset = select.value;
-  updateAssetView();
+}
+
+function beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = "sine";
+    o.frequency.value = 880;
+    g.gain.value = 0.05;
+    o.start();
+    setTimeout(() => { o.stop(); ctx.close(); }, 120);
+  } catch (e) {}
 }
 
 function updateAssetView() {
@@ -238,47 +327,70 @@ function updateAssetView() {
 
   const gScore = document.getElementById("gScore");
   const gFg    = document.getElementById("gFg");
-
   const sigDot = document.getElementById("sigDot");
 
+  // Market State
+  const uiStatePill = document.getElementById("uiStatePill");
+  const uiStateText = document.getElementById("uiStateText");
+  const uiStateHint = document.getElementById("uiStateHint");
+
   if (!select || !title) return;
+
+  // asegúrate de que currentAsset sea el value del select
+  if (!currentAsset) currentAsset = select.value;
+  if (select.value !== currentAsset) select.value = currentAsset;
 
   const assetName = select.selectedOptions?.[0]?.textContent || "Activo";
   title.textContent = assetName;
 
   const assetData = macroData.assets?.[currentAsset];
 
-  // Reset dot
-  if (sigDot) sigDot.className = "dot";
+  const setState = (pillClass, pillText, text, hint) => {
+    if (uiStatePill) {
+      uiStatePill.className = `statePill ${pillClass}`;
+      uiStatePill.textContent = pillText;
+    }
+    if (uiStateText) uiStateText.textContent = text;
+    if (uiStateHint) uiStateHint.textContent = hint;
+  };
 
-  // Si no hay datos
+  // Sin datos
   if (!assetData) {
     title.textContent += " (sin datos aún)";
     if (uiTrend) uiTrend.textContent = "—";
     if (uiVol) uiVol.textContent = "—";
     if (uiSignal) uiSignal.textContent = "—";
     if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
+
+    if (sigDot) sigDot.className = "dot";
+
     if (gScore) gScore.textContent = "—";
     if (gFg) {
       gFg.style.stroke = "#94a3b8";
       gFg.style.strokeDashoffset = "251.2";
     }
+
+    setState("neutral", "ESTADO", "Sin datos", "Esperando actualización");
     return;
   }
 
-  // Texto chips
-  if (uiTrend) uiTrend.textContent = assetData.trend ?? "—";
-  if (uiVol) uiVol.textContent = assetData.volatility ?? "—";
-  if (uiSignal) uiSignal.textContent = assetData.signal ?? "—";
+  const trend = String(assetData.trend ?? "—");
+  const vol   = String(assetData.volatility ?? "—");
+  const sig   = String(assetData.signal ?? "—");
+
+  // Aviso si cambia señal
+  const prevSig = lastSignal[currentAsset];
+  if (prevSig && prevSig !== sig) {
+    console.log(`[ALERTA] ${currentAsset}: ${prevSig} -> ${sig}`);
+    beep();
+  }
+  lastSignal[currentAsset] = sig;
+
+  if (uiTrend) uiTrend.textContent = trend;
+  if (uiVol) uiVol.textContent = vol;
+  if (uiSignal) uiSignal.textContent = sig;
   if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
 
-  // Dot color por señal
-  if (sigDot) {
-    if (assetData.signal === "explosion_up") sigDot.classList.add("up");
-    if (assetData.signal === "explosion_down") sigDot.classList.add("down");
-  }
-
-  // Score + gauge
   const score = Number(assetData.score ?? 0);
   const clamped = Math.max(0, Math.min(100, score));
   if (gScore) gScore.textContent = String(clamped);
@@ -287,17 +399,47 @@ function updateAssetView() {
   const offset = total * (1 - clamped / 100);
 
   let color = "#94a3b8";
-  if (assetData.signal === "explosion_up") color = "#22c55e";
-  if (assetData.signal === "explosion_down") color = "#ef4444";
+  if (sig === "explosion_up") color = "#22c55e";
+  if (sig === "explosion_down") color = "#ef4444";
 
   if (gFg) {
     gFg.style.stroke = color;
     gFg.style.strokeDasharray = String(total);
     gFg.style.strokeDashoffset = String(offset);
   }
+
+  if (sigDot) {
+    sigDot.className = "dot";
+    if (sig === "explosion_up") sigDot.classList.add("up");
+    if (sig === "explosion_down") sigDot.classList.add("down");
+  }
+
+  const volLow = (vol.toLowerCase() === "low");
+  const bullish = (trend.toLowerCase() === "bullish");
+  const bearish = (trend.toLowerCase() === "bearish");
+
+  if (clamped >= 75 && bullish && sig === "explosion_up") {
+    setState("up", "MOMENTUM", "Impulso fuerte", "Probable continuación (ojo pullbacks)");
+  } else if (sig === "explosion_down" || clamped <= 35) {
+    setState("down", "RIESGO", "Presión bajista", "Evitar FOMO / buscar confirmación");
+  } else if (volLow && clamped >= 40 && clamped <= 70) {
+    setState("neutral", "COMPR.", "Compresión", "Posible salida en breve (esperar señal)");
+  } else if (bearish && clamped < 55) {
+    setState("down", "BAJISTA", "Sesgo bajista", "Rebotes = posible venta");
+  } else {
+    setState("neutral", "NEUTRAL", "Mercado mixto", "Esperar mejor ventana");
+  }
 }
 
-document.addEventListener("DOMContentLoaded", loadData);
+function startAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(loadData, REFRESH_MS);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadData();
+  startAutoRefresh();
+});
 </script>
 
 </body>
