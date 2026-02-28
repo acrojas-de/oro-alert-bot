@@ -1,6 +1,6 @@
 {
   "meta": {
-    "updated_utc": "2026-02-28T23:37:26+00:00",
+    "updated_utc": "2026-02-28T23:51:21+00:00",
     "timeframe": "1h",
     "source": "macro_bot.py"
   },
@@ -46,8 +46,8 @@
       "signal": "explosion_up",
       "price": 94.415,
       "ema21": 91.9171,
-      "ema50": 90.4696,
-      "atr_pct": 0.011665
+      "ema50": 90.4705,
+      "atr_pct": 0.011664
     },
     "MSFT": {
       "score": 35,
@@ -56,7 +56,7 @@
       "signal": "explosion_down",
       "price": 393.8,
       "ema21": 396.06,
-      "ema50": 396.68,
+      "ema50": 396.73,
       "atr_pct": 0.007922
     },
     "GOOGL": {
@@ -66,8 +66,8 @@
       "signal": "explosion_down",
       "price": 308.1,
       "ema21": 308.34,
-      "ema50": 309.4,
-      "atr_pct": 0.008777
+      "ema50": 309.39,
+      "atr_pct": 0.008778
     },
     "NVDA": {
       "score": 35,
@@ -77,7 +77,7 @@
       "price": 178.9,
       "ema21": 185.45,
       "ema50": 187.66,
-      "atr_pct": 0.01184
+      "atr_pct": 0.011839
     },
     "AMD": {
       "score": 35,
@@ -86,7 +86,7 @@
       "signal": "explosion_down",
       "price": 199.45,
       "ema21": 203.1,
-      "ema50": 204.63,
+      "ema50": 204.64,
       "atr_pct": 0.013035
     },
     "AAPL": {
@@ -96,7 +96,7 @@
       "signal": "neutral",
       "price": 266.64,
       "ema21": 269.76,
-      "ema50": 269.09,
+      "ema50": 269.08,
       "atr_pct": 0.007211
     },
     "BTC-USD": {
@@ -105,9 +105,9 @@
       "volatility": "high",
       "signal": "neutral",
       "price": 67276.68,
-      "ema21": 65612.15,
-      "ema50": 65825.81,
-      "atr_pct": 0.009876
+      "ema21": 65612.2,
+      "ema50": 65825.89,
+      "atr_pct": 0.009877
     },
     "ETH-USD": {
       "score": 65,
@@ -117,7 +117,7 @@
       "price": 1968.89,
       "ema21": 1922.99,
       "ema50": 1938.28,
-      "atr_pct": 0.011821
+      "atr_pct": 0.011811
     },
     "SOL-USD": {
       "score": 65,
@@ -125,9 +125,9 @@
       "volatility": "high",
       "signal": "neutral",
       "price": 84.5453,
-      "ema21": 81.9155,
+      "ema21": 81.9154,
       "ema50": 82.4784,
-      "atr_pct": 0.011831
+      "atr_pct": 0.01183
     },
     "XRP-USD": {
       "score": 65,
@@ -137,7 +137,7 @@
       "price": 1.3832,
       "ema21": 1.3442,
       "ema50": 1.3569,
-      "atr_pct": 0.011045
+      "atr_pct": 0.011049
     },
     "BNB-USD": {
       "score": 65,
@@ -147,7 +147,7 @@
       "price": 618.69,
       "ema21": 608.67,
       "ema50": 610.85,
-      "atr_pct": 0.006859
+      "atr_pct": 0.006858
     }
   }
 }
