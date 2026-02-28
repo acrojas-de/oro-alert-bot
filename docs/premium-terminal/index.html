@@ -1,1 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Premium Terminal V1</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
 
+    header {
+      padding: 15px;
+      background: #1e293b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    select {
+      padding: 6px 10px;
+      background: #0f172a;
+      color: white;
+      border: 1px solid #334155;
+      border-radius: 6px;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h2>Premium Terminal V1 (1H)</h2>
+  <select id="assetSelect"></select>
+</header>
+
+<div class="content">
+  <div class="card">
+    <h3 id="assetName">Selecciona un activo</h3>
+    <p>Timeframe fijo: 1H</p>
+  </div>
+</div>
+
+<script>
+async function loadWatchlist() {
+  const response = await fetch('watchlist.json');
+  const data = await response.json();
+
+  const select = document.getElementById("assetSelect");
+
+  for (const category in data) {
+    const group = document.createElement("optgroup");
+    group.label = category;
+
+    data[category].forEach(asset => {
+      const option = document.createElement("option");
+      option.value = asset.symbol;
+      option.textContent = asset.name;
+      group.appendChild(option);
+    });
+
+    select.appendChild(group);
+  }
+
+  select.addEventListener("change", () => {
+    document.getElementById("assetName").textContent =
+      select.options[select.selectedIndex].text;
+  });
+}
+
+loadWatchlist();
+</script>
+
+</body>
+</html>
