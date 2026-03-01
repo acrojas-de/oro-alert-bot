@@ -409,15 +409,19 @@ function buildRadar() {
     const ema21Txt = (data.ema21 ?? "—");
 
     div.innerHTML = `
-      <div class="radarLeft">
-        <div class="radarSym">${sym}</div>
-        <div class="radarMeta">Señal: <span style="color:${color};font-weight:800;">${data.signal ?? "—"}</span></div>
-      </div>
-      <div class="radarRight">
-        <div class="radarPrice" style="color:${color};">${priceTxt}</div>
-        <div class="radarEma">EMA21: ${ema21Txt}</div>
-      </div>
-    `;
+  <div style="font-weight:800;">${sym}</div>
+  <div style="font-size:12px;color:#94a3b8;">
+    ${data.signal ?? "—"}
+  </div>
+  <div style="text-align:right;">
+    <div style="color:${color};font-weight:800;">
+      ${data.price ?? "—"}
+    </div>
+    <div style="font-size:11px;color:#94a3b8;">
+      EMA21 ${data.ema21 ?? "—"}
+    </div>
+  </div>
+`;
 
     div.addEventListener("click", () => {
       currentAsset = sym;
