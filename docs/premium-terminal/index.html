@@ -313,23 +313,33 @@ async function loadData() {
 const { iso, ts } = parseUpdatedTs(macroData);
 const now = Date.now();
 
-if (iso && ts){
+if (iso && ts) {
   const age = now - ts;
-  let level = "good";
-if (age > 10*60_000) level = "bad";
-else if (age > 5*60_000) level = "warn";
 
-  if (lastUpdatedISO && iso === lastUpdatedISO && lastUpdatedSeenAt && (now - lastUpdatedSeenAt) > FREEZE_WARN_MS){
-  setHealth(`⚠️ Datos congelados: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`, "bad");
-} 
-  else {
-  setHealth(`✅ OK: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`, level);
-}
+  let level = "good";
+  if (age > 10 * 60_000) level = "bad";
+  else if (age > 5 * 60_000) level = "warn";
+
+  const frozen =
+    lastUpdatedISO &&
+    iso === lastUpdatedISO &&
+    lastUpdatedSeenAt &&
+    (now - lastUpdatedSeenAt) > FREEZE_WARN_MS;
+
+  if (frozen) {
+    setHealth(
+      `⚠️ Datos congelados: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`,
+      "bad"
+    );
   } else {
-    setHealth(`✅ OK: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`);
+    setHealth(
+      `✅ OK: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`,
+      level
+    );
   }
 
-  if (iso !== lastUpdatedISO){
+  // memoriza “updated” para detectar congelación
+  if (iso !== lastUpdatedISO) {
     lastUpdatedISO = iso;
     lastUpdatedSeenAt = now;
   } else if (!lastUpdatedSeenAt) {
