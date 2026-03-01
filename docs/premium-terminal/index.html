@@ -684,8 +684,7 @@
 
         if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {} };
         if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
-        if (!macroData.series || typeof macroData.series !== "object") 
-    macroData.series = {};
+        if (!macroData.series || typeof macroData.series !== "object") macroData.series = {};
         const sel = document.getElementById("assetSelect");
         if (!currentAsset && sel) currentAsset = sel.value;
 
