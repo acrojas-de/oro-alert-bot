@@ -463,24 +463,31 @@ function updateAssetView() {
   };
 
   // Sin datos
-  if (!assetData) {
-    title.textContent += " (sin datos aún)";
-    if (uiTrend) uiTrend.textContent = "—";
-    if (uiVol) uiVol.textContent = "—";
-    if (uiSignal) uiSignal.textContent = `${sig} | score=${assetData.score}`;
-    if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
+if (!assetData) {
+  title.textContent += " (sin datos aún)";
+  if (uiTrend) uiTrend.textContent = "—";
+  if (uiVol) uiVol.textContent = "—";
+  if (uiSignal) uiSignal.textContent = "—";
+  if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
 
-    if (sigDot) sigDot.className = "dot";
+  if (sigDot) sigDot.className = "dot";
 
-    if (gScore) gScore.textContent = "—";
-    if (gFg) {
-      gFg.style.stroke = "#94a3b8";
-      gFg.style.strokeDashoffset = "251.2";
-    }
-
-    setState("neutral", "ESTADO", "Sin datos", "Esperando actualización");
-    return;
+  if (gScore) gScore.textContent = "—";
+  if (gFg) {
+    gFg.style.stroke = "#94a3b8";
+    gFg.style.strokeDashoffset = "251.2";
   }
+
+  // quita tintes
+  const mainCard = document.getElementById("mainCard");
+  if (mainCard) mainCard.classList.remove("tone-up","tone-down");
+
+  // quita colores gauge
+  document.body.classList.remove("gauge-red","gauge-amber","gauge-green");
+
+  setState("neutral", "ESTADO", "Sin datos", "Esperando actualización");
+  return;
+}
 
   const trend = String(assetData.trend ?? "—");
   const vol   = String(assetData.volatility ?? "—");
@@ -535,7 +542,7 @@ else if (vol.toLowerCase() === "high") paint(bVol, "#f59e0b");
 else paint(bVol, "#94a3b8");
   if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
 
-  const score = 85;
+  const score = Number(assetData.score ?? 0);
   const clamped = Math.max(0, Math.min(100, score));
   // ===== GAUGE COLOR POR SCORE =====
 document.body.classList.remove("gauge-red","gauge-amber","gauge-green");
