@@ -504,7 +504,7 @@
 
   <script>
     let watchlistData = {};
-    let macroData = { meta: {}, assets: {} };
+    let macroData = { meta: {}, assets: {}, series: {} };
     let currentAsset = null;
 
     let refreshTimer = null;
@@ -684,7 +684,8 @@
 
         if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {} };
         if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
-
+        if (!macroData.series || typeof macroData.series !== "object") 
+    macroData.series = {};
         const sel = document.getElementById("assetSelect");
         if (!currentAsset && sel) currentAsset = sel.value;
 
@@ -860,30 +861,29 @@
         setState("neutral", "NEUTRAL", "Mercado mixto", "Esperar mejor ventana");
       }
       
-              // ===== BLOOMBERG STRUCTURE (EMA) =====
-      try {
-        // Copia limpia del asset actual
-        const asset = { ...assetData };
+            // ===== BLOOMBERG STRUCTURE (EMA) =====
+try {
+  const asset = { ...assetData };
 
-        // Tu atr_pct viene en decimal (0.004 = 0.4%) -> convertir a %
-        if (asset.atr_pct != null) {
-          const v = Number(asset.atr_pct);
-          asset.atr_pct = (Number.isFinite(v) && v < 1) ? (v * 100) : v;
-        }
+  // atr_pct a %
+  if (asset.atr_pct != null) {
+    const v = Number(asset.atr_pct);
+    asset.atr_pct = (Number.isFinite(v) && v < 1) ? (v * 100) : v;
+  }
 
-        // Si falta ema50, no rompemos (fallback)
-        if (asset.ema50 == null) asset.ema50 = asset.ema21;
+  if (asset.ema50 == null) asset.ema50 = asset.ema21;
 
-       // series viene del JSON: premium_out.series
-    const sym = currentAsset;
-    const series = (macroData && macroData.series && macroData.series[sym]) ? macroData.series[sym] : null;
+  // ✅ series correcta desde TU macroData (macro_data.json)
+  const sym = currentAsset; 
+  const seriesArr = (macroData && macroData.series && macroData.series[sym]) ? macroData.series[sym] : null;
 
-    renderBloombergStructure(asset, series);
-        
-      } catch (e) {
-        console.warn("Bloomberg Structure error:", e);
-      } 
-    }
+  console.log("SERIES OK?", sym, Array.isArray(seriesArr), seriesArr?.length);
+
+  renderBloombergStructure(asset, seriesArr);
+
+} catch (e) {
+  console.warn("Bloomberg Structure error:", e);
+}
 
     function startAutoRefresh() {
       if (refreshTimer) clearInterval(refreshTimer);
@@ -1022,8 +1022,17 @@ function renderBloombergStructure(asset, series){
         : "Plan: no hay ventaja; conservar munición.";
 
   // Mini chart (canvas): price + EMA21 + EMA50
-  drawEmaCanvas("emaCanvas", series, { price, ema21, ema50 });
+  let parsedSeries = null;
+
+if (Array.isArray(series)) {
+  parsedSeries = {
+    price: series.map(x => x.price),
+    ema21: series.map(x => x.ema21),
+    ema50: series.map(x => x.ema50)
+  };
 }
+
+drawEmaCanvas("emaCanvas", parsedSeries, { price, ema21, ema50 });
 
 // Dibujo canvas sencillo (no depende de librerías)
 function drawEmaCanvas(canvasId, series, last){
