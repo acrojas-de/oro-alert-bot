@@ -225,6 +225,7 @@ def build_asset_metrics(symbol: str, period: str, interval: str) -> dict | None:
         i = last_closed_index(close)
         price = float(close.iloc[i])
 
+        e9  = float(ema(close, 9).iloc[i])
         e21 = float(ema(close, 21).iloc[i])
         # ema50 opcional si hay datos suficientes
         e50_series = ema(close, 50)
@@ -251,6 +252,7 @@ def build_asset_metrics(symbol: str, period: str, interval: str) -> dict | None:
             "volatility": classify_volatility(atr_pct_val),
             "signal": signal,
             "price": round(price, 4) if price < 100 else round(price, 2),
+            "ema9":  round(e9, 4) if e9 < 100 else round(e9, 2),
             "ema21": round(e21, 4) if e21 < 100 else round(e21, 2),
             "ema50": round(e50, 4) if e50 < 100 else round(e50, 2),
             "atr_pct": round(atr_pct_val, 6),
@@ -282,8 +284,11 @@ def main():
     g = float(gold.iloc[i_g])
     g_prev = float(gold.iloc[i_g - 1]) if len(gold) >= 3 else g
 
+    ema9_series  = ema(gold, 9)
     ema21_series = ema(gold, 21)
     ema50_series = ema(gold, 50)
+
+    g_ema9  = float(ema9_series.iloc[i_g])
     g_ema21 = float(ema21_series.iloc[i_g])
     g_ema50 = float(ema50_series.iloc[i_g])
 
@@ -533,6 +538,7 @@ def main():
             "volatility": "low" if atr_pct <= COMP_ATR_PCT else ("high" if atr_pct >= 0.003 else "medium"),
             "signal": "explosion_up" if (g > g_ema21 and g_ema21 > g_ema50) else ("explosion_down" if (g < g_ema21 and g_ema21 < g_ema50) else "neutral"),
             "price": round(g, 2),
+            "ema9": round(g_ema9, 2),
             "ema21": round(g_ema21, 2),
             "ema50": round(g_ema50, 2),
             "atr_pct": round(atr_pct, 6),
