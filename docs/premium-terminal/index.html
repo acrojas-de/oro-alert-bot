@@ -304,6 +304,96 @@
 .refreshBtn:active{
   transform: translateY(0);
 }
+
+   .bloomberg-structure{
+  margin-top:14px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:12px;
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.06));
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+
+.bb-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  margin-bottom:10px;
+}
+.bb-title{
+  font-weight:700;
+  letter-spacing:.12em;
+  font-size:12px;
+  opacity:.9;
+}
+.bb-sub{
+  font-size:12px;
+  opacity:.75;
+}
+
+.bb-chart-wrap{
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  padding:10px;
+  background: rgba(0,0,0,.18);
+}
+
+.bb-meters{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:10px;
+}
+.bb-meter{
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  padding:10px;
+  background: rgba(0,0,0,.14);
+}
+.bb-meter-label{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  opacity:.9;
+  margin-bottom:8px;
+}
+.bb-bar{
+  height:10px;
+  border-radius:999px;
+  background: rgba(255,255,255,.08);
+  overflow:hidden;
+}
+.bb-bar-fill{
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  background: rgba(130,255,180,.75); /* base; luego JS cambia */
+  box-shadow: 0 0 20px rgba(130,255,180,.25);
+}
+.bb-meter-hint{
+  margin-top:8px;
+  font-size:12px;
+  opacity:.75;
+}
+
+.bb-decision{
+  margin-top:10px;
+  border-radius:16px;
+  padding:12px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+}
+.bb-decision-mode{
+  font-weight:800;
+  font-size:14px;
+  letter-spacing:.08em;
+  margin-bottom:6px;
+}
+.bb-decision-line{
+  font-size:12px;
+  opacity:.85;
+  line-height:1.35;
+} 
     
   </style>
 </head>
@@ -354,6 +444,49 @@
               <text id="gLabel" x="100" y="98" text-anchor="middle" class="gLabel">Score</text>
             </svg>
           </div>
+
+                <!-- ===== BLOOMBERG STRUCTURE (EMA) ===== -->
+      <section class="bloomberg-structure">
+        <div class="bb-head">
+          <div class="bb-title">STRUCTURE</div>
+          <div class="bb-sub" id="bbRegime">—</div>
+        </div>
+
+        <div class="bb-chart-wrap">
+          <canvas id="emaCanvas" height="88"></canvas>
+        </div>
+
+        <div class="bb-meters">
+          <div class="bb-meter">
+            <div class="bb-meter-label">
+              <span>EMA SPREAD</span>
+              <span id="bbSpreadVal">—</span>
+            </div>
+            <div class="bb-bar">
+              <div class="bb-bar-fill" id="bbSpreadFill"></div>
+            </div>
+            <div class="bb-meter-hint" id="bbSpreadHint">—</div>
+          </div>
+
+          <div class="bb-meter">
+            <div class="bb-meter-label">
+              <span>RISK (ATR%)</span>
+              <span id="bbAtrVal">—</span>
+            </div>
+            <div class="bb-bar">
+              <div class="bb-bar-fill" id="bbAtrFill"></div>
+            </div>
+            <div class="bb-meter-hint" id="bbAtrHint">—</div>
+          </div>
+        </div>
+
+        <div class="bb-decision" id="bbDecision">
+          <div class="bb-decision-mode" id="bbMode">—</div>
+          <div class="bb-decision-line" id="bbLine1">—</div>
+          <div class="bb-decision-line" id="bbLine2">—</div>
+        </div>
+      </section>
+        
         </div>
 
         <div class="rightPane">
@@ -725,6 +858,26 @@
       } else {
         setState("neutral", "NEUTRAL", "Mercado mixto", "Esperar mejor ventana");
       }
+      
+              // ===== BLOOMBERG STRUCTURE (EMA) =====
+      try {
+        // Copia limpia del asset actual
+        const asset = { ...assetData };
+
+        // Tu atr_pct viene en decimal (0.004 = 0.4%) -> convertir a %
+        if (asset.atr_pct != null) {
+          const v = Number(asset.atr_pct);
+          asset.atr_pct = (Number.isFinite(v) && v < 1) ? (v * 100) : v;
+        }
+
+        // Si falta ema50, no rompemos (fallback)
+        if (asset.ema50 == null) asset.ema50 = asset.ema21;
+
+        // Aún no tienes series -> null
+        renderBloombergStructure(asset, null);
+      } catch (e) {
+        console.warn("Bloomberg Structure error:", e);
+      } 
     }
 
     function startAutoRefresh() {
@@ -750,6 +903,201 @@
       loadData();
       startAutoRefresh();
     });
+
+    function pct(n){ return (n*100).toFixed(2) + "%"; }
+function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+
+// Clasificador de régimen Bloomberg-style
+function calcRegime({signal, score, ema21, ema50, atr_pct, spread_pct}) {
+  const trendBull = ema21 > ema50;
+  const highScore = score >= 75;
+  const medScore  = score >= 60 && score < 75;
+
+  const lowVol = atr_pct !== null && atr_pct <= 0.7;
+  const highVol = atr_pct !== null && atr_pct >= 1.2;
+
+  const compression = spread_pct !== null && spread_pct < 0.15; // % muy pegadas
+  const healthyExp  = spread_pct !== null && spread_pct >= 0.15 && spread_pct <= 0.80;
+  const extended    = spread_pct !== null && spread_pct > 0.80;
+
+  // Decisión base
+  if (highScore && !highVol && healthyExp && (signal === "explosion_up" || signal === "explosion_down")) {
+    return { mode: "MODO ATAQUE", sub: trendBull ? "Bull Expansion" : "Bear Expansion" };
+  }
+  if (compression && (medScore || highScore)) {
+    return { mode: "MODO VIGILANCIA", sub: "Compression / Pre-break" };
+  }
+  if (highVol || extended) {
+    return { mode: "MODO DEFENSA", sub: "High Risk / Extended" };
+  }
+  return { mode: "MODO ESPERA", sub: "No Edge" };
+}
+
+function setBar(el, value01, tone){
+  el.style.width = (value01*100).toFixed(0) + "%";
+  // tono: "green"|"yellow"|"red"
+  if (tone==="green") el.style.background = "rgba(130,255,180,.78)";
+  if (tone==="yellow") el.style.background = "rgba(255,210,120,.78)";
+  if (tone==="red") el.style.background = "rgba(255,120,140,.78)";
+}
+
+function renderBloombergStructure(asset, series){
+  // asset: {price, ema21, ema50, atr_pct, score, signal}
+  // series: {price:[], ema21:[], ema50:[]} (si no tienes serie, igual pintamos 1 punto con fallback)
+
+  const price = Number(asset.price);
+  const ema21 = Number(asset.ema21);
+  const ema50 = Number(asset.ema50);
+
+  const atrPct = asset.atr_pct==null ? null : Number(asset.atr_pct); // ya viene convertido a % desde updateAssetView
+  const score  = asset.score==null ? 0 : Number(asset.score);
+  const signal = asset.signal || "neutral";
+
+  // spread % respecto al precio
+  const spreadPct = (Number.isFinite(price) && price!==0) ? (Math.abs(ema21-ema50)/price)*100 : null;
+
+  // Regime
+  const reg = calcRegime({
+    signal, score, ema21, ema50,
+    atr_pct: atrPct,
+    spread_pct: spreadPct
+  });
+
+  document.getElementById("bbRegime").textContent = reg.sub;
+
+  // Medidor Spread: escala 0 → 1.2%
+  const spreadNorm = spreadPct==null ? 0 : clamp01(spreadPct/1.2);
+  document.getElementById("bbSpreadVal").textContent = spreadPct==null ? "—" : spreadPct.toFixed(2) + "%";
+
+  let spreadTone = "green";
+  let spreadHint = "Expansión saludable";
+  if (spreadPct != null && spreadPct < 0.15){ spreadTone="yellow"; spreadHint="Compresión: posible ruptura"; }
+  if (spreadPct != null && spreadPct > 0.80){ spreadTone="red"; spreadHint="Extendido: riesgo de pullback"; }
+
+  setBar(document.getElementById("bbSpreadFill"), spreadNorm, spreadTone);
+  document.getElementById("bbSpreadHint").textContent = spreadHint;
+
+  // Medidor ATR%: escala 0 → 2.0%
+  const atrNorm = atrPct==null ? 0 : clamp01(atrPct/2.0);
+  document.getElementById("bbAtrVal").textContent = atrPct==null ? "—" : atrPct.toFixed(2) + "%";
+
+  let atrTone = "green";
+  let atrHint = "Riesgo bajo/normal";
+  if (atrPct != null && atrPct > 0.9){ atrTone="yellow"; atrHint="Riesgo medio: cuidado entradas tarde"; }
+  if (atrPct != null && atrPct > 1.3){ atrTone="red"; atrHint="Riesgo alto: evita mercado sucio"; }
+
+  setBar(document.getElementById("bbAtrFill"), atrNorm, atrTone);
+  document.getElementById("bbAtrHint").textContent = atrHint;
+
+  // Decisión grande (texto)
+  const modeEl = document.getElementById("bbMode");
+  const l1 = document.getElementById("bbLine1");
+  const l2 = document.getElementById("bbLine2");
+
+  modeEl.textContent = reg.mode;
+
+  // Color por modo
+  const box = document.getElementById("bbDecision");
+  if (reg.mode==="MODO ATAQUE"){ box.style.borderColor="rgba(130,255,180,.30)"; }
+  if (reg.mode==="MODO VIGILANCIA"){ box.style.borderColor="rgba(255,210,120,.30)"; }
+  if (reg.mode==="MODO DEFENSA"){ box.style.borderColor="rgba(255,120,140,.30)"; }
+  if (reg.mode==="MODO ESPERA"){ box.style.borderColor="rgba(180,180,255,.22)"; }
+
+  const trendTxt = (ema21>ema50) ? "EMA21 > EMA50 (Bull)" : "EMA21 < EMA50 (Bear)";
+  l1.textContent = `${trendTxt} | Señal: ${signal.toUpperCase()} | Score: ${score.toFixed(0)}`;
+  l2.textContent = (reg.mode==="MODO ATAQUE")
+    ? "Plan: buscar entrada en retroceso/control (no perseguir vela)."
+    : (reg.mode==="MODO VIGILANCIA")
+      ? "Plan: esperar confirmación (ruptura + cierre) antes de actuar."
+      : (reg.mode==="MODO DEFENSA")
+        ? "Plan: reducir riesgo, evitar entradas impulsivas, esperar limpieza."
+        : "Plan: no hay ventaja; conservar munición.";
+
+  // Mini chart (canvas): price + EMA21 + EMA50
+  drawEmaCanvas("emaCanvas", series, { price, ema21, ema50 });
+}
+
+// Dibujo canvas sencillo (no depende de librerías)
+function drawEmaCanvas(canvasId, series, last){
+  const c = document.getElementById(canvasId);
+  if (!c) return;
+  const ctx = c.getContext("2d");
+  const w = c.width = c.parentElement.clientWidth - 2;
+  const h = c.height;
+
+  // Fondo
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = "rgba(0,0,0,.08)";
+  ctx.fillRect(0,0,w,h);
+
+  const p = (series && series.price && series.price.length) ? series.price : [last.price];
+  const e21 = (series && series.ema21 && series.ema21.length) ? series.ema21 : [last.ema21];
+  const e50 = (series && series.ema50 && series.ema50.length) ? series.ema50 : [last.ema50];
+
+  const n = Math.max(p.length, e21.length, e50.length);
+  const get = (arr,i)=> arr[Math.min(arr.length-1,i)];
+
+  // rango
+  let min=Infinity,max=-Infinity;
+  for(let i=0;i<n;i++){
+    const a=[get(p,i),get(e21,i),get(e50,i)];
+    a.forEach(v=>{ min=Math.min(min,v); max=Math.max(max,v); });
+  }
+  if (!Number.isFinite(min) || !Number.isFinite(max) || min===max){ min-=1; max+=1; }
+
+  const X = i => (i/(n-1||1))*(w-16)+8;
+  const Y = v => (h-10) - ((v-min)/(max-min))*(h-20);
+
+  // banda entre EMAs (sombra institucional)
+  ctx.beginPath();
+  for(let i=0;i<n;i++){
+    const x=X(i), y=Y(get(e21,i));
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  for(let i=n-1;i>=0;i--){
+    const x=X(i), y=Y(get(e50,i));
+    ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  ctx.fillStyle = (last.ema21>last.ema50) ? "rgba(130,255,180,.10)" : "rgba(255,120,140,.10)";
+  ctx.fill();
+
+  // ema21
+  ctx.beginPath();
+  for(let i=0;i<n;i++){
+    const x=X(i), y=Y(get(e21,i));
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle = "rgba(130,255,180,.65)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // ema50
+  ctx.beginPath();
+  for(let i=0;i<n;i++){
+    const x=X(i), y=Y(get(e50,i));
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle = "rgba(180,180,255,.55)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // precio
+  ctx.beginPath();
+  for(let i=0;i<n;i++){
+    const x=X(i), y=Y(get(p,i));
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle = "rgba(255,255,255,.55)";
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // último punto
+  ctx.beginPath();
+  ctx.arc(X(n-1), Y(get(p,n-1)), 2.6, 0, Math.PI*2);
+  ctx.fillStyle = "rgba(255,255,255,.85)";
+  ctx.fill();
+}
   </script>
 </body>
 </html>
