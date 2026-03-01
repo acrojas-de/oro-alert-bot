@@ -30,8 +30,6 @@
       border-radius: 6px;
     }
 
-    <button id="refreshBtn" class="refreshBtn">↻ Refresh</button>
-    
     .content { padding: 20px; }
 
     .card {
@@ -399,11 +397,14 @@
 </head>
 
 <body>
-  <header>
-    <h2 style="margin:0;">Premium Terminal V1 (1H)</h2>
-    <select id="assetSelect"></select>
-    <div id="dataHealth" style="opacity:.85;font-size:12px;"></div>
-  </header>
+ <header>
+  <h2 style="margin:0;">Premium Terminal V1 (1H)</h2>
+  <select id="assetSelect"></select>
+
+  <button id="refreshBtn" class="refreshBtn">↻ Refresh</button>
+
+  <div id="dataHealth" style="opacity:.85;font-size:12px;"></div>
+</header>
 
   <div class="content">
     <div id="mainCard" class="card">
@@ -444,49 +445,6 @@
               <text id="gLabel" x="100" y="98" text-anchor="middle" class="gLabel">Score</text>
             </svg>
           </div>
-
-                <!-- ===== BLOOMBERG STRUCTURE (EMA) ===== -->
-      <section class="bloomberg-structure">
-        <div class="bb-head">
-          <div class="bb-title">STRUCTURE</div>
-          <div class="bb-sub" id="bbRegime">—</div>
-        </div>
-
-        <div class="bb-chart-wrap">
-          <canvas id="emaCanvas" height="88"></canvas>
-        </div>
-
-        <div class="bb-meters">
-          <div class="bb-meter">
-            <div class="bb-meter-label">
-              <span>EMA SPREAD</span>
-              <span id="bbSpreadVal">—</span>
-            </div>
-            <div class="bb-bar">
-              <div class="bb-bar-fill" id="bbSpreadFill"></div>
-            </div>
-            <div class="bb-meter-hint" id="bbSpreadHint">—</div>
-          </div>
-
-          <div class="bb-meter">
-            <div class="bb-meter-label">
-              <span>RISK (ATR%)</span>
-              <span id="bbAtrVal">—</span>
-            </div>
-            <div class="bb-bar">
-              <div class="bb-bar-fill" id="bbAtrFill"></div>
-            </div>
-            <div class="bb-meter-hint" id="bbAtrHint">—</div>
-          </div>
-        </div>
-
-        <div class="bb-decision" id="bbDecision">
-          <div class="bb-decision-mode" id="bbMode">—</div>
-          <div class="bb-decision-line" id="bbLine1">—</div>
-          <div class="bb-decision-line" id="bbLine2">—</div>
-        </div>
-      </section>
-        
         </div>
 
         <div class="rightPane">
@@ -495,6 +453,49 @@
             <div class="radarHint">Señal · Precio · EMA21</div>
           </div>
           <div id="radarList" class="radarList"></div>
+
+          <!-- ===== BLOOMBERG STRUCTURE (EMA) ===== -->
+<section class="bloomberg-structure">
+  <div class="bb-head">
+    <div class="bb-title">STRUCTURE</div>
+    <div class="bb-sub" id="bbRegime">—</div>
+  </div>
+
+  <div class="bb-chart-wrap">
+    <canvas id="emaCanvas" height="88"></canvas>
+  </div>
+
+  <div class="bb-meters">
+    <div class="bb-meter">
+      <div class="bb-meter-label">
+        <span>EMA SPREAD</span>
+        <span id="bbSpreadVal">—</span>
+      </div>
+      <div class="bb-bar">
+        <div class="bb-bar-fill" id="bbSpreadFill"></div>
+      </div>
+      <div class="bb-meter-hint" id="bbSpreadHint">—</div>
+    </div>
+
+    <div class="bb-meter">
+      <div class="bb-meter-label">
+        <span>RISK (ATR%)</span>
+        <span id="bbAtrVal">—</span>
+      </div>
+      <div class="bb-bar">
+        <div class="bb-bar-fill" id="bbAtrFill"></div>
+      </div>
+      <div class="bb-meter-hint" id="bbAtrHint">—</div>
+    </div>
+  </div>
+
+  <div class="bb-decision" id="bbDecision">
+    <div class="bb-decision-mode" id="bbMode">—</div>
+    <div class="bb-decision-line" id="bbLine1">—</div>
+    <div class="bb-decision-line" id="bbLine2">—</div>
+  </div>
+</section>
+          
         </div>
       </div>
 
@@ -900,9 +901,12 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      loadData();
-      startAutoRefresh();
-    });
+  loadData();
+  startAutoRefresh();
+
+  const rb = document.getElementById("refreshBtn");
+  if (rb) rb.addEventListener("click", loadData);
+});
 
     function pct(n){ return (n*100).toFixed(2) + "%"; }
 function clamp01(x){ return Math.max(0, Math.min(1, x)); }
