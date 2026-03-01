@@ -1,6 +1,6 @@
 {
   "meta": {
-    "updated_utc": "2026-03-01T21:01:41+00:00",
+    "updated_utc": "2026-03-01T21:31:44+00:00",
     "timeframe": "1h",
     "source": "macro_bot.py"
   },
@@ -56,7 +56,7 @@
       "signal": "explosion_down",
       "price": 393.8,
       "ema21": 396.06,
-      "ema50": 396.68,
+      "ema50": 396.73,
       "atr_pct": 0.007922
     },
     "GOOGL": {
@@ -66,8 +66,8 @@
       "signal": "explosion_down",
       "price": 308.1,
       "ema21": 308.34,
-      "ema50": 309.4,
-      "atr_pct": 0.008777
+      "ema50": 309.39,
+      "atr_pct": 0.008778
     },
     "NVDA": {
       "score": 35,
@@ -77,7 +77,7 @@
       "price": 178.9,
       "ema21": 185.45,
       "ema50": 187.66,
-      "atr_pct": 0.01184
+      "atr_pct": 0.011839
     },
     "AMD": {
       "score": 35,
@@ -86,7 +86,7 @@
       "signal": "explosion_down",
       "price": 199.45,
       "ema21": 203.1,
-      "ema50": 204.63,
+      "ema50": 204.64,
       "atr_pct": 0.013035
     },
     "AAPL": {
@@ -96,7 +96,7 @@
       "signal": "neutral",
       "price": 266.64,
       "ema21": 269.76,
-      "ema50": 269.09,
+      "ema50": 269.08,
       "atr_pct": 0.007211
     },
     "BTC-USD": {
@@ -104,20 +104,20 @@
       "trend": "bearish",
       "volatility": "high",
       "signal": "neutral",
-      "price": 65957.3,
-      "ema21": 66447.25,
-      "ema50": 66318.01,
-      "atr_pct": 0.00886
+      "price": 65328.14,
+      "ema21": 66345.41,
+      "ema50": 66279.12,
+      "atr_pct": 0.009225
     },
     "ETH-USD": {
       "score": 35,
       "trend": "bearish",
       "volatility": "high",
       "signal": "neutral",
-      "price": 1954.39,
-      "ema21": 1976.84,
-      "ema50": 1966.92,
-      "atr_pct": 0.012224
+      "price": 1913.14,
+      "ema21": 1971.05,
+      "ema50": 1964.81,
+      "atr_pct": 0.013276
     },
     "SOL-USD": {
       "score": 35,
@@ -134,20 +134,20 @@
       "trend": "bearish",
       "volatility": "high",
       "signal": "neutral",
-      "price": 1.3574,
-      "ema21": 1.3748,
-      "ema50": 1.372,
-      "atr_pct": 0.010317
+      "price": 1.3422,
+      "ema21": 1.3718,
+      "ema50": 1.3709,
+      "atr_pct": 0.010659
     },
     "BNB-USD": {
       "score": 35,
       "trend": "bearish",
       "volatility": "high",
       "signal": "neutral",
-      "price": 620.13,
-      "ema21": 621.71,
-      "ema50": 618.3,
-      "atr_pct": 0.005995
+      "price": 612.53,
+      "ema21": 620.87,
+      "ema50": 618.07,
+      "atr_pct": 0.00657
     }
   }
 }
