@@ -451,6 +451,7 @@ function updateAssetView() {
   title.textContent = assetName;
 
   const assetData = macroData.assets?.[currentAsset];
+  console.log("ASSET", currentAsset, "score=", assetData?.score, "trend=", assetData?.trend, "sig=", assetData?.signal);
 
   const setState = (pillClass, pillText, text, hint) => {
     if (uiStatePill) {
@@ -466,7 +467,7 @@ function updateAssetView() {
     title.textContent += " (sin datos aún)";
     if (uiTrend) uiTrend.textContent = "—";
     if (uiVol) uiVol.textContent = "—";
-    if (uiSignal) uiSignal.textContent = "—";
+    if (uiSignal) uiSignal.textContent = `${sig} | score=${assetData.score}`;
     if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
 
     if (sigDot) sigDot.className = "dot";
