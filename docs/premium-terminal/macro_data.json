@@ -1,6 +1,6 @@
 {
   "meta": {
-    "updated_utc": "2026-03-01T21:31:44+00:00",
+    "updated_utc": "2026-03-01T21:48:09+00:00",
     "timeframe": "1h",
     "source": "macro_bot.py"
   },
@@ -46,8 +46,8 @@
       "signal": "explosion_up",
       "price": 94.415,
       "ema21": 91.9171,
-      "ema50": 90.4696,
-      "atr_pct": 0.011665
+      "ema50": 90.4705,
+      "atr_pct": 0.011664
     },
     "MSFT": {
       "score": 35,
@@ -137,7 +137,7 @@
       "price": 1.3422,
       "ema21": 1.3718,
       "ema50": 1.3709,
-      "atr_pct": 0.010659
+      "atr_pct": 0.01066
     },
     "BNB-USD": {
       "score": 35,
