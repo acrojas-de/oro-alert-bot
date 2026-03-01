@@ -1,6 +1,6 @@
 {
   "meta": {
-    "updated_utc": "2026-03-01T19:40:55+00:00",
+    "updated_utc": "2026-03-01T19:52:28+00:00",
     "timeframe": "1h",
     "source": "macro_bot.py"
   },
@@ -46,8 +46,8 @@
       "signal": "explosion_up",
       "price": 94.415,
       "ema21": 91.9171,
-      "ema50": 90.4696,
-      "atr_pct": 0.011665
+      "ema50": 90.4705,
+      "atr_pct": 0.011664
     },
     "MSFT": {
       "score": 35,
@@ -56,7 +56,7 @@
       "signal": "explosion_down",
       "price": 393.8,
       "ema21": 396.06,
-      "ema50": 396.68,
+      "ema50": 396.73,
       "atr_pct": 0.007922
     },
     "GOOGL": {
@@ -66,8 +66,8 @@
       "signal": "explosion_down",
       "price": 308.1,
       "ema21": 308.34,
-      "ema50": 309.4,
-      "atr_pct": 0.008777
+      "ema50": 309.39,
+      "atr_pct": 0.008778
     },
     "NVDA": {
       "score": 35,
@@ -77,7 +77,7 @@
       "price": 178.9,
       "ema21": 185.45,
       "ema50": 187.66,
-      "atr_pct": 0.01184
+      "atr_pct": 0.011839
     },
     "AMD": {
       "score": 35,
@@ -86,7 +86,7 @@
       "signal": "explosion_down",
       "price": 199.45,
       "ema21": 203.1,
-      "ema50": 204.63,
+      "ema50": 204.64,
       "atr_pct": 0.013035
     },
     "AAPL": {
@@ -96,7 +96,7 @@
       "signal": "neutral",
       "price": 266.64,
       "ema21": 269.76,
-      "ema50": 269.09,
+      "ema50": 269.08,
       "atr_pct": 0.007211
     },
     "BTC-USD": {
@@ -105,9 +105,9 @@
       "volatility": "high",
       "signal": "neutral",
       "price": 66302.34,
-      "ema21": 66496.24,
-      "ema50": 66332.73,
-      "atr_pct": 0.008875
+      "ema21": 66496.12,
+      "ema50": 66332.65,
+      "atr_pct": 0.008866
     },
     "ETH-USD": {
       "score": 35,
@@ -117,7 +117,7 @@
       "price": 1975.51,
       "ema21": 1979.09,
       "ema50": 1967.43,
-      "atr_pct": 0.012043
+      "atr_pct": 0.012048
     },
     "SOL-USD": {
       "score": 35,
@@ -147,7 +147,7 @@
       "price": 623.31,
       "ema21": 621.86,
       "ema50": 618.22,
-      "atr_pct": 0.005999
+      "atr_pct": 0.005997
     }
   }
 }
