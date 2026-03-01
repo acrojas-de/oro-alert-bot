@@ -338,6 +338,7 @@ def main():
         "score": score,
         "bias": bias,
         "gold": round(g, 2),
+        "gold_ema9": round(g_ema9, 2),
         "gold_ema21": round(g_ema21, 2),
         "gold_ema50": round(g_ema50, 2),
         "gold_rsi14": round(g_rsi14, 2),
@@ -593,6 +594,23 @@ premium_series = {
             "ema21": r.get("gold_ema21"),
             "ema50": r.get("gold_ema50"),
             # ema9 no existe en row todavía -> (por ahora no lo metemos aquí)
+        }
+        for r in tail
+        if r.get("gold") is not None
+    ]
+}
+
+    # === mini histórico para pintar EMAs (últimos 120 puntos) ===
+tail = series[-120:] if len(series) > 120 else series
+
+premium_series = {
+    GOLD_TICKER: [
+        {
+            "ts": r.get("ts"),
+            "price": r.get("gold"),
+            "ema9": r.get("gold_ema9"),
+            "ema21": r.get("gold_ema21"),
+            "ema50": r.get("gold_ema50"),
         }
         for r in tail
         if r.get("gold") is not None
