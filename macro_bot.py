@@ -582,9 +582,27 @@ def main():
         if m:
             premium_assets[sym] = m
 
+    # === mini histórico para pintar EMAs (últimos 120 puntos) ===
+tail = series[-120:] if len(series) > 120 else series
+
+premium_series = {
+    GOLD_TICKER: [
+        {
+            "ts": r.get("ts"),
+            "price": r.get("gold"),
+            "ema21": r.get("gold_ema21"),
+            "ema50": r.get("gold_ema50"),
+            # ema9 no existe en row todavía -> (por ahora no lo metemos aquí)
+        }
+        for r in tail
+        if r.get("gold") is not None
+    ]
+}
+
     premium_out = {
         "meta": {"updated_utc": now_ts, "timeframe": "1h", "source": "macro_bot.py"},
-        "assets": premium_assets
+        "assets": premium_assets,
+        "series": premium_series,
     }
 
     os.makedirs(os.path.dirname(premium_path), exist_ok=True)
