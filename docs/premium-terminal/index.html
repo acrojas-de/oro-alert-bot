@@ -327,7 +327,8 @@
       </div>
     </div>
 
-
+<!-- ===== RADAR MODERNO V2 ===== -->
+<div id="radarList" class="radarList"></div>
     
   </div>
 </div>
@@ -348,104 +349,50 @@ const FREEZE_WARN_MS = 10 * 60_000; // 10 min
 let lastUpdatedISO = null;
 let lastUpdatedSeenAt = null; // timestamp local cuando vimos ese updated por última vez
 
-  async function fetchJson(url) {
-  const r = await fetch(url + '?v=' + Date.now());
+async function fetchJson(url) {
+  const r = await fetch(url + "?v=" + Date.now());
   if (!r.ok) throw new Error(url + " HTTP " + r.status);
   return await r.json();
 }
 
-function setHealth(text, level="good"){
+function setHealth(text, level = "good") {
   const el = document.getElementById("dataHealth");
   if (!el) return;
   el.textContent = text;
-  el.classList.remove("good","warn","bad");
+  el.classList.remove("good", "warn", "bad");
   el.classList.add(level);
 }
 
-function fmtAge(ms){
+function fmtAge(ms) {
   const s = Math.max(0, Math.floor(ms / 1000));
   const m = Math.floor(s / 60);
   const r = s % 60;
   return m <= 0 ? `${s}s` : `${m}m ${r}s`;
 }
 
-function parseUpdatedTs(macro){
+function parseUpdatedTs(macro) {
   const iso = macro?.meta?.updated_utc || macro?.meta?.updated || macro?.updated || null;
   if (!iso) return { iso: null, ts: null };
   const ts = Date.parse(iso);
   return { iso, ts: Number.isFinite(ts) ? ts : null };
-}  
-  
-async function loadData() {
-  try {
-    // watchlist solo una vez (para no resetear selector)
-    if (!watchlistLoaded) {
-      watchlistData = await fetchJson('watchlist.json');
-      watchlistLoaded = true;
-      buildSelector();
-    }
-
-    // macro siempre
-   macroData = await fetchJson(JSON_URL);
-
-// ===== HEALTH CHECK =====
-const { iso, ts } = parseUpdatedTs(macroData);
-const now = Date.now();
-
-if (iso && ts) {
-  const age = now - ts;
-
-  let level = "good";
-  if (age > 10 * 60_000) level = "bad";
-  else if (age > 5 * 60_000) level = "warn";
-
-  const frozen =
-    lastUpdatedISO &&
-    iso === lastUpdatedISO &&
-    lastUpdatedSeenAt &&
-    (now - lastUpdatedSeenAt) > FREEZE_WARN_MS;
-
-  if (frozen) {
-    setHealth(
-      `⚠️ Datos congelados: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`,
-      "bad"
-    );
-  } else {
-    setHealth(
-      `✅ OK: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`,
-      level
-    );
-  }
-
-  // memoriza “updated” para detectar congelación
-  if (iso !== lastUpdatedISO) {
-    lastUpdatedISO = iso;
-    lastUpdatedSeenAt = now;
-  } else if (!lastUpdatedSeenAt) {
-    lastUpdatedSeenAt = now;
-  }
-} else {
-  setHealth(`⚠️ No encuentro updated en JSON | Fuente: ${JSON_URL}`, "warn");
 }
-    if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {} };
-    if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
 
-    // si aún no hay currentAsset, toma el del selector
-    const sel = document.getElementById("assetSelect");
-    if (!currentAsset && sel) currentAsset = sel.value;
-
-    updateAssetView();
-    buildRadar();
-
-    function buildRadar(){
+/* =========================
+   RADAR (GLOBAL ✅)
+   ========================= */
+function buildRadar() {
   const radar = document.getElementById("radarList");
-  if (!radar) return;
+  if (!radar) {
+    console.warn("No existe #radarList en el DOM (revisa el <div id='radarList'>)");
+    return;
+  }
 
   radar.innerHTML = "";
 
+  // de momento solo oro y bitcoin (como dijiste)
   const symbols = ["GC=F", "BTC-USD"];
 
-  symbols.forEach(sym => {
+  symbols.forEach((sym) => {
     const data = macroData.assets?.[sym];
     if (!data) return;
 
@@ -458,15 +405,27 @@ if (iso && ts) {
 
     div.style.borderColor = color;
 
+    const priceTxt = (data.price ?? "—");
+    const ema21Txt = (data.ema21 ?? "—");
+
     div.innerHTML = `
-      <span>${sym}</span>
-      <span style="color:${color}; font-weight:700;">
-        ${data.price ?? "—"}
-      </span>
+      <div class="radarLeft">
+        <div class="radarSym">${sym}</div>
+        <div class="radarMeta">Señal: <span style="color:${color};font-weight:800;">${data.signal ?? "—"}</span></div>
+      </div>
+      <div class="radarRight">
+        <div class="radarPrice" style="color:${color};">${priceTxt}</div>
+        <div class="radarEma">EMA21: ${ema21Txt}</div>
+      </div>
     `;
 
     div.addEventListener("click", () => {
       currentAsset = sym;
+
+      // sincroniza el selector arriba (si existe)
+      const sel = document.getElementById("assetSelect");
+      if (sel) sel.value = sym;
+
       updateAssetView();
     });
 
@@ -474,14 +433,9 @@ if (iso && ts) {
   });
 }
 
-  } catch (err) {
-    console.error(err);
-    setHealth(`❌ Error cargando JSON | Fuente: ${JSON_URL}`, "bad");
-    const title = document.getElementById("assetName");
-    if (title) title.textContent = "ERROR: " + err.message;
-  }
-}
-
+/* =========================
+   SELECTOR ✅ (sin radar dentro)
+   ========================= */
 function buildSelector() {
   const select = document.getElementById("assetSelect");
   if (!select) return;
@@ -492,7 +446,7 @@ function buildSelector() {
     const group = document.createElement("optgroup");
     group.label = category;
 
-    (watchlistData[category] || []).forEach(asset => {
+    (watchlistData[category] || []).forEach((asset) => {
       const option = document.createElement("option");
       option.value = asset.symbol;
       option.textContent = asset.name;
@@ -505,6 +459,8 @@ function buildSelector() {
   select.addEventListener("change", () => {
     currentAsset = select.value;
     updateAssetView();
+    // opcional: refresca radar al cambiar (no hace daño)
+    buildRadar();
   });
 
   // inicial
@@ -516,40 +472,113 @@ function beep() {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const o = ctx.createOscillator();
     const g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
+    o.connect(g);
+    g.connect(ctx.destination);
     o.type = "sine";
     o.frequency.value = 880;
     g.gain.value = 0.05;
     o.start();
-    setTimeout(() => { o.stop(); ctx.close(); }, 120);
+    setTimeout(() => {
+      o.stop();
+      ctx.close();
+    }, 120);
   } catch (e) {}
 }
 
+/* =========================
+   LOAD DATA ✅
+   ========================= */
+async function loadData() {
+  try {
+    // watchlist solo una vez
+    if (!watchlistLoaded) {
+      watchlistData = await fetchJson("watchlist.json");
+      watchlistLoaded = true;
+      buildSelector();
+    }
+
+    // macro siempre
+    macroData = await fetchJson(JSON_URL);
+
+    // ===== HEALTH CHECK =====
+    const { iso, ts } = parseUpdatedTs(macroData);
+    const now = Date.now();
+
+    if (iso && ts) {
+      const age = now - ts;
+
+      let level = "good";
+      if (age > 10 * 60_000) level = "bad";
+      else if (age > 5 * 60_000) level = "warn";
+
+      const frozen =
+        lastUpdatedISO &&
+        iso === lastUpdatedISO &&
+        lastUpdatedSeenAt &&
+        now - lastUpdatedSeenAt > FREEZE_WARN_MS;
+
+      if (frozen) {
+        setHealth(
+          `⚠️ Datos congelados: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`,
+          "bad"
+        );
+      } else {
+        setHealth(`✅ OK: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`, level);
+      }
+
+      if (iso !== lastUpdatedISO) {
+        lastUpdatedISO = iso;
+        lastUpdatedSeenAt = now;
+      } else if (!lastUpdatedSeenAt) {
+        lastUpdatedSeenAt = now;
+      }
+    } else {
+      setHealth(`⚠️ No encuentro updated en JSON | Fuente: ${JSON_URL}`, "warn");
+    }
+
+    if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {} };
+    if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
+
+    // si aún no hay currentAsset, toma el del selector
+    const sel = document.getElementById("assetSelect");
+    if (!currentAsset && sel) currentAsset = sel.value;
+
+    updateAssetView();
+    buildRadar();
+  } catch (err) {
+    console.error(err);
+    setHealth(`❌ Error cargando JSON | Fuente: ${JSON_URL}`, "bad");
+    const title = document.getElementById("assetName");
+    if (title) title.textContent = "ERROR: " + err.message;
+  }
+}
+
+/* =========================
+   UPDATE ASSET VIEW ✅ (tu lógica)
+   ========================= */
 function updateAssetView() {
   const select = document.getElementById("assetSelect");
-  const title  = document.getElementById("assetName");
+  const title = document.getElementById("assetName");
 
-  const uiTrend   = document.getElementById("uiTrend");
-  const uiVol     = document.getElementById("uiVol");
-  const uiSignal  = document.getElementById("uiSignal");
+  const uiTrend = document.getElementById("uiTrend");
+  const uiVol = document.getElementById("uiVol");
+  const uiSignal = document.getElementById("uiSignal");
   const uiUpdated = document.getElementById("uiUpdated");
 
   const gScore = document.getElementById("gScore");
-  const gFg    = document.getElementById("gFg");
+  const gFg = document.getElementById("gFg");
   const sigDot = document.getElementById("sigDot");
 
-  // Market State
   const uiStatePill = document.getElementById("uiStatePill");
   const uiStateText = document.getElementById("uiStateText");
   const uiStateHint = document.getElementById("uiStateHint");
 
   if (!select || !title) return;
 
-  // asegúrate de que currentAsset sea el value del select
   if (!currentAsset) currentAsset = select.value;
   if (select.value !== currentAsset) select.value = currentAsset;
 
-  const assetName = select.selectedOptions?.[0]?.textContent || "Activo";
+  const assetName = select.selectedOptions?.[0]?.textContent || currentAsset || "Activo";
   title.textContent = assetName;
 
   const assetData = macroData.assets?.[currentAsset];
@@ -564,112 +593,99 @@ function updateAssetView() {
     if (uiStateHint) uiStateHint.textContent = hint;
   };
 
-  // Sin datos
-if (!assetData) {
-  title.textContent += " (sin datos aún)";
-  if (uiTrend) uiTrend.textContent = "—";
-  if (uiVol) uiVol.textContent = "—";
-  if (uiSignal) uiSignal.textContent = "—";
-  if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
-
-  if (sigDot) sigDot.className = "dot";
-
-  if (gScore) gScore.textContent = "—";
-  if (gFg) {
-    gFg.style.stroke = "#94a3b8";
-    gFg.style.strokeDashoffset = "251.2";
+  if (!assetData) {
+    title.textContent += " (sin datos aún)";
+    if (uiTrend) uiTrend.textContent = "—";
+    if (uiVol) uiVol.textContent = "—";
+    if (uiSignal) uiSignal.textContent = "—";
+    if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
+    if (sigDot) sigDot.className = "dot";
+    if (gScore) gScore.textContent = "—";
+    if (gFg) {
+      gFg.style.stroke = "#94a3b8";
+      gFg.style.strokeDashoffset = "251.2";
+    }
+    const mainCard = document.getElementById("mainCard");
+    if (mainCard) mainCard.classList.remove("tone-up", "tone-down");
+    document.body.classList.remove("gauge-red", "gauge-amber", "gauge-green");
+    setState("neutral", "ESTADO", "Sin datos", "Esperando actualización");
+    return;
   }
-
-  // quita tintes
-  const mainCard = document.getElementById("mainCard");
-  if (mainCard) mainCard.classList.remove("tone-up","tone-down");
-
-  // quita colores gauge
-  document.body.classList.remove("gauge-red","gauge-amber","gauge-green");
-
-  setState("neutral", "ESTADO", "Sin datos", "Esperando actualización");
-  return;
-}
 
   const trend = String(assetData.trend ?? "—");
-  const vol   = String(assetData.volatility ?? "—");
-  const sig   = String(assetData.signal ?? "—");
-  // ===== CARD TINT POR SEÑAL =====
-const mainCard = document.getElementById("mainCard");
-if (mainCard){
-  mainCard.classList.remove("tone-up","tone-down");
-  if (sig === "explosion_up") mainCard.classList.add("tone-up");
-  if (sig === "explosion_down") mainCard.classList.add("tone-down");
-}
-  // Aviso si cambia señal
+  const vol = String(assetData.volatility ?? "—");
+  const sig = String(assetData.signal ?? "—");
+
+  const mainCard = document.getElementById("mainCard");
+  if (mainCard) {
+    mainCard.classList.remove("tone-up", "tone-down");
+    if (sig === "explosion_up") mainCard.classList.add("tone-up");
+    if (sig === "explosion_down") mainCard.classList.add("tone-down");
+  }
+
   const prevSig = lastSignal[currentAsset];
-
   if (prevSig && prevSig !== sig) {
-  console.log(`[ALERTA] ${currentAsset}: ${prevSig} -> ${sig}`);
-  beep();
-
-  if (sig === "explosion_up") {
-    showToast(`${assetName} – EXPLOSION UP`, "up");
+    console.log(`[ALERTA] ${currentAsset}: ${prevSig} -> ${sig}`);
+    beep();
+    if (sig === "explosion_up") showToast(`${assetName} – EXPLOSION UP`, "up");
+    if (sig === "explosion_down") showToast(`${assetName} – EXPLOSION DOWN`, "down");
   }
-  if (sig === "explosion_down") {
-    showToast(`${assetName} – EXPLOSION DOWN`, "down");
-  }
-}
   lastSignal[currentAsset] = sig;
 
-  // ===== COLOR CHIPS =====
-const bSig = document.getElementById("badgeSignal");
-const bTr  = document.getElementById("badgeTrend");
-const bVol = document.getElementById("badgeVol");
+  // chips
+  const bSig = document.getElementById("badgeSignal");
+  const bTr = document.getElementById("badgeTrend");
+  const bVol = document.getElementById("badgeVol");
 
-function paint(el, color){
-  if (!el) return;
-  el.style.borderColor = color;
-  el.style.color = color;
-}
+  function paint(el, color) {
+    if (!el) return;
+    el.style.borderColor = color;
+    el.style.color = color;
+  }
 
-// Señal
-if (sig === "explosion_up") paint(bSig, "#22c55e");
-else if (sig === "explosion_down") paint(bSig, "#ef4444");
-else paint(bSig, "#94a3b8");
+  if (sig === "explosion_up") paint(bSig, "#22c55e");
+  else if (sig === "explosion_down") paint(bSig, "#ef4444");
+  else paint(bSig, "#94a3b8");
 
-// Tendencia
-if (trend.toLowerCase() === "bullish") paint(bTr, "#22c55e");
-else if (trend.toLowerCase() === "bearish") paint(bTr, "#ef4444");
-else paint(bTr, "#94a3b8");
+  if (trend.toLowerCase() === "bullish") paint(bTr, "#22c55e");
+  else if (trend.toLowerCase() === "bearish") paint(bTr, "#ef4444");
+  else paint(bTr, "#94a3b8");
 
-// Volatilidad
-if (vol.toLowerCase() === "low") paint(bVol, "#22c55e");
-else if (vol.toLowerCase() === "high") paint(bVol, "#f59e0b");
-else paint(bVol, "#94a3b8");
+  if (vol.toLowerCase() === "low") paint(bVol, "#22c55e");
+  else if (vol.toLowerCase() === "high") paint(bVol, "#f59e0b");
+  else paint(bVol, "#94a3b8");
+
+  if (uiTrend) uiTrend.textContent = trend;
+  if (uiVol) uiVol.textContent = vol;
+  if (uiSignal) uiSignal.textContent = sig;
   if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
 
+  // gauge
   const score = Number(assetData.score ?? 0);
   const clamped = Math.max(0, Math.min(100, score));
-  // ===== GAUGE COLOR POR SCORE =====
-document.body.classList.remove("gauge-red","gauge-amber","gauge-green");
 
-if (clamped < 40) document.body.classList.add("gauge-red");
-else if (clamped <= 70) document.body.classList.add("gauge-amber");
-else document.body.classList.add("gauge-green");
+  document.body.classList.remove("gauge-red", "gauge-amber", "gauge-green");
+  if (clamped < 40) document.body.classList.add("gauge-red");
+  else if (clamped <= 70) document.body.classList.add("gauge-amber");
+  else document.body.classList.add("gauge-green");
+
   if (gScore) {
-  gScore.textContent = String(clamped);
-
-  // color del número según score
-  if (clamped < 40) gScore.style.fill = "#ef4444";        // rojo
-  else if (clamped <= 70) gScore.style.fill = "#f59e0b";  // naranja
-  else gScore.style.fill = "#22c55e";                     // verde
-}
+    gScore.textContent = String(clamped);
+    if (clamped < 40) gScore.style.fill = "#ef4444";
+    else if (clamped <= 70) gScore.style.fill = "#f59e0b";
+    else gScore.style.fill = "#22c55e";
+  }
 
   const total = 251.2;
   const offset = total * (1 - clamped / 100);
 
- let color = "#94a3b8";
-  if (clamped < 40) color = "#ef4444";        // rojo
-  else if (clamped <= 70) color = "#f59e0b";  // naranja
-  else color = "#22c55e";                     // verde
+  let color = "#94a3b8";
+  if (clamped < 40) color = "#ef4444";
+  else if (clamped <= 70) color = "#f59e0b";
+  else color = "#22c55e";
 
   if (gFg) {
+    gFg.style.stroke = color;
     gFg.style.strokeDasharray = String(total);
     gFg.style.strokeDashoffset = String(offset);
   }
@@ -680,9 +696,10 @@ else document.body.classList.add("gauge-green");
     if (sig === "explosion_down") sigDot.classList.add("down");
   }
 
-  const volLow = (vol.toLowerCase() === "low");
-  const bullish = (trend.toLowerCase() === "bullish");
-  const bearish = (trend.toLowerCase() === "bearish");
+  // Market state
+  const volLow = vol.toLowerCase() === "low";
+  const bullish = trend.toLowerCase() === "bullish";
+  const bearish = trend.toLowerCase() === "bearish";
 
   if (clamped >= 75 && bullish && sig === "explosion_up") {
     setState("up", "MOMENTUM", "Impulso fuerte", "Probable continuación (ojo pullbacks)");
@@ -702,7 +719,7 @@ function startAutoRefresh() {
   refreshTimer = setInterval(loadData, REFRESH_MS);
 }
 
- function showToast(message, type){
+function showToast(message, type) {
   const t = document.createElement("div");
   t.className = `toast ${type}`;
   t.textContent = message;
@@ -714,7 +731,7 @@ function startAutoRefresh() {
     t.classList.remove("show");
     setTimeout(() => t.remove(), 300);
   }, 4000);
-} 
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   loadData();
