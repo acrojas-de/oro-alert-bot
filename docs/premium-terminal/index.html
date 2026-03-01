@@ -213,6 +213,68 @@
   box-shadow: 0 0 0 1px rgba(239,68,68,.08), 0 12px 40px rgba(0,0,0,.25);
 }  
   #gFg { filter: drop-shadow(0 0 6px rgba(255,255,255,.18)); }  
+ /* ===== RADAR LIST (mini listado) ===== */
+.radarList{
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radarItem{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 12px;
+  border:1px solid #334155;
+  border-radius:12px;
+  background: rgba(15,23,42,0.35);
+  cursor:pointer;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+
+.radarItem:hover{
+  transform: translateY(-1px);
+  background: rgba(15,23,42,0.55);
+}
+
+.radarLeft{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.radarSym{
+  font-weight:800;
+  font-size:13px;
+}
+
+.radarMeta{
+  font-size:12px;
+  color:#94a3b8;
+}
+
+.radarRight{
+  text-align:right;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.radarPrice{
+  font-weight:800;
+  font-size:14px;
+}
+
+.radarEma{
+  font-size:12px;
+  color:#94a3b8;
+}
+
+.spark{
+  width:90px;
+  height:30px;
+}  
     
   </style>
 
@@ -265,6 +327,8 @@
       </div>
     </div>
 
+
+    
   </div>
 </div>
 
@@ -371,6 +435,44 @@ if (iso && ts) {
     if (!currentAsset && sel) currentAsset = sel.value;
 
     updateAssetView();
+    buildRadar();
+
+    function buildRadar(){
+  const radar = document.getElementById("radarList");
+  if (!radar) return;
+
+  radar.innerHTML = "";
+
+  const symbols = ["GC=F", "BTC-USD"];
+
+  symbols.forEach(sym => {
+    const data = macroData.assets?.[sym];
+    if (!data) return;
+
+    const div = document.createElement("div");
+    div.className = "radarItem";
+
+    let color = "#94a3b8";
+    if (data.signal === "explosion_up") color = "#22c55e";
+    if (data.signal === "explosion_down") color = "#ef4444";
+
+    div.style.borderColor = color;
+
+    div.innerHTML = `
+      <span>${sym}</span>
+      <span style="color:${color}; font-weight:700;">
+        ${data.price ?? "—"}
+      </span>
+    `;
+
+    div.addEventListener("click", () => {
+      currentAsset = sym;
+      updateAssetView();
+    });
+
+    radar.appendChild(div);
+  });
+}
 
   } catch (err) {
     console.error(err);
@@ -568,7 +670,6 @@ else document.body.classList.add("gauge-green");
   else color = "#22c55e";                     // verde
 
   if (gFg) {
-    gFg.style.stroke = color;
     gFg.style.strokeDasharray = String(total);
     gFg.style.strokeDashoffset = String(offset);
   }
