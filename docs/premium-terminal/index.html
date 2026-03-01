@@ -533,7 +533,7 @@ else if (vol.toLowerCase() === "high") paint(bVol, "#f59e0b");
 else paint(bVol, "#94a3b8");
   if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
 
-  const score = Number(assetData.score ?? 0);
+  const score = 85;
   const clamped = Math.max(0, Math.min(100, score));
   // ===== GAUGE COLOR POR SCORE =====
 document.body.classList.remove("gauge-red","gauge-amber","gauge-green");
