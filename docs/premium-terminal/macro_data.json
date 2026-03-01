@@ -1,6 +1,6 @@
 {
   "meta": {
-    "updated_utc": "2026-03-01T09:58:56+00:00",
+    "updated_utc": "2026-03-01T10:26:50+00:00",
     "timeframe": "1h",
     "source": "macro_bot.py"
   },
@@ -100,54 +100,54 @@
       "atr_pct": 0.007211
     },
     "BTC-USD": {
-      "score": 65,
-      "trend": "bullish",
+      "score": 35,
+      "trend": "bearish",
       "volatility": "high",
-      "signal": "explosion_up",
-      "price": 66539.45,
-      "ema21": 66536.18,
-      "ema50": 66257.57,
-      "atr_pct": 0.009414
+      "signal": "neutral",
+      "price": 66373.39,
+      "ema21": 66521.38,
+      "ema50": 66262.11,
+      "atr_pct": 0.009215
     },
     "ETH-USD": {
       "score": 65,
       "trend": "bullish",
       "volatility": "high",
       "signal": "explosion_up",
-      "price": 1984.52,
-      "ema21": 1971.33,
-      "ema50": 1958.99,
-      "atr_pct": 0.012095
+      "price": 1979.74,
+      "ema21": 1972.09,
+      "ema50": 1959.8,
+      "atr_pct": 0.011756
     },
     "SOL-USD": {
       "score": 65,
       "trend": "bullish",
       "volatility": "high",
       "signal": "explosion_up",
-      "price": 85.2859,
-      "ema21": 84.7813,
-      "ema50": 83.8237,
-      "atr_pct": 0.011846
+      "price": 84.9583,
+      "ema21": 84.7974,
+      "ema50": 83.8682,
+      "atr_pct": 0.011712
     },
     "XRP-USD": {
-      "score": 65,
-      "trend": "bullish",
+      "score": 35,
+      "trend": "bearish",
       "volatility": "high",
-      "signal": "explosion_up",
-      "price": 1.3804,
-      "ema21": 1.3784,
+      "signal": "neutral",
+      "price": 1.3723,
+      "ema21": 1.3779,
       "ema50": 1.3712,
-      "atr_pct": 0.011089
+      "atr_pct": 0.011044
     },
     "BNB-USD": {
       "score": 65,
       "trend": "bullish",
       "volatility": "high",
       "signal": "explosion_up",
-      "price": 620.4,
-      "ema21": 618.71,
-      "ema50": 615.48,
-      "atr_pct": 0.0066
+      "price": 620.17,
+      "ema21": 618.84,
+      "ema50": 615.67,
+      "atr_pct": 0.006452
     }
   }
 }
