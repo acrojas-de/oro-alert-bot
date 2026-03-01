@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Premium Terminal V1</title>
+
   <style>
     body {
       margin: 0;
@@ -17,6 +18,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
     }
 
     select {
@@ -34,6 +37,7 @@
       padding: 20px;
       border-radius: 12px;
       margin-bottom: 20px;
+      border: 1px solid rgba(148,163,184,0.12);
     }
 
     /* ===== Velocímetro ===== */
@@ -58,14 +62,14 @@
     }
 
     .gFg{
-       fill:none;
-       stroke: var(--gauge, #94a3b8);
-       stroke-width:14;
-       stroke-linecap:round;
-       stroke-dasharray: 251.2;
-       stroke-dashoffset: 251.2;
-       transition: stroke-dashoffset 400ms ease, stroke 200ms ease;
-   }
+      fill:none;
+      stroke: var(--gauge, #94a3b8);
+      stroke-width:14;
+      stroke-linecap:round;
+      stroke-dasharray: 251.2;
+      stroke-dashoffset: 251.2;
+      transition: stroke-dashoffset 400ms ease, stroke 200ms ease;
+    }
 
     .gScore{
       font-size:28px;
@@ -124,624 +128,604 @@
       box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
     }
 
-    .muted{
-      color:#94a3b8;
-      font-size:12px;
+    /* ===== MARKET STATE (PRO) ===== */
+    .stateBar{
+      margin: 10px 0 14px;
+      padding: 12px 14px;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      background: rgba(15,23,42,0.35);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
     }
 
-    /* ===== MARKET STATE (PRO) ===== */
-.stateBar{
-  margin: 10px 0 14px;
-  padding: 12px 14px;
-  border: 1px solid #334155;
-  border-radius: 14px;
-  background: rgba(15,23,42,0.35);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-}
+    .stateLeft{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
 
-.stateLeft{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  flex-wrap:wrap;
-}
+    .statePill{
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      border: 1px solid #334155;
+      background: rgba(2,6,23,0.35);
+    }
 
-.statePill{
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.4px;
-  border: 1px solid #334155;
-  background: rgba(2,6,23,0.35);
-}
+    .stateText{
+      font-size: 14px;
+      color: #e2e8f0;
+      font-weight: 700;
+    }
 
-.stateText{
-  font-size: 14px;
-  color: #e2e8f0;
-  font-weight: 700;
-}
+    .stateHint{
+      font-size: 12px;
+      color:#94a3b8;
+    }
 
-.stateHint{
-  font-size: 12px;
-  color:#94a3b8;
-}
+    .statePill.up{ border-color: rgba(34,197,94,0.45); }
+    .statePill.down{ border-color: rgba(239,68,68,0.45); }
+    .statePill.neutral{ border-color: rgba(148,163,184,0.45); }
 
-.statePill.up{ border-color: rgba(34,197,94,0.45); }
-.statePill.down{ border-color: rgba(239,68,68,0.45); }
-.statePill.neutral{ border-color: rgba(148,163,184,0.45); }
-
-  /* ===== TOAST ALERT ===== */
-.toast{
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 14px 18px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 13px;
-  color: white;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  z-index: 9999;
-  opacity: 0;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
-}
-
-.toast.show{
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.toast.up{ background: #22c55e; }
-.toast.down{ background: #ef4444; }  
+    /* ===== TOAST ALERT ===== */
+    .toast{
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 13px;
+      color: white;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+    }
+    .toast.show{ opacity: 1; transform: translateY(0); }
+    .toast.up{ background: #22c55e; }
+    .toast.down{ background: #ef4444; }
 
     /* ===== Gauge color by score ===== */
-.gauge-red  { --gauge: #ef4444; }
-.gauge-amber{ --gauge: #f59e0b; }
-.gauge-green{ --gauge: #22c55e; }
-  /* ===== Card tint by signal ===== */
-.card.tone-up{
-  border-color: rgba(34,197,94,.35);
-  box-shadow: 0 0 0 1px rgba(34,197,94,.08), 0 12px 40px rgba(0,0,0,.25);
-}
-.card.tone-down{
-  border-color: rgba(239,68,68,.35);
-  box-shadow: 0 0 0 1px rgba(239,68,68,.08), 0 12px 40px rgba(0,0,0,.25);
-}  
-  #gFg { filter: drop-shadow(0 0 6px rgba(255,255,255,.18)); }  
- /* ===== RADAR LIST (mini listado) ===== */
-.radarList{
-  margin-top: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+    .gauge-red  { --gauge: #ef4444; }
+    .gauge-amber{ --gauge: #f59e0b; }
+    .gauge-green{ --gauge: #22c55e; }
 
-.radarItem {
-  display: grid;
-  grid-template-columns: 120px 1fr auto;
-  align-items: center;
-  padding: 8px 14px;
-  border: 1px solid #334155;
-  border-radius: 10px;
-  background: rgba(15,23,42,0.35);
-  cursor: pointer;
-  transition: all .15s ease;
-}
+    /* ===== Card tint by signal ===== */
+    .card.tone-up{
+      border-color: rgba(34,197,94,.35);
+      box-shadow: 0 0 0 1px rgba(34,197,94,.08), 0 12px 40px rgba(0,0,0,.25);
+    }
+    .card.tone-down{
+      border-color: rgba(239,68,68,.35);
+      box-shadow: 0 0 0 1px rgba(239,68,68,.08), 0 12px 40px rgba(0,0,0,.25);
+    }
+    #gFg { filter: drop-shadow(0 0 6px rgba(255,255,255,.18)); }
 
-.radarItem:hover {
-  background: rgba(15,23,42,0.6);
-  transform: translateY(-1px);
-}
+    /* ===== LAYOUT 2 COLUMNAS (GAUGE + RADAR) ===== */
+    .layout2{
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      gap: 14px;
+      align-items: start;
+      margin-top: 10px;
+    }
+    @media (max-width: 980px){
+      .layout2{ grid-template-columns: 1fr; }
+    }
 
-.radarLeft{
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-}
+    .radarHeader{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:12px;
+      margin: 2px 0 10px;
+    }
+    .radarTitle{
+      font-weight:900;
+      letter-spacing:.6px;
+      font-size:12px;
+      color:#e2e8f0;
+    }
+    .radarHint{
+      font-size:12px;
+      color:#94a3b8;
+    }
 
-.radarSym{
-  font-weight:800;
-  font-size:13px;
-}
+    /* ===== RADAR LIST ===== */
+    .radarList{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
 
-.radarMeta{
-  font-size:12px;
-  color:#94a3b8;
-}
+    .radarItem {
+      display: grid;
+      grid-template-columns: 120px 1fr auto;
+      align-items: center;
+      padding: 8px 14px;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      background: rgba(15,23,42,0.35);
+      cursor: pointer;
+      transition: all .15s ease;
+    }
 
-.radarRight{
-  text-align:right;
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-}
+    .radarItem:hover {
+      background: rgba(15,23,42,0.6);
+      transform: translateY(-1px);
+    }
 
-.radarPrice{
-  font-weight:800;
-  font-size:14px;
-}
-
-.radarEma{
-  font-size:12px;
-  color:#94a3b8;
-}
-
-.spark{
-  width:90px;
-  height:30px;
-}  
-    
+    .radarSym{
+      font-weight:900;
+      font-size:13px;
+    }
+    .radarMeta{
+      font-size:12px;
+      color:#94a3b8;
+    }
+    .radarPrice{
+      font-weight:900;
+      font-size:14px;
+      text-align:right;
+    }
+    .radarEma{
+      font-size:12px;
+      color:#94a3b8;
+      text-align:right;
+    }
   </style>
-
 </head>
+
 <body>
+  <header>
+    <h2 style="margin:0;">Premium Terminal V1 (1H)</h2>
+    <select id="assetSelect"></select>
+    <div id="dataHealth" style="opacity:.85;font-size:12px;"></div>
+  </header>
 
-<header>
-  <h2>Premium Terminal V1 (1H)</h2>
-  <select id="assetSelect"></select>
-<div id="dataHealth" style="opacity:.8;font-size:12px;margin:8px 0 0 0;"></div>
-</header>
- 
-<div class="content">
-  <div id="mainCard" class="card">
+  <div class="content">
+    <div id="mainCard" class="card">
+      <div class="rowTop">
+        <div>
+          <h3 id="assetName" style="margin:0;">Selecciona un activo</h3>
 
-    <div class="rowTop">
-      <div>
-        <h3 id="assetName">Selecciona un activo</h3>
-
-        <div class="badges">
-          <span id="badgeSignal" class="badge">
-            <span id="sigDot" class="dot"></span>
-            <b>Señal</b> <span id="uiSignal">—</span>
-          </span>
-          <span id="badgeTrend" class="badge"><b>Tendencia</b> <span id="uiTrend">—</span></span>
-          <span id="badgeVol" class="badge"><b>Volatilidad</b> <span id="uiVol">—</span></span>
-          <span class="badge"><b>Updated</b> <span id="uiUpdated">—</span></span>
-          <span class="badge"><b>TF</b> 1H</span>
+          <div class="badges">
+            <span id="badgeSignal" class="badge">
+              <span id="sigDot" class="dot"></span>
+              <b>Señal</b> <span id="uiSignal">—</span>
+            </span>
+            <span id="badgeTrend" class="badge"><b>Tendencia</b> <span id="uiTrend">—</span></span>
+            <span id="badgeVol" class="badge"><b>Volatilidad</b> <span id="uiVol">—</span></span>
+            <span class="badge"><b>Updated</b> <span id="uiUpdated">—</span></span>
+            <span class="badge"><b>TF</b> 1H</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="stateBar">
-      <div class="stateLeft">
-         <span id="uiStatePill" class="statePill neutral">ESTADO</span>
-         <span id="uiStateText" class="stateText">—</span>
+      <div class="stateBar">
+        <div class="stateLeft">
+          <span id="uiStatePill" class="statePill neutral">ESTADO</span>
+          <span id="uiStateText" class="stateText">—</span>
+        </div>
+        <span id="uiStateHint" class="stateHint">—</span>
       </div>
-      <span id="uiStateHint" class="stateHint">—</span>
-    </div>
-    
-    <div id="assetDetails" style="margin-top:10px;">
-      <div class="gaugeWrap">
-        <svg id="scoreGauge" viewBox="0 0 200 120" class="gauge">
-          <path id="gBg" d="M 20 100 A 80 80 0 0 1 180 100" class="gBg"></path>
-          <path id="gFg" d="M 20 100 A 80 80 0 0 1 180 100" class="gFg"></path>
 
-          <text id="gScore" x="100" y="78" text-anchor="middle" class="gScore">—</text>
-          <text id="gLabel" x="100" y="98" text-anchor="middle" class="gLabel">Score</text>
-        </svg>
+      <!-- ===== GAUGE + RADAR (PRO) ===== -->
+      <div class="layout2">
+        <div class="leftPane">
+          <div class="gaugeWrap">
+            <svg id="scoreGauge" viewBox="0 0 200 120" class="gauge">
+              <path id="gBg" d="M 20 100 A 80 80 0 0 1 180 100" class="gBg"></path>
+              <path id="gFg" d="M 20 100 A 80 80 0 0 1 180 100" class="gFg"></path>
+
+              <text id="gScore" x="100" y="78" text-anchor="middle" class="gScore">—</text>
+              <text id="gLabel" x="100" y="98" text-anchor="middle" class="gLabel">Score</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="rightPane">
+          <div class="radarHeader">
+            <div class="radarTitle">RADAR</div>
+            <div class="radarHint">Señal · Precio · EMA21</div>
+          </div>
+          <div id="radarList" class="radarList"></div>
+        </div>
       </div>
-    </div>
 
-<!-- ===== RADAR MODERNO V2 ===== -->
-<div id="radarList" class="radarList"></div>
-    
-  </div>
-</div>
-
-<script>
-let watchlistData = {};
-let macroData = { meta: {}, assets: {} };
-let currentAsset = null;
-
-let refreshTimer = null;
-let watchlistLoaded = false;
-let lastSignal = {}; // por símbolo
-
-const REFRESH_MS = 60000; // 60s (cambia a 15000 si quieres 15s)
-const JSON_URL = "macro_data.json";
-const FREEZE_WARN_MS = 10 * 60_000; // 10 min
-
-let lastUpdatedISO = null;
-let lastUpdatedSeenAt = null; // timestamp local cuando vimos ese updated por última vez
-
-async function fetchJson(url) {
-  const r = await fetch(url + "?v=" + Date.now());
-  if (!r.ok) throw new Error(url + " HTTP " + r.status);
-  return await r.json();
-}
-
-function setHealth(text, level = "good") {
-  const el = document.getElementById("dataHealth");
-  if (!el) return;
-  el.textContent = text;
-  el.classList.remove("good", "warn", "bad");
-  el.classList.add(level);
-}
-
-function fmtAge(ms) {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  const m = Math.floor(s / 60);
-  const r = s % 60;
-  return m <= 0 ? `${s}s` : `${m}m ${r}s`;
-}
-
-function parseUpdatedTs(macro) {
-  const iso = macro?.meta?.updated_utc || macro?.meta?.updated || macro?.updated || null;
-  if (!iso) return { iso: null, ts: null };
-  const ts = Date.parse(iso);
-  return { iso, ts: Number.isFinite(ts) ? ts : null };
-}
-
-/* =========================
-   RADAR (GLOBAL ✅)
-   ========================= */
-function buildRadar() {
-  const radar = document.getElementById("radarList");
-  if (!radar) {
-    console.warn("No existe #radarList en el DOM (revisa el <div id='radarList'>)");
-    return;
-  }
-
-  radar.innerHTML = "";
-
-  // de momento solo oro y bitcoin (como dijiste)
-  const symbols = ["GC=F", "BTC-USD"];
-
-  symbols.forEach((sym) => {
-    const data = macroData.assets?.[sym];
-    if (!data) return;
-
-    const div = document.createElement("div");
-    div.className = "radarItem";
-
-    let color = "#94a3b8";
-    if (data.signal === "explosion_up") color = "#22c55e";
-    if (data.signal === "explosion_down") color = "#ef4444";
-
-    div.style.borderColor = color;
-
-    const priceTxt = (data.price ?? "—");
-    const ema21Txt = (data.ema21 ?? "—");
-
-    div.innerHTML = `
-  <div style="font-weight:800;">${sym}</div>
-  <div style="font-size:12px;color:#94a3b8;">
-    ${data.signal ?? "—"}
-  </div>
-  <div style="text-align:right;">
-    <div style="color:${color};font-weight:800;">
-      ${data.price ?? "—"}
-    </div>
-    <div style="font-size:11px;color:#94a3b8;">
-      EMA21 ${data.ema21 ?? "—"}
     </div>
   </div>
-`;
 
-    div.addEventListener("click", () => {
-      currentAsset = sym;
+  <script>
+    let watchlistData = {};
+    let macroData = { meta: {}, assets: {} };
+    let currentAsset = null;
 
-      // sincroniza el selector arriba (si existe)
-      const sel = document.getElementById("assetSelect");
-      if (sel) sel.value = sym;
+    let refreshTimer = null;
+    let watchlistLoaded = false;
+    let lastSignal = {}; // por símbolo
 
-      updateAssetView();
-    });
+    const REFRESH_MS = 60000; // 60s
+    const JSON_URL = "macro_data.json";
+    const FREEZE_WARN_MS = 10 * 60_000; // 10 min
 
-    radar.appendChild(div);
-  });
-}
+    let lastUpdatedISO = null;
+    let lastUpdatedSeenAt = null;
 
-/* =========================
-   SELECTOR ✅ (sin radar dentro)
-   ========================= */
-function buildSelector() {
-  const select = document.getElementById("assetSelect");
-  if (!select) return;
-
-  select.innerHTML = "";
-
-  for (const category in watchlistData) {
-    const group = document.createElement("optgroup");
-    group.label = category;
-
-    (watchlistData[category] || []).forEach((asset) => {
-      const option = document.createElement("option");
-      option.value = asset.symbol;
-      option.textContent = asset.name;
-      group.appendChild(option);
-    });
-
-    select.appendChild(group);
-  }
-
-  select.addEventListener("change", () => {
-    currentAsset = select.value;
-    updateAssetView();
-    // opcional: refresca radar al cambiar (no hace daño)
-    buildRadar();
-  });
-
-  // inicial
-  currentAsset = select.value;
-}
-
-function beep() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.connect(g);
-    g.connect(ctx.destination);
-    o.type = "sine";
-    o.frequency.value = 880;
-    g.gain.value = 0.05;
-    o.start();
-    setTimeout(() => {
-      o.stop();
-      ctx.close();
-    }, 120);
-  } catch (e) {}
-}
-
-/* =========================
-   LOAD DATA ✅
-   ========================= */
-async function loadData() {
-  try {
-    // watchlist solo una vez
-    if (!watchlistLoaded) {
-      watchlistData = await fetchJson("watchlist.json");
-      watchlistLoaded = true;
-      buildSelector();
+    async function fetchJson(url) {
+      const r = await fetch(url + "?v=" + Date.now());
+      if (!r.ok) throw new Error(url + " HTTP " + r.status);
+      return await r.json();
     }
 
-    // macro siempre
-    macroData = await fetchJson(JSON_URL);
+    function setHealth(text, level = "good") {
+      const el = document.getElementById("dataHealth");
+      if (!el) return;
+      el.textContent = text;
+      el.classList.remove("good", "warn", "bad");
+      el.classList.add(level);
+    }
 
-    // ===== HEALTH CHECK =====
-    const { iso, ts } = parseUpdatedTs(macroData);
-    const now = Date.now();
+    function fmtAge(ms) {
+      const s = Math.max(0, Math.floor(ms / 1000));
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return m <= 0 ? `${s}s` : `${m}m ${r}s`;
+    }
 
-    if (iso && ts) {
-      const age = now - ts;
+    function parseUpdatedTs(macro) {
+      const iso = macro?.meta?.updated_utc || macro?.meta?.updated || macro?.updated || null;
+      if (!iso) return { iso: null, ts: null };
+      const ts = Date.parse(iso);
+      return { iso, ts: Number.isFinite(ts) ? ts : null };
+    }
 
-      let level = "good";
-      if (age > 10 * 60_000) level = "bad";
-      else if (age > 5 * 60_000) level = "warn";
+    /* =========================
+       RADAR (GLOBAL ✅ ÚNICO)
+       ========================= */
+    function buildRadar() {
+      const radar = document.getElementById("radarList");
+      if (!radar) {
+        console.warn("No existe #radarList en el DOM");
+        return;
+      }
 
-      const frozen =
-        lastUpdatedISO &&
-        iso === lastUpdatedISO &&
-        lastUpdatedSeenAt &&
-        now - lastUpdatedSeenAt > FREEZE_WARN_MS;
+      radar.innerHTML = "";
 
-      if (frozen) {
-        setHealth(
-          `⚠️ Datos congelados: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`,
-          "bad"
-        );
+      // lista mínima segura (luego ampliamos)
+      const symbols = ["GC=F", "BTC-USD"];
+
+      symbols.forEach((sym) => {
+        const data = macroData.assets?.[sym];
+        if (!data) return;
+
+        let color = "#94a3b8";
+        if (data.signal === "explosion_up") color = "#22c55e";
+        if (data.signal === "explosion_down") color = "#ef4444";
+
+        const div = document.createElement("div");
+        div.className = "radarItem";
+        div.style.borderColor = color;
+
+        div.innerHTML = `
+          <div>
+            <div class="radarSym">${sym}</div>
+            <div class="radarMeta">${data.signal ?? "—"}</div>
+          </div>
+
+          <div></div>
+
+          <div>
+            <div class="radarPrice" style="color:${color}">${data.price ?? "—"}</div>
+            <div class="radarEma">EMA21: ${data.ema21 ?? "—"}</div>
+          </div>
+        `;
+
+        div.addEventListener("click", () => {
+          currentAsset = sym;
+          const sel = document.getElementById("assetSelect");
+          if (sel) sel.value = sym;
+          updateAssetView();
+        });
+
+        radar.appendChild(div);
+      });
+    }
+
+    function buildSelector() {
+      const select = document.getElementById("assetSelect");
+      if (!select) return;
+
+      select.innerHTML = "";
+
+      for (const category in watchlistData) {
+        const group = document.createElement("optgroup");
+        group.label = category;
+
+        (watchlistData[category] || []).forEach((asset) => {
+          const option = document.createElement("option");
+          option.value = asset.symbol;
+          option.textContent = asset.name;
+          group.appendChild(option);
+        });
+
+        select.appendChild(group);
+      }
+
+      select.addEventListener("change", () => {
+        currentAsset = select.value;
+        updateAssetView();
+      });
+
+      currentAsset = select.value;
+    }
+
+    function beep() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = "sine";
+        o.frequency.value = 880;
+        g.gain.value = 0.05;
+        o.start();
+        setTimeout(() => { o.stop(); ctx.close(); }, 120);
+      } catch (e) {}
+    }
+
+    async function loadData() {
+      try {
+        if (!watchlistLoaded) {
+          watchlistData = await fetchJson("watchlist.json");
+          watchlistLoaded = true;
+          buildSelector();
+        }
+
+        macroData = await fetchJson(JSON_URL);
+
+        const { iso, ts } = parseUpdatedTs(macroData);
+        const now = Date.now();
+
+        if (iso && ts) {
+          const age = now - ts;
+
+          let level = "good";
+          if (age > 10 * 60_000) level = "bad";
+          else if (age > 5 * 60_000) level = "warn";
+
+          const frozen =
+            lastUpdatedISO &&
+            iso === lastUpdatedISO &&
+            lastUpdatedSeenAt &&
+            (now - lastUpdatedSeenAt) > FREEZE_WARN_MS;
+
+          if (frozen) {
+            setHealth(`⚠️ Datos congelados: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`, "bad");
+          } else {
+            setHealth(`✅ OK: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`, level);
+          }
+
+          if (iso !== lastUpdatedISO) {
+            lastUpdatedISO = iso;
+            lastUpdatedSeenAt = now;
+          } else if (!lastUpdatedSeenAt) {
+            lastUpdatedSeenAt = now;
+          }
+        } else {
+          setHealth(`⚠️ No encuentro updated en JSON | Fuente: ${JSON_URL}`, "warn");
+        }
+
+        if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {} };
+        if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
+
+        const sel = document.getElementById("assetSelect");
+        if (!currentAsset && sel) currentAsset = sel.value;
+
+        updateAssetView();
+        buildRadar();
+
+      } catch (err) {
+        console.error(err);
+        setHealth(`❌ Error cargando JSON | Fuente: ${JSON_URL}`, "bad");
+        const title = document.getElementById("assetName");
+        if (title) title.textContent = "ERROR: " + err.message;
+      }
+    }
+
+    function updateAssetView() {
+      const select = document.getElementById("assetSelect");
+      const title  = document.getElementById("assetName");
+
+      const uiTrend   = document.getElementById("uiTrend");
+      const uiVol     = document.getElementById("uiVol");
+      const uiSignal  = document.getElementById("uiSignal");
+      const uiUpdated = document.getElementById("uiUpdated");
+
+      const gScore = document.getElementById("gScore");
+      const gFg    = document.getElementById("gFg");
+      const sigDot = document.getElementById("sigDot");
+
+      const uiStatePill = document.getElementById("uiStatePill");
+      const uiStateText = document.getElementById("uiStateText");
+      const uiStateHint = document.getElementById("uiStateHint");
+
+      if (!select || !title) return;
+
+      if (!currentAsset) currentAsset = select.value;
+      if (select.value !== currentAsset) select.value = currentAsset;
+
+      const assetName = select.selectedOptions?.[0]?.textContent || currentAsset || "Activo";
+      title.textContent = assetName;
+
+      const assetData = macroData.assets?.[currentAsset];
+      console.log("ASSET", currentAsset, "score=", assetData?.score, "trend=", assetData?.trend, "sig=", assetData?.signal);
+
+      const setState = (pillClass, pillText, text, hint) => {
+        if (uiStatePill) {
+          uiStatePill.className = `statePill ${pillClass}`;
+          uiStatePill.textContent = pillText;
+        }
+        if (uiStateText) uiStateText.textContent = text;
+        if (uiStateHint) uiStateHint.textContent = hint;
+      };
+
+      if (!assetData) {
+        title.textContent += " (sin datos aún)";
+        if (uiTrend) uiTrend.textContent = "—";
+        if (uiVol) uiVol.textContent = "—";
+        if (uiSignal) uiSignal.textContent = "—";
+        if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
+
+        if (sigDot) sigDot.className = "dot";
+        if (gScore) gScore.textContent = "—";
+        if (gFg) {
+          gFg.style.stroke = "#94a3b8";
+          gFg.style.strokeDashoffset = "251.2";
+        }
+
+        const mainCard = document.getElementById("mainCard");
+        if (mainCard) mainCard.classList.remove("tone-up","tone-down");
+
+        document.body.classList.remove("gauge-red","gauge-amber","gauge-green");
+
+        setState("neutral", "ESTADO", "Sin datos", "Esperando actualización");
+        return;
+      }
+
+      const trend = String(assetData.trend ?? "—");
+      const vol   = String(assetData.volatility ?? "—");
+      const sig   = String(assetData.signal ?? "—");
+
+      const mainCard = document.getElementById("mainCard");
+      if (mainCard){
+        mainCard.classList.remove("tone-up","tone-down");
+        if (sig === "explosion_up") mainCard.classList.add("tone-up");
+        if (sig === "explosion_down") mainCard.classList.add("tone-down");
+      }
+
+      const prevSig = lastSignal[currentAsset];
+      if (prevSig && prevSig !== sig) {
+        console.log(`[ALERTA] ${currentAsset}: ${prevSig} -> ${sig}`);
+        beep();
+        if (sig === "explosion_up") showToast(`${assetName} – EXPLOSION UP`, "up");
+        if (sig === "explosion_down") showToast(`${assetName} – EXPLOSION DOWN`, "down");
+      }
+      lastSignal[currentAsset] = sig;
+
+      // chips
+      const bSig = document.getElementById("badgeSignal");
+      const bTr  = document.getElementById("badgeTrend");
+      const bVol = document.getElementById("badgeVol");
+
+      function paint(el, color){
+        if (!el) return;
+        el.style.borderColor = color;
+        el.style.color = color;
+      }
+
+      if (sig === "explosion_up") paint(bSig, "#22c55e");
+      else if (sig === "explosion_down") paint(bSig, "#ef4444");
+      else paint(bSig, "#94a3b8");
+
+      if (trend.toLowerCase() === "bullish") paint(bTr, "#22c55e");
+      else if (trend.toLowerCase() === "bearish") paint(bTr, "#ef4444");
+      else paint(bTr, "#94a3b8");
+
+      if (vol.toLowerCase() === "low") paint(bVol, "#22c55e");
+      else if (vol.toLowerCase() === "high") paint(bVol, "#f59e0b");
+      else paint(bVol, "#94a3b8");
+
+      if (uiTrend) uiTrend.textContent = trend;
+      if (uiVol) uiVol.textContent = vol;
+      if (uiSignal) uiSignal.textContent = sig;
+      if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
+
+      // gauge
+      const score = Number(assetData.score ?? 0);
+      const clamped = Math.max(0, Math.min(100, score));
+
+      document.body.classList.remove("gauge-red","gauge-amber","gauge-green");
+      if (clamped < 40) document.body.classList.add("gauge-red");
+      else if (clamped <= 70) document.body.classList.add("gauge-amber");
+      else document.body.classList.add("gauge-green");
+
+      if (gScore) {
+        gScore.textContent = String(clamped);
+        if (clamped < 40) gScore.style.fill = "#ef4444";
+        else if (clamped <= 70) gScore.style.fill = "#f59e0b";
+        else gScore.style.fill = "#22c55e";
+      }
+
+      const total = 251.2;
+      const offset = total * (1 - clamped / 100);
+
+      let color = "#94a3b8";
+      if (clamped < 40) color = "#ef4444";
+      else if (clamped <= 70) color = "#f59e0b";
+      else color = "#22c55e";
+
+      if (gFg) {
+        gFg.style.stroke = color;
+        gFg.style.strokeDasharray = String(total);
+        gFg.style.strokeDashoffset = String(offset);
+      }
+
+      if (sigDot) {
+        sigDot.className = "dot";
+        if (sig === "explosion_up") sigDot.classList.add("up");
+        if (sig === "explosion_down") sigDot.classList.add("down");
+      }
+
+      // Market state
+      const volLow = (vol.toLowerCase() === "low");
+      const bullish = (trend.toLowerCase() === "bullish");
+      const bearish = (trend.toLowerCase() === "bearish");
+
+      if (clamped >= 75 && bullish && sig === "explosion_up") {
+        setState("up", "MOMENTUM", "Impulso fuerte", "Probable continuación (ojo pullbacks)");
+      } else if (sig === "explosion_down" || clamped <= 35) {
+        setState("down", "RIESGO", "Presión bajista", "Evitar FOMO / buscar confirmación");
+      } else if (volLow && clamped >= 40 && clamped <= 70) {
+        setState("neutral", "COMPR.", "Compresión", "Posible salida en breve (esperar señal)");
+      } else if (bearish && clamped < 55) {
+        setState("down", "BAJISTA", "Sesgo bajista", "Rebotes = posible venta");
       } else {
-        setHealth(`✅ OK: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`, level);
+        setState("neutral", "NEUTRAL", "Mercado mixto", "Esperar mejor ventana");
       }
-
-      if (iso !== lastUpdatedISO) {
-        lastUpdatedISO = iso;
-        lastUpdatedSeenAt = now;
-      } else if (!lastUpdatedSeenAt) {
-        lastUpdatedSeenAt = now;
-      }
-    } else {
-      setHealth(`⚠️ No encuentro updated en JSON | Fuente: ${JSON_URL}`, "warn");
     }
 
-    if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {} };
-    if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
-
-    // si aún no hay currentAsset, toma el del selector
-    const sel = document.getElementById("assetSelect");
-    if (!currentAsset && sel) currentAsset = sel.value;
-
-    updateAssetView();
-    buildRadar();
-  } catch (err) {
-    console.error(err);
-    setHealth(`❌ Error cargando JSON | Fuente: ${JSON_URL}`, "bad");
-    const title = document.getElementById("assetName");
-    if (title) title.textContent = "ERROR: " + err.message;
-  }
-}
-
-/* =========================
-   UPDATE ASSET VIEW ✅ (tu lógica)
-   ========================= */
-function updateAssetView() {
-  const select = document.getElementById("assetSelect");
-  const title = document.getElementById("assetName");
-
-  const uiTrend = document.getElementById("uiTrend");
-  const uiVol = document.getElementById("uiVol");
-  const uiSignal = document.getElementById("uiSignal");
-  const uiUpdated = document.getElementById("uiUpdated");
-
-  const gScore = document.getElementById("gScore");
-  const gFg = document.getElementById("gFg");
-  const sigDot = document.getElementById("sigDot");
-
-  const uiStatePill = document.getElementById("uiStatePill");
-  const uiStateText = document.getElementById("uiStateText");
-  const uiStateHint = document.getElementById("uiStateHint");
-
-  if (!select || !title) return;
-
-  if (!currentAsset) currentAsset = select.value;
-  if (select.value !== currentAsset) select.value = currentAsset;
-
-  const assetName = select.selectedOptions?.[0]?.textContent || currentAsset || "Activo";
-  title.textContent = assetName;
-
-  const assetData = macroData.assets?.[currentAsset];
-  console.log("ASSET", currentAsset, "score=", assetData?.score, "trend=", assetData?.trend, "sig=", assetData?.signal);
-
-  const setState = (pillClass, pillText, text, hint) => {
-    if (uiStatePill) {
-      uiStatePill.className = `statePill ${pillClass}`;
-      uiStatePill.textContent = pillText;
+    function startAutoRefresh() {
+      if (refreshTimer) clearInterval(refreshTimer);
+      refreshTimer = setInterval(loadData, REFRESH_MS);
     }
-    if (uiStateText) uiStateText.textContent = text;
-    if (uiStateHint) uiStateHint.textContent = hint;
-  };
 
-  if (!assetData) {
-    title.textContent += " (sin datos aún)";
-    if (uiTrend) uiTrend.textContent = "—";
-    if (uiVol) uiVol.textContent = "—";
-    if (uiSignal) uiSignal.textContent = "—";
-    if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
-    if (sigDot) sigDot.className = "dot";
-    if (gScore) gScore.textContent = "—";
-    if (gFg) {
-      gFg.style.stroke = "#94a3b8";
-      gFg.style.strokeDashoffset = "251.2";
+    function showToast(message, type){
+      const t = document.createElement("div");
+      t.className = `toast ${type}`;
+      t.textContent = message;
+      document.body.appendChild(t);
+
+      setTimeout(() => t.classList.add("show"), 50);
+
+      setTimeout(() => {
+        t.classList.remove("show");
+        setTimeout(() => t.remove(), 300);
+      }, 4000);
     }
-    const mainCard = document.getElementById("mainCard");
-    if (mainCard) mainCard.classList.remove("tone-up", "tone-down");
-    document.body.classList.remove("gauge-red", "gauge-amber", "gauge-green");
-    setState("neutral", "ESTADO", "Sin datos", "Esperando actualización");
-    return;
-  }
 
-  const trend = String(assetData.trend ?? "—");
-  const vol = String(assetData.volatility ?? "—");
-  const sig = String(assetData.signal ?? "—");
-
-  const mainCard = document.getElementById("mainCard");
-  if (mainCard) {
-    mainCard.classList.remove("tone-up", "tone-down");
-    if (sig === "explosion_up") mainCard.classList.add("tone-up");
-    if (sig === "explosion_down") mainCard.classList.add("tone-down");
-  }
-
-  const prevSig = lastSignal[currentAsset];
-  if (prevSig && prevSig !== sig) {
-    console.log(`[ALERTA] ${currentAsset}: ${prevSig} -> ${sig}`);
-    beep();
-    if (sig === "explosion_up") showToast(`${assetName} – EXPLOSION UP`, "up");
-    if (sig === "explosion_down") showToast(`${assetName} – EXPLOSION DOWN`, "down");
-  }
-  lastSignal[currentAsset] = sig;
-
-  // chips
-  const bSig = document.getElementById("badgeSignal");
-  const bTr = document.getElementById("badgeTrend");
-  const bVol = document.getElementById("badgeVol");
-
-  function paint(el, color) {
-    if (!el) return;
-    el.style.borderColor = color;
-    el.style.color = color;
-  }
-
-  if (sig === "explosion_up") paint(bSig, "#22c55e");
-  else if (sig === "explosion_down") paint(bSig, "#ef4444");
-  else paint(bSig, "#94a3b8");
-
-  if (trend.toLowerCase() === "bullish") paint(bTr, "#22c55e");
-  else if (trend.toLowerCase() === "bearish") paint(bTr, "#ef4444");
-  else paint(bTr, "#94a3b8");
-
-  if (vol.toLowerCase() === "low") paint(bVol, "#22c55e");
-  else if (vol.toLowerCase() === "high") paint(bVol, "#f59e0b");
-  else paint(bVol, "#94a3b8");
-
-  if (uiTrend) uiTrend.textContent = trend;
-  if (uiVol) uiVol.textContent = vol;
-  if (uiSignal) uiSignal.textContent = sig;
-  if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
-
-  // gauge
-  const score = Number(assetData.score ?? 0);
-  const clamped = Math.max(0, Math.min(100, score));
-
-  document.body.classList.remove("gauge-red", "gauge-amber", "gauge-green");
-  if (clamped < 40) document.body.classList.add("gauge-red");
-  else if (clamped <= 70) document.body.classList.add("gauge-amber");
-  else document.body.classList.add("gauge-green");
-
-  if (gScore) {
-    gScore.textContent = String(clamped);
-    if (clamped < 40) gScore.style.fill = "#ef4444";
-    else if (clamped <= 70) gScore.style.fill = "#f59e0b";
-    else gScore.style.fill = "#22c55e";
-  }
-
-  const total = 251.2;
-  const offset = total * (1 - clamped / 100);
-
-  let color = "#94a3b8";
-  if (clamped < 40) color = "#ef4444";
-  else if (clamped <= 70) color = "#f59e0b";
-  else color = "#22c55e";
-
-  if (gFg) {
-    gFg.style.stroke = color;
-    gFg.style.strokeDasharray = String(total);
-    gFg.style.strokeDashoffset = String(offset);
-  }
-
-  if (sigDot) {
-    sigDot.className = "dot";
-    if (sig === "explosion_up") sigDot.classList.add("up");
-    if (sig === "explosion_down") sigDot.classList.add("down");
-  }
-
-  // Market state
-  const volLow = vol.toLowerCase() === "low";
-  const bullish = trend.toLowerCase() === "bullish";
-  const bearish = trend.toLowerCase() === "bearish";
-
-  if (clamped >= 75 && bullish && sig === "explosion_up") {
-    setState("up", "MOMENTUM", "Impulso fuerte", "Probable continuación (ojo pullbacks)");
-  } else if (sig === "explosion_down" || clamped <= 35) {
-    setState("down", "RIESGO", "Presión bajista", "Evitar FOMO / buscar confirmación");
-  } else if (volLow && clamped >= 40 && clamped <= 70) {
-    setState("neutral", "COMPR.", "Compresión", "Posible salida en breve (esperar señal)");
-  } else if (bearish && clamped < 55) {
-    setState("down", "BAJISTA", "Sesgo bajista", "Rebotes = posible venta");
-  } else {
-    setState("neutral", "NEUTRAL", "Mercado mixto", "Esperar mejor ventana");
-  }
-}
-
-function startAutoRefresh() {
-  if (refreshTimer) clearInterval(refreshTimer);
-  refreshTimer = setInterval(loadData, REFRESH_MS);
-}
-
-function showToast(message, type) {
-  const t = document.createElement("div");
-  t.className = `toast ${type}`;
-  t.textContent = message;
-  document.body.appendChild(t);
-
-  setTimeout(() => t.classList.add("show"), 50);
-
-  setTimeout(() => {
-    t.classList.remove("show");
-    setTimeout(() => t.remove(), 300);
-  }, 4000);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  loadData();
-  startAutoRefresh();
-});
-</script>
-
+    document.addEventListener("DOMContentLoaded", () => {
+      loadData();
+      startAutoRefresh();
+    });
+  </script>
 </body>
 </html>
