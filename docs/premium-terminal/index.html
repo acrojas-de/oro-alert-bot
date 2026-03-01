@@ -218,12 +218,12 @@
         <h3 id="assetName">Selecciona un activo</h3>
 
         <div class="badges">
-          <span class="badge">
+          <span id="badgeSignal" class="badge">
             <span id="sigDot" class="dot"></span>
             <b>Señal</b> <span id="uiSignal">—</span>
           </span>
-          <span class="badge"><b>Tendencia</b> <span id="uiTrend">—</span></span>
-          <span class="badge"><b>Volatilidad</b> <span id="uiVol">—</span></span>
+          <span id="badgeTrend" class="badge"><b>Tendencia</b> <span id="uiTrend">—</span></span>
+          <span id="badgeVol" class="badge"><b>Volatilidad</b> <span id="uiVol">—</span></span>
           <span class="badge"><b>Updated</b> <span id="uiUpdated">—</span></span>
           <span class="badge"><b>TF</b> 1H</span>
         </div>
@@ -486,9 +486,31 @@ function updateAssetView() {
 }
   lastSignal[currentAsset] = sig;
 
-  if (uiTrend) uiTrend.textContent = trend;
-  if (uiVol) uiVol.textContent = vol;
-  if (uiSignal) uiSignal.textContent = sig;
+  // ===== COLOR CHIPS =====
+const bSig = document.getElementById("badgeSignal");
+const bTr  = document.getElementById("badgeTrend");
+const bVol = document.getElementById("badgeVol");
+
+function paint(el, color){
+  if (!el) return;
+  el.style.borderColor = color;
+  el.style.color = color;
+}
+
+// Señal
+if (sig === "explosion_up") paint(bSig, "#22c55e");
+else if (sig === "explosion_down") paint(bSig, "#ef4444");
+else paint(bSig, "#94a3b8");
+
+// Tendencia
+if (trend.toLowerCase() === "bullish") paint(bTr, "#22c55e");
+else if (trend.toLowerCase() === "bearish") paint(bTr, "#ef4444");
+else paint(bTr, "#94a3b8");
+
+// Volatilidad
+if (vol.toLowerCase() === "low") paint(bVol, "#22c55e");
+else if (vol.toLowerCase() === "high") paint(bVol, "#f59e0b");
+else paint(bVol, "#94a3b8");
   if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
 
   const score = Number(assetData.score ?? 0);
