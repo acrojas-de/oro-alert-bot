@@ -541,14 +541,22 @@ document.body.classList.remove("gauge-red","gauge-amber","gauge-green");
 if (clamped < 40) document.body.classList.add("gauge-red");
 else if (clamped <= 70) document.body.classList.add("gauge-amber");
 else document.body.classList.add("gauge-green");
-  if (gScore) gScore.textContent = String(clamped);
+  if (gScore) {
+  gScore.textContent = String(clamped);
+
+  // color del número según score
+  if (clamped < 40) gScore.style.fill = "#ef4444";        // rojo
+  else if (clamped <= 70) gScore.style.fill = "#f59e0b";  // naranja
+  else gScore.style.fill = "#22c55e";                     // verde
+}
 
   const total = 251.2;
   const offset = total * (1 - clamped / 100);
 
-  let color = "#94a3b8";
-  if (sig === "explosion_up") color = "#22c55e";
-  if (sig === "explosion_down") color = "#ef4444";
+ let color = "#94a3b8";
+  if (clamped < 40) color = "#ef4444";        // rojo
+  else if (clamped <= 70) color = "#f59e0b";  // naranja
+  else color = "#22c55e";                     // verde
 
   if (gFg) {
     gFg.style.stroke = color;
