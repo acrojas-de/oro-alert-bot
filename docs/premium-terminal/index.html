@@ -875,8 +875,8 @@
         if (asset.ema50 == null) asset.ema50 = asset.ema21;
 
        // series viene del JSON: premium_out.series
-    const sym = currentSymbol; // o como lo llames tú (selectedSymbol)
-    const series = (data && data.series && data.series[sym]) ? data.series[sym] : null;
+    const sym = currentAsset;
+    const series = (macroData && macroData.series && macroData.series[sym]) ? macroData.series[sym] : null;
 
     renderBloombergStructure(asset, series);
         
