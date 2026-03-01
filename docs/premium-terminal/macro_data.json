@@ -1,6 +1,6 @@
 {
   "meta": {
-    "updated_utc": "2026-03-01T22:21:21+00:00",
+    "updated_utc": "2026-03-01T22:45:17+00:00",
     "timeframe": "1h",
     "source": "macro_bot.py"
   },
@@ -11,6 +11,7 @@
       "volatility": "high",
       "signal": "explosion_up",
       "price": 5281.3,
+      "ema9": 5252.05,
       "ema21": 5231.29,
       "ema50": 5213.32,
       "atr_pct": 0.004001
@@ -45,6 +46,7 @@
       "volatility": "high",
       "signal": "explosion_up",
       "price": 94.415,
+      "ema9": 93.2747,
       "ema21": 91.9171,
       "ema50": 90.4696,
       "atr_pct": 0.011665
@@ -55,6 +57,7 @@
       "volatility": "high",
       "signal": "explosion_down",
       "price": 393.8,
+      "ema9": 395.56,
       "ema21": 396.06,
       "ema50": 396.68,
       "atr_pct": 0.007922
@@ -65,6 +68,7 @@
       "volatility": "high",
       "signal": "explosion_down",
       "price": 308.1,
+      "ema9": 307.63,
       "ema21": 308.34,
       "ema50": 309.4,
       "atr_pct": 0.008777
@@ -75,6 +79,7 @@
       "volatility": "high",
       "signal": "explosion_down",
       "price": 178.9,
+      "ema9": 181.65,
       "ema21": 185.45,
       "ema50": 187.66,
       "atr_pct": 0.01184
@@ -85,6 +90,7 @@
       "volatility": "high",
       "signal": "explosion_down",
       "price": 199.45,
+      "ema9": 200.66,
       "ema21": 203.1,
       "ema50": 204.63,
       "atr_pct": 0.013035
@@ -95,6 +101,7 @@
       "volatility": "high",
       "signal": "neutral",
       "price": 266.64,
+      "ema9": 268.43,
       "ema21": 269.76,
       "ema50": 269.09,
       "atr_pct": 0.007211
@@ -105,6 +112,7 @@
       "volatility": "high",
       "signal": "neutral",
       "price": 65743.03,
+      "ema9": 66083.85,
       "ema21": 66290.74,
       "ema50": 66258.17,
       "atr_pct": 0.00897
@@ -115,6 +123,7 @@
       "volatility": "high",
       "signal": "neutral",
       "price": 1931.13,
+      "ema9": 1957.98,
       "ema21": 1967.42,
       "ema50": 1963.49,
       "atr_pct": 0.012873
@@ -125,6 +134,7 @@
       "volatility": "high",
       "signal": "neutral",
       "price": 82.9703,
+      "ema9": 83.8676,
       "ema21": 84.3621,
       "ema50": 84.0559,
       "atr_pct": 0.011902
@@ -135,6 +145,7 @@
       "volatility": "high",
       "signal": "neutral",
       "price": 1.3558,
+      "ema9": 1.3644,
       "ema21": 1.3704,
       "ema50": 1.3703,
       "atr_pct": 0.010538
@@ -145,6 +156,7 @@
       "volatility": "high",
       "signal": "neutral",
       "price": 612.78,
+      "ema9": 619.32,
       "ema21": 620.14,
       "ema50": 617.86,
       "atr_pct": 0.00659
