@@ -1,6 +1,6 @@
 {
   "meta": {
-    "updated_utc": "2026-03-01T07:43:33+00:00",
+    "updated_utc": "2026-03-01T07:57:29+00:00",
     "timeframe": "1h",
     "source": "macro_bot.py"
   },
@@ -86,7 +86,7 @@
       "signal": "explosion_down",
       "price": 199.45,
       "ema21": 203.1,
-      "ema50": 204.64,
+      "ema50": 204.63,
       "atr_pct": 0.013035
     },
     "AAPL": {
@@ -96,7 +96,7 @@
       "signal": "neutral",
       "price": 266.64,
       "ema21": 269.76,
-      "ema50": 269.08,
+      "ema50": 269.09,
       "atr_pct": 0.007211
     },
     "BTC-USD": {
@@ -105,9 +105,9 @@
       "volatility": "high",
       "signal": "explosion_up",
       "price": 66941.35,
-      "ema21": 66476.99,
-      "ema50": 66210.23,
-      "atr_pct": 0.009426
+      "ema21": 66477.37,
+      "ema50": 66210.37,
+      "atr_pct": 0.009448
     },
     "ETH-USD": {
       "score": 65,
@@ -147,7 +147,7 @@
       "price": 625.32,
       "ema21": 617.87,
       "ema50": 614.88,
-      "atr_pct": 0.006685
+      "atr_pct": 0.006686
     }
   }
 }
