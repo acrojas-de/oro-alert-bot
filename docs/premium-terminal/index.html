@@ -948,105 +948,40 @@ function setBar(el, value01, tone){
   if (tone==="red") el.style.background = "rgba(255,120,140,.78)";
 }
 
-function renderBloombergStructure(asset, series){
-  // asset: {price, ema21, ema50, atr_pct, score, signal}
-  // series: {price:[], ema21:[], ema50:[]} (si no tienes serie, igual pintamos 1 punto con fallback)
 
+function renderBloombergStructure(asset, series){
   const price = Number(asset.price);
   const ema21 = Number(asset.ema21);
   const ema50 = Number(asset.ema50);
 
-  const atrPct = asset.atr_pct==null ? null : Number(asset.atr_pct); // ya viene convertido a % desde updateAssetView
-  const score  = asset.score==null ? 0 : Number(asset.score);
-  const signal = asset.signal || "neutral";
-
-  // spread % respecto al precio
-  const spreadPct = (Number.isFinite(price) && price!==0) ? (Math.abs(ema21-ema50)/price)*100 : null;
-
-  // Regime
-  const reg = calcRegime({
-    signal, score, ema21, ema50,
-    atr_pct: atrPct,
-    spread_pct: spreadPct
-  });
-
-  document.getElementById("bbRegime").textContent = reg.sub;
-
-  // Medidor Spread: escala 0 → 1.2%
-  const spreadNorm = spreadPct==null ? 0 : clamp01(spreadPct/1.2);
-  document.getElementById("bbSpreadVal").textContent = spreadPct==null ? "—" : spreadPct.toFixed(2) + "%";
-
-  let spreadTone = "green";
-  let spreadHint = "Expansión saludable";
-  if (spreadPct != null && spreadPct < 0.15){ spreadTone="yellow"; spreadHint="Compresión: posible ruptura"; }
-  if (spreadPct != null && spreadPct > 0.80){ spreadTone="red"; spreadHint="Extendido: riesgo de pullback"; }
-
-  setBar(document.getElementById("bbSpreadFill"), spreadNorm, spreadTone);
-  document.getElementById("bbSpreadHint").textContent = spreadHint;
-
-  // Medidor ATR%: escala 0 → 2.0%
-  const atrNorm = atrPct==null ? 0 : clamp01(atrPct/2.0);
-  document.getElementById("bbAtrVal").textContent = atrPct==null ? "—" : atrPct.toFixed(2) + "%";
-
-  let atrTone = "green";
-  let atrHint = "Riesgo bajo/normal";
-  if (atrPct != null && atrPct > 0.9){ atrTone="yellow"; atrHint="Riesgo medio: cuidado entradas tarde"; }
-  if (atrPct != null && atrPct > 1.3){ atrTone="red"; atrHint="Riesgo alto: evita mercado sucio"; }
-
-  setBar(document.getElementById("bbAtrFill"), atrNorm, atrTone);
-  document.getElementById("bbAtrHint").textContent = atrHint;
-
-  // Decisión grande (texto)
-  const modeEl = document.getElementById("bbMode");
-  const l1 = document.getElementById("bbLine1");
-  const l2 = document.getElementById("bbLine2");
-
-  modeEl.textContent = reg.mode;
-
-  // Color por modo
-  const box = document.getElementById("bbDecision");
-  if (reg.mode==="MODO ATAQUE"){ box.style.borderColor="rgba(130,255,180,.30)"; }
-  if (reg.mode==="MODO VIGILANCIA"){ box.style.borderColor="rgba(255,210,120,.30)"; }
-  if (reg.mode==="MODO DEFENSA"){ box.style.borderColor="rgba(255,120,140,.30)"; }
-  if (reg.mode==="MODO ESPERA"){ box.style.borderColor="rgba(180,180,255,.22)"; }
-
-  const trendTxt = (ema21>ema50) ? "EMA21 > EMA50 (Bull)" : "EMA21 < EMA50 (Bear)";
-  l1.textContent = `${trendTxt} | Señal: ${signal.toUpperCase()} | Score: ${score.toFixed(0)}`;
-  l2.textContent = (reg.mode==="MODO ATAQUE")
-    ? "Plan: buscar entrada en retroceso/control (no perseguir vela)."
-    : (reg.mode==="MODO VIGILANCIA")
-      ? "Plan: esperar confirmación (ruptura + cierre) antes de actuar."
-      : (reg.mode==="MODO DEFENSA")
-        ? "Plan: reducir riesgo, evitar entradas impulsivas, esperar limpieza."
-        : "Plan: no hay ventaja; conservar munición.";
-
   // Mini chart (canvas): price + EMA21 + EMA50
   let parsedSeries = null;
+  if (Array.isArray(series)) {
+    parsedSeries = {
+      price: series.map(x => x.price),
+      ema21: series.map(x => x.ema21),
+      ema50: series.map(x => x.ema50)
+    };
+  }
 
-if (Array.isArray(series)) {
-  parsedSeries = {
-    price: series.map(x => x.price),
-    ema21: series.map(x => x.ema21),
-    ema50: series.map(x => x.ema50)
-  };
+  drawEmaCanvas("emaCanvas", parsedSeries, { price, ema21, ema50 });
 }
 
-drawEmaCanvas("emaCanvas", parsedSeries, { price, ema21, ema50 });
-}
 // Dibujo canvas sencillo (no depende de librerías)
 function drawEmaCanvas(canvasId, series, last){
   const c = document.getElementById(canvasId);
   if (!c) return;
+
   const ctx = c.getContext("2d");
   const w = c.width = c.parentElement.clientWidth - 2;
   const h = c.height;
-}
+
   // Fondo
   ctx.clearRect(0,0,w,h);
   ctx.fillStyle = "rgba(0,0,0,.08)";
   ctx.fillRect(0,0,w,h);
 
-  const p = (series && series.price && series.price.length) ? series.price : [last.price];
+  const p   = (series && series.price && series.price.length) ? series.price : [last.price];
   const e21 = (series && series.ema21 && series.ema21.length) ? series.ema21 : [last.ema21];
   const e50 = (series && series.ema50 && series.ema50.length) ? series.ema50 : [last.ema50];
 
@@ -1064,7 +999,7 @@ function drawEmaCanvas(canvasId, series, last){
   const X = i => (i/(n-1||1))*(w-16)+8;
   const Y = v => (h-10) - ((v-min)/(max-min))*(h-20);
 
-  // banda entre EMAs (sombra institucional)
+  // banda entre EMAs
   ctx.beginPath();
   for(let i=0;i<n;i++){
     const x=X(i), y=Y(get(e21,i));
@@ -1114,6 +1049,7 @@ function drawEmaCanvas(canvasId, series, last){
   ctx.fillStyle = "rgba(255,255,255,.85)";
   ctx.fill();
 }
+</script>
   
 </script>
 </body>
