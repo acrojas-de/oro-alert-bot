@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import pandas as pd
 import yfinance as yf
 
-
+tail
 # ======================
 # CONFIG (env variables)
 # ======================
@@ -600,9 +600,52 @@ premium_series = {
     ]
 }
 
-    # === mini histórico para pintar EMAs (últimos 120 puntos) ===
-tail = series[-120:] if len(series) > 120 else series
+   # ==========================
+# SERIES (para Premium Terminal)
+# ==========================
+SERIES_POINTS = 120
 
+premium_series = {}
+
+# símbolos que queremos con histórico: todos los assets del premium terminal
+series_symbols = list(premium_assets.keys())
+
+for sym in series_symbols:
+    try:
+        df_s = fetch_ohlc(sym, PERIOD, TIMEFRAME)
+        close_s = df_s["close"]
+
+        e21_s = ema(close_s, 21)
+        e50_s = ema(close_s, 50)
+
+        # recortamos últimas N velas
+        df_out = pd.DataFrame({
+            "ts": close_s.index.astype(str),
+            "price": close_s.values,
+            "ema21": e21_s.values,
+            "ema50": e50_s.values,
+        }).tail(SERIES_POINTS)
+
+        premium_series[sym] = [
+            {
+                "ts": r["ts"],
+                "price": round(float(r["price"]), 6),
+                "ema21": round(float(r["ema21"]), 6),
+                "ema50": round(float(r["ema50"]), 6),
+            }
+            for _, r in df_out.iterrows()
+            if pd.notna(r["price"]) and pd.notna(r["ema21"]) and pd.notna(r["ema50"])
+        ]
+
+    except Exception as e:
+        # si falla un símbolo, no rompe el script
+        premium_series[sym] = []
+
+premium_out = {
+    "meta": {"updated_utc": now_ts, "timeframe": "1h", "source": "macro_bot.py"},
+    "assets": premium_assets,
+    "series": premium_series,
+}
 premium_series = {
     GOLD_TICKER: [
         {
