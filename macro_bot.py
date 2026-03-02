@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import pandas as pd
 import yfinance as yf
 
-tail
+
 # ======================
 # CONFIG (env variables)
 # ======================
@@ -137,8 +137,16 @@ def save_data(path: str, data: dict) -> None:
 # ==============
 # SIGNALS
 # ==============
-def add_signal(signals_list: list, ts_: str, asset: str, type_: str, reason: str,
-               strength: int, price: float, extra: dict = None) -> None:
+def add_signal(
+    signals_list: list,
+    ts_: str,
+    asset: str,
+    type_: str,
+    reason: str,
+    strength: int,
+    price: float,
+    extra: dict = None,
+) -> None:
     key = (ts_, asset, type_)
     for s in signals_list:
         if (s.get("ts"), s.get("asset"), s.get("type")) == key:
@@ -204,7 +212,6 @@ def load_watchlist_symbols(path: str) -> list[str]:
 
 
 def classify_volatility(atr_pct_val: float) -> str:
-    # simple y robusto
     if atr_pct_val is None:
         return "medium"
     if atr_pct_val <= 0.0018:
@@ -225,20 +232,17 @@ def build_asset_metrics(symbol: str, period: str, interval: str) -> dict | None:
         i = last_closed_index(close)
         price = float(close.iloc[i])
 
-        e9  = float(ema(close, 9).iloc[i])
+        e9 = float(ema(close, 9).iloc[i])
         e21 = float(ema(close, 21).iloc[i])
-        # ema50 opcional si hay datos suficientes
         e50_series = ema(close, 50)
         e50 = float(e50_series.iloc[i]) if len(e50_series) else e21
 
         a = float(atr(df, ATR_LEN).iloc[i])
         atr_pct_val = (a / price) if price else 0.0
 
-        # score simple (para no inventar macro)
         score = 65 if price > e21 else 35
         trend = "bullish" if price > e21 else "bearish"
 
-        # señal simple
         if price > e21 and e21 > e50:
             signal = "explosion_up"
         elif price < e21 and e21 < e50:
@@ -252,7 +256,7 @@ def build_asset_metrics(symbol: str, period: str, interval: str) -> dict | None:
             "volatility": classify_volatility(atr_pct_val),
             "signal": signal,
             "price": round(price, 4) if price < 100 else round(price, 2),
-            "ema9":  round(e9, 4) if e9 < 100 else round(e9, 2),
+            "ema9": round(e9, 4) if e9 < 100 else round(e9, 2),
             "ema21": round(e21, 4) if e21 < 100 else round(e21, 2),
             "ema50": round(e50, 4) if e50 < 100 else round(e50, 2),
             "atr_pct": round(atr_pct_val, 6),
@@ -278,17 +282,19 @@ def main():
     i_t = last_closed_index(tnx)
     i_n = last_closed_index(nas)
 
-    candle_ts = pd.Timestamp(gold.index[i_g]).to_pydatetime().replace(tzinfo=timezone.utc).isoformat()
+    candle_ts = (
+        pd.Timestamp(gold.index[i_g]).to_pydatetime().replace(tzinfo=timezone.utc).isoformat()
+    )
     now_ts = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
     g = float(gold.iloc[i_g])
     g_prev = float(gold.iloc[i_g - 1]) if len(gold) >= 3 else g
 
-    ema9_series  = ema(gold, 9)
+    ema9_series = ema(gold, 9)
     ema21_series = ema(gold, 21)
     ema50_series = ema(gold, 50)
 
-    g_ema9  = float(ema9_series.iloc[i_g])
+    g_ema9 = float(ema9_series.iloc[i_g])
     g_ema21 = float(ema21_series.iloc[i_g])
     g_ema50 = float(ema50_series.iloc[i_g])
 
@@ -299,9 +305,12 @@ def main():
     g_rsi14 = float(gold_rsi.iloc[i_g])
     g_rsi14_prev = float(gold_rsi.iloc[i_g - 1]) if len(gold) >= 3 else g_rsi14
 
-    d = float(dxy.iloc[i_d]);  d_ema21 = float(ema(dxy, 21).iloc[i_d])
-    t = float(tnx.iloc[i_t]);  t_ema21 = float(ema(tnx, 21).iloc[i_t])
-    n = float(nas.iloc[i_n]);  n_ema21 = float(ema(nas, 21).iloc[i_n])
+    d = float(dxy.iloc[i_d])
+    d_ema21 = float(ema(dxy, 21).iloc[i_d])
+    t = float(tnx.iloc[i_t])
+    t_ema21 = float(ema(tnx, 21).iloc[i_t])
+    n = float(nas.iloc[i_n])
+    n_ema21 = float(ema(nas, 21).iloc[i_n])
 
     score = 0
     score += 25 if (g > g_ema21 and g_ema21 > g_ema50) else 0
@@ -391,7 +400,12 @@ def main():
         "atr": round(g_atr, 4),
         "atr_pct": round(atr_pct, 6),
         "ema21_slope_pct": round(ema21_slope_pct, 6),
-        "thresholds": {"COMP_EMA_PCT": COMP_EMA_PCT, "COMP_ATR_PCT": COMP_ATR_PCT, "SLOPE_PCT": SLOPE_PCT, "ATR_LEN": ATR_LEN},
+        "thresholds": {
+            "COMP_EMA_PCT": COMP_EMA_PCT,
+            "COMP_ATR_PCT": COMP_ATR_PCT,
+            "SLOPE_PCT": SLOPE_PCT,
+            "ATR_LEN": ATR_LEN,
+        },
     }
 
     if compression_now and not prev_comp:
@@ -416,20 +430,24 @@ def main():
 
         if (g > g_ema21) and (ema21_slope_pct > SLOPE_PCT):
             state["market_state"] = "EXPANSION_UP"
-            add_signal(signals, candle_ts, "GOLD", "EXPANSION_UP",
-                       "Inicio expansión alcista tras compresión (posible movimiento fuerte)",
-                       2, g, extra={"ema21_slope_pct": round(ema21_slope_pct, 6)})
+            add_signal(
+                signals, candle_ts, "GOLD", "EXPANSION_UP",
+                "Inicio expansión alcista tras compresión (posible movimiento fuerte)",
+                2, g, extra={"ema21_slope_pct": round(ema21_slope_pct, 6)},
+            )
         elif (g < g_ema21) and (ema21_slope_pct < -SLOPE_PCT):
             state["market_state"] = "EXPANSION_DOWN"
-            add_signal(signals, candle_ts, "GOLD", "EXPANSION_DOWN",
-                       "Inicio expansión bajista tras compresión (posible movimiento fuerte)",
-                       2, g, extra={"ema21_slope_pct": round(ema21_slope_pct, 6)})
+            add_signal(
+                signals, candle_ts, "GOLD", "EXPANSION_DOWN",
+                "Inicio expansión bajista tras compresión (posible movimiento fuerte)",
+                2, g, extra={"ema21_slope_pct": round(ema21_slope_pct, 6)},
+            )
         else:
             state["market_state"] = "EXPANSION_UNCLEAR"
 
     state["market_state"] = "COMPRESSION" if compression_now else state.get("market_state", "NORMAL")
 
-    # ========== 6) Confirmación táctica (5m) desde el cruce ==========
+    # ========== 6) Confirmación táctica (5m) ==========
     if "BUY" in just_types:
         state["pending_confirm"] = {
             "direction": "UP",
@@ -476,38 +494,62 @@ def main():
         move_pct = pct_move(p_now, from_price)
 
         if pc.get("direction") == "DOWN" and p_now > stop_price:
-            add_signal(signals, now_ts, "GOLD", "STOP_HIT",
-                       f"Stop tocado (SELL): {p_now:.2f} > {stop_price:.2f}",
-                       4, p_now,
-                       extra={"from_price": round(from_price, 2), "stop_price": round(stop_price, 2), "source_ts": pc.get("from_ts")})
+            add_signal(
+                signals, now_ts, "GOLD", "STOP_HIT",
+                f"Stop tocado (SELL): {p_now:.2f} > {stop_price:.2f}",
+                4, p_now,
+                extra={"from_price": round(from_price, 2), "stop_price": round(stop_price, 2), "source_ts": pc.get("from_ts")},
+            )
             state.pop("pending_confirm", None)
 
         elif pc.get("direction") == "UP" and p_now < stop_price:
-            add_signal(signals, now_ts, "GOLD", "STOP_HIT",
-                       f"Stop tocado (BUY): {p_now:.2f} < {stop_price:.2f}",
-                       4, p_now,
-                       extra={"from_price": round(from_price, 2), "stop_price": round(stop_price, 2), "source_ts": pc.get("from_ts")})
+            add_signal(
+                signals, now_ts, "GOLD", "STOP_HIT",
+                f"Stop tocado (BUY): {p_now:.2f} < {stop_price:.2f}",
+                4, p_now,
+                extra={"from_price": round(from_price, 2), "stop_price": round(stop_price, 2), "source_ts": pc.get("from_ts")},
+            )
             state.pop("pending_confirm", None)
 
         else:
             if pc.get("direction") == "DOWN" and move_pct <= -thr:
-                add_signal(signals, now_ts, "GOLD", "CONFIRM_DOWN",
-                           f"Confirmación bajista: {move_pct*100:.2f}% ({move:.2f}$) desde cruce {from_price:.2f}",
-                           3, p_now,
-                           extra={"from_price": round(from_price, 2), "move": round(move, 2), "move_pct": round(move_pct, 6),
-                                  "threshold_pct": thr, "stop_price": round(stop_price, 2),
-                                  "source_ts": pc.get("from_ts"), "source_type": pc.get("source_type"),
-                                  "exec_timeframe": EXEC_TIMEFRAME, "warmup_bars": warm, "p_base": round(p_base, 2)})
+                add_signal(
+                    signals, now_ts, "GOLD", "CONFIRM_DOWN",
+                    f"Confirmación bajista: {move_pct*100:.2f}% ({move:.2f}$) desde cruce {from_price:.2f}",
+                    3, p_now,
+                    extra={
+                        "from_price": round(from_price, 2),
+                        "move": round(move, 2),
+                        "move_pct": round(move_pct, 6),
+                        "threshold_pct": thr,
+                        "stop_price": round(stop_price, 2),
+                        "source_ts": pc.get("from_ts"),
+                        "source_type": pc.get("source_type"),
+                        "exec_timeframe": EXEC_TIMEFRAME,
+                        "warmup_bars": warm,
+                        "p_base": round(p_base, 2),
+                    },
+                )
                 state.pop("pending_confirm", None)
 
             elif pc.get("direction") == "UP" and move_pct >= thr:
-                add_signal(signals, now_ts, "GOLD", "CONFIRM_UP",
-                           f"Confirmación alcista: {move_pct*100:.2f}% (+{move:.2f}$) desde cruce {from_price:.2f}",
-                           3, p_now,
-                           extra={"from_price": round(from_price, 2), "move": round(move, 2), "move_pct": round(move_pct, 6),
-                                  "threshold_pct": thr, "stop_price": round(stop_price, 2),
-                                  "source_ts": pc.get("from_ts"), "source_type": pc.get("source_type"),
-                                  "exec_timeframe": EXEC_TIMEFRAME, "warmup_bars": warm, "p_base": round(p_base, 2)})
+                add_signal(
+                    signals, now_ts, "GOLD", "CONFIRM_UP",
+                    f"Confirmación alcista: {move_pct*100:.2f}% (+{move:.2f}$) desde cruce {from_price:.2f}",
+                    3, p_now,
+                    extra={
+                        "from_price": round(from_price, 2),
+                        "move": round(move, 2),
+                        "move_pct": round(move_pct, 6),
+                        "threshold_pct": thr,
+                        "stop_price": round(stop_price, 2),
+                        "source_ts": pc.get("from_ts"),
+                        "source_type": pc.get("source_type"),
+                        "exec_timeframe": EXEC_TIMEFRAME,
+                        "warmup_bars": warm,
+                        "p_base": round(p_base, 2),
+                    },
+                )
                 state.pop("pending_confirm", None)
 
     if DEBUG_TEST_SIGNAL:
@@ -527,11 +569,10 @@ def main():
     print(f"Saved dashboard data: {DATA_PATH} (points={len(series)}) | signals={len(signals)}")
 
     # ==========================
-    # EXPORT para Premium Terminal (assets)
+    # EXPORT para Premium Terminal
     # ==========================
     premium_path = "docs/premium-terminal/macro_data.json"
 
-    # construimos assets SOLO con lo que ya calculas aquí (macro base)
     premium_assets = {
         GOLD_TICKER: {
             "score": score,
@@ -570,95 +611,55 @@ def main():
         },
     }
 
-    # ========= Añadir watchlist (BTC, acciones, etc.) =========
+    # Añadir watchlist (BTC, acciones, etc.)
     watchlist_path = "docs/premium-terminal/watchlist.json"
     symbols = load_watchlist_symbols(watchlist_path)
 
     for sym in symbols:
-        # si ya existe (por ejemplo GC=F), no lo machacamos
         if sym in premium_assets:
             continue
-
         m = build_asset_metrics(sym, PERIOD, TIMEFRAME)
         if m:
             premium_assets[sym] = m
 
-    # === mini histórico para pintar EMAs (últimos 120 puntos) ===
-tail = series[-120:] if len(series) > 120 else series
+    # ==========================
+    # SERIES (para Premium Terminal)
+    # ==========================
+    SERIES_POINTS = 120
+    premium_series = {}
 
-premium_series = {
-    GOLD_TICKER: [
-        {
-            "ts": r.get("ts"),
-            "price": r.get("gold"),
-            "ema21": r.get("gold_ema21"),
-            "ema50": r.get("gold_ema50"),
-            # ema9 no existe en row todavía -> (por ahora no lo metemos aquí)
-        }
-        for r in tail
-        if r.get("gold") is not None
-    ]
-}
+    series_symbols = list(premium_assets.keys())
 
-   # ==========================
-# SERIES (para Premium Terminal)
-# ==========================
-SERIES_POINTS = 120
+    for sym in series_symbols:
+        try:
+            df_s = fetch_ohlc(sym, PERIOD, TIMEFRAME)
+            close_s = df_s["close"]
 
-premium_series = {}
+            e9_s = ema(close_s, 9)
+            e21_s = ema(close_s, 21)
+            e50_s = ema(close_s, 50)
 
-# símbolos que queremos con histórico: todos los assets del premium terminal
-series_symbols = list(premium_assets.keys())
+            df_out = pd.DataFrame({
+                "ts": close_s.index.astype(str),
+                "price": close_s.values,
+                "ema9": e9_s.values,
+                "ema21": e21_s.values,
+                "ema50": e50_s.values,
+            }).tail(SERIES_POINTS)
 
-for sym in series_symbols:
-    try:
-        df_s = fetch_ohlc(sym, PERIOD, TIMEFRAME)
-        close_s = df_s["close"]
-
-        e21_s = ema(close_s, 21)
-        e50_s = ema(close_s, 50)
-
-        # recortamos últimas N velas
-        df_out = pd.DataFrame({
-            "ts": close_s.index.astype(str),
-            "price": close_s.values,
-            "ema21": e21_s.values,
-            "ema50": e50_s.values,
-        }).tail(SERIES_POINTS)
-
-        premium_series[sym] = [
-            {
-                "ts": r["ts"],
-                "price": round(float(r["price"]), 6),
-                "ema21": round(float(r["ema21"]), 6),
-                "ema50": round(float(r["ema50"]), 6),
-            }
-            for _, r in df_out.iterrows()
-            if pd.notna(r["price"]) and pd.notna(r["ema21"]) and pd.notna(r["ema50"])
-        ]
-
-    except Exception as e:
-        # si falla un símbolo, no rompe el script
-        premium_series[sym] = []
-
-premium_out = {
-    "meta": {"updated_utc": now_ts, "timeframe": "1h", "source": "macro_bot.py"},
-    "assets": premium_assets,
-    "series": premium_series,
-}
-premium_series = {
-    GOLD_TICKER: [
-        {
-            "ts": r.get("ts"),
-            "price": r.get("gold"),
-            "ema9": r.get("gold_ema9"),
-            "ema21": r.get("gold_ema21"),
-            "ema50": r.get("gold_ema50"),
-        }
-        for r in tail
-        if r.get("gold") is not None
-    ]
-}
+            premium_series[sym] = [
+                {
+                    "ts": r["ts"],
+                    "price": round(float(r["price"]), 6),
+                    "ema9": round(float(r["ema9"]), 6),
+                    "ema21": round(float(r["ema21"]), 6),
+                    "ema50": round(float(r["ema50"]), 6),
+                }
+                for _, r in df_out.iterrows()
+                if pd.notna(r["price"]) and pd.notna(r["ema21"]) and pd.notna(r["ema50"])
+            ]
+        except Exception:
+            premium_series[sym] = []
 
     premium_out = {
         "meta": {"updated_utc": now_ts, "timeframe": "1h", "source": "macro_bot.py"},
