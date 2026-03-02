@@ -511,16 +511,15 @@
 
 <script>
   let watchlistData = {};
-  let macroData = { meta: {}, assets: {}, series: null }; // ✅ series puede ser null | array | object por símbolo
+  let macroData = { meta: {}, assets: {}, series: null };
   let currentAsset = null;
 
   let refreshTimer = null;
   let watchlistLoaded = false;
-  let lastSignal = {}; // por símbolo
 
-  const REFRESH_MS = 60000; // 60s
+  const REFRESH_MS = 60000;
   const JSON_URL = "macro_data.json";
-  const FREEZE_WARN_MS = 10 * 60_000; // 10 min
+  const FREEZE_WARN_MS = 10 * 60_000;
 
   let lastUpdatedISO = null;
   let lastUpdatedSeenAt = null;
@@ -553,34 +552,23 @@
     return { iso, ts: Number.isFinite(ts) ? ts : null };
   }
 
-  // ✅ FUNCIÓN GLOBAL (NO dentro de clicks)
   function getSeriesFor(sym){
     const s = macroData?.series;
-
-    // A) series por símbolo: { "GC=F": [...] }
-    if (s && typeof s === "object" && !Array.isArray(s) && Array.isArray(s[sym])) {
-      return s[sym];
-    }
-
-    // B) series global como array: [ ... ]
+    if (s && typeof s === "object" && !Array.isArray(s) && Array.isArray(s[sym])) return s[sym];
     if (Array.isArray(s)) return s;
-
     return null;
   }
 
   /* =========================
-     RADAR (GLOBAL ✅ ÚNICO)
+     RADAR
      ========================= */
   function buildRadar() {
     const radar = document.getElementById("radarList");
-    if (!radar) {
-      console.warn("No existe #radarList en el DOM");
-      return;
-    }
+    if (!radar) return;
 
     radar.innerHTML = "";
 
-    const symbols = ["GC=F", "BTC-USD"];
+    const symbols = ["GC=F", "BTC-USD"]; // ajusta si quieres
 
     symbols.forEach((sym) => {
       const data = macroData.assets?.[sym];
@@ -645,18 +633,239 @@
     currentAsset = select.value;
   }
 
-  function beep() {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.type = "sine";
-      o.frequency.value = 880;
-      g.gain.value = 0.05;
-      o.start();
-      setTimeout(() => { o.stop(); ctx.close(); }, 120);
-    } catch (e) {}
+  /* =========================
+     BLOOMBERG STRUCTURE (EMA)
+     ========================= */
+  function n(v, fallback = 0){
+    v = Number(v);
+    return Number.isFinite(v) ? v : fallback;
+  }
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+
+  function renderBloombergStructure(asset, series){
+    if (!asset) return;
+
+    const price = n(asset.price);
+    const ema21 = n(asset.ema21, price);
+    const ema50 = n(asset.ema50, ema21);
+
+    let parsedSeries = null;
+    if (Array.isArray(series) && series.length){
+      parsedSeries = {
+        price: series.map(x => n(x?.price, price)),
+        ema21: series.map(x => n(x?.ema21, ema21)),
+        ema50: series.map(x => n(x?.ema50, ema50)),
+      };
+    }
+
+    drawEmaCanvas("emaCanvas", parsedSeries, { price, ema21, ema50 });
+    updateBloombergMeters(asset, { price, ema21, ema50 });
+  }
+
+  function drawEmaCanvas(canvasId, series, last){
+    const c = document.getElementById(canvasId);
+    if (!c) return;
+
+    const parent = c.parentElement;
+    const cssW = Math.max(120, (parent?.clientWidth || 260) - 2);
+    const cssH = Number(c.getAttribute("height") || 88);
+
+    const dpr = window.devicePixelRatio || 1;
+    c.style.width = cssW + "px";
+    c.style.height = cssH + "px";
+    c.width  = Math.floor(cssW * dpr);
+    c.height = Math.floor(cssH * dpr);
+
+    const ctx = c.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0,0,cssW,cssH);
+
+    ctx.fillStyle = "rgba(0,0,0,.10)";
+    ctx.fillRect(0,0,cssW,cssH);
+
+    const padL = 14, padR = 14, padT = 10, padB = 12;
+    const W = cssW - padL - padR;
+    const H = cssH - padT - padB;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(padL, padT, W, H);
+    ctx.clip();
+
+    const p   = (series?.price?.length) ? series.price : [last.price];
+    const e21 = (series?.ema21?.length) ? series.ema21 : [last.ema21];
+    const e50 = (series?.ema50?.length) ? series.ema50 : [last.ema50];
+
+    const nPts = Math.max(p.length, e21.length, e50.length);
+    const get = (arr,i)=> arr[Math.min(arr.length-1, i)];
+
+    let min=Infinity, max=-Infinity;
+    for(let i=0;i<nPts;i++){
+      [get(p,i),get(e21,i),get(e50,i)].forEach(v=>{
+        min=Math.min(min,v); max=Math.max(max,v);
+      });
+    }
+    if (!Number.isFinite(min) || !Number.isFinite(max)){ min=0; max=1; }
+    if (min === max){
+      const bump = (Math.abs(min) || 1) * 0.01;
+      min -= bump; max += bump;
+    }
+
+    const X = i => padL + (i / (nPts - 1 || 1)) * W;
+    const Y = v => padT + H - ((v - min) / (max - min)) * H;
+
+    // grid
+    ctx.strokeStyle = "rgba(255,255,255,.08)";
+    ctx.lineWidth = 1;
+    for (let k=1;k<=3;k++){
+      const y = padT + (H*k/4);
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL+W, y);
+      ctx.stroke();
+    }
+
+    // banda
+    ctx.beginPath();
+    for(let i=0;i<nPts;i++){
+      const x=X(i), y=Y(get(e21,i));
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    for(let i=nPts-1;i>=0;i--){
+      const x=X(i), y=Y(get(e50,i));
+      ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = (last.ema21 > last.ema50) ? "rgba(34,197,94,.10)" : "rgba(239,68,68,.10)";
+    ctx.fill();
+
+    // EMA21
+    ctx.beginPath();
+    for(let i=0;i<nPts;i++){
+      const x=X(i), y=Y(get(e21,i));
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle = "rgba(34,197,94,.85)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // EMA50
+    ctx.beginPath();
+    for(let i=0;i<nPts;i++){
+      const x=X(i), y=Y(get(e50,i));
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle = "rgba(96,165,250,.75)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Precio
+    ctx.beginPath();
+    for(let i=0;i<nPts;i++){
+      const x=X(i), y=Y(get(p,i));
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle = "rgba(255,255,255,.70)";
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+
+    const lx = X(nPts-1), ly = Y(get(p,nPts-1));
+    ctx.beginPath();
+    ctx.arc(lx, ly, 2.8, 0, Math.PI*2);
+    ctx.fillStyle = "rgba(255,255,255,.95)";
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function updateBloombergMeters(asset, last){
+    const bbRegime = document.getElementById("bbRegime");
+    const bbSpreadVal = document.getElementById("bbSpreadVal");
+    const bbSpreadFill = document.getElementById("bbSpreadFill");
+    const bbSpreadHint = document.getElementById("bbSpreadHint");
+
+    const bbAtrVal = document.getElementById("bbAtrVal");
+    const bbAtrFill = document.getElementById("bbAtrFill");
+    const bbAtrHint = document.getElementById("bbAtrHint");
+
+    const bbMode = document.getElementById("bbMode");
+    const bbLine1 = document.getElementById("bbLine1");
+    const bbLine2 = document.getElementById("bbLine2");
+
+    const price = n(last.price);
+    const ema21 = n(last.ema21, price);
+    const ema50 = n(last.ema50, ema21);
+
+    let atrp = asset?.atr_pct;
+    atrp = (atrp==null) ? null : n(atrp);
+    if (atrp != null && atrp < 1) atrp *= 100;
+
+    const spreadPct = (price !== 0) ? ((ema21 - ema50) / price) * 100 : 0;
+    const spreadAbs = Math.abs(spreadPct);
+
+    const up = ema21 > ema50;
+    if (bbRegime) bbRegime.textContent = up ? "BULL (EMA21>EMA50)" : "BEAR (EMA21<EMA50)";
+
+    const spreadCap = 3.0;
+    const spreadFillPct = clamp((spreadAbs / spreadCap) * 100, 0, 100);
+    if (bbSpreadVal) bbSpreadVal.textContent = `${spreadPct.toFixed(2)}%`;
+    if (bbSpreadFill){
+      bbSpreadFill.style.width = `${spreadFillPct}%`;
+      bbSpreadFill.style.background = up ? "rgba(130,255,180,.75)" : "rgba(255,120,120,.75)";
+    }
+    if (bbSpreadHint){
+      bbSpreadHint.textContent =
+        spreadAbs < 0.15 ? "Compresión (zona de decisión)" :
+        spreadAbs < 0.60 ? "Tendencia válida (spread sano)" :
+        "Spread alto (cuidado: extensión)";
+    }
+
+    const atrCap = 2.5;
+    const atrAbs = (atrp==null) ? null : Math.abs(atrp);
+    const atrFillPct = (atrAbs==null) ? 0 : clamp((atrAbs / atrCap) * 100, 0, 100);
+    if (bbAtrVal) bbAtrVal.textContent = (atrAbs==null) ? "—" : `${atrAbs.toFixed(2)}%`;
+    if (bbAtrFill){
+      bbAtrFill.style.width = `${atrFillPct}%`;
+      const hot = (atrAbs!=null && atrAbs > 1.2);
+      bbAtrFill.style.background = hot ? "rgba(255,120,120,.75)" : "rgba(130,255,180,.75)";
+    }
+    if (bbAtrHint){
+      bbAtrHint.textContent =
+        (atrAbs==null) ? "ATR% no disponible" :
+        atrAbs < 0.5 ? "Riesgo bajo (movimiento controlado)" :
+        atrAbs < 1.2 ? "Riesgo medio (normal en 1H)" :
+        "Riesgo alto (stop más amplio / menos size)";
+    }
+
+    const signal = asset?.signal || "—";
+    if (bbMode) bbMode.textContent = up ? "MODE: LONG BIAS" : "MODE: SHORT BIAS";
+    if (bbLine1) bbLine1.textContent = `${up ? "Sesgo alcista" : "Sesgo bajista"} · Señal: ${signal}`;
+    if (bbLine2){
+      const infoAtr = (atrAbs==null) ? "ATR% —" : `ATR% ${atrAbs.toFixed(2)}%`;
+      bbLine2.textContent = `Precio ${price.toFixed(2)} · EMA21 ${ema21.toFixed(2)} · EMA50 ${ema50.toFixed(2)} · ${infoAtr}`;
+    }
+  }
+
+  /* =========================
+     UPDATE VIEW (UNA SOLA)
+     ========================= */
+  function updateAssetView() {
+    const assetData = macroData.assets?.[currentAsset];
+    if (!assetData) return;
+
+    const asset = { ...assetData };
+
+    if (asset.atr_pct != null) {
+      const v = Number(asset.atr_pct);
+      asset.atr_pct = (Number.isFinite(v) && v < 1) ? (v * 100) : v;
+    }
+
+    if (asset.ema50 == null) asset.ema50 = asset.ema21;
+
+    const seriesArr = getSeriesFor(currentAsset);
+    renderBloombergStructure(asset, seriesArr);
+
+    // aquí puedes seguir con tu UI antigua (badges, gauge, etc.)
   }
 
   async function loadData() {
@@ -701,10 +910,9 @@
         setHealth(`⚠️ No encuentro updated en JSON | Fuente: ${JSON_URL}`, "warn");
       }
 
-      // ✅ sanitizado SIN romper series (puede ser array)
       if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {}, series: null };
       if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
-      if (!("series" in macroData)) macroData.series = null; // ✅ no fuerces a {}
+      if (!("series" in macroData)) macroData.series = null;
 
       const sel = document.getElementById("assetSelect");
       if (!currentAsset && sel) currentAsset = sel.value;
@@ -720,32 +928,6 @@
     }
   }
 
-  function updateAssetView() {
-    // ... tu código tal cual ...
-
-    // ✅ Solo cambia ESTE trocito Bloomberg:
-    try {
-      const assetData = macroData.assets?.[currentAsset];
-      if (!assetData) return;
-
-      const asset = { ...assetData };
-
-      if (asset.atr_pct != null) {
-        const v = Number(asset.atr_pct);
-        asset.atr_pct = (Number.isFinite(v) && v < 1) ? (v * 100) : v;
-      }
-
-      if (asset.ema50 == null) asset.ema50 = asset.ema21;
-
-      const sym = currentAsset;
-      const seriesArr = getSeriesFor(sym); // ✅ ahora sí existe
-      renderBloombergStructure(asset, seriesArr);
-
-    } catch (e) {
-      console.warn("Bloomberg Structure error:", e);
-    }
-  }
-
   function startAutoRefresh() {
     if (refreshTimer) clearInterval(refreshTimer);
     refreshTimer = setInterval(loadData, REFRESH_MS);
@@ -756,6 +938,13 @@
     startAutoRefresh();
     const rb = document.getElementById("refreshBtn");
     if (rb) rb.addEventListener("click", loadData);
+  });
+
+  window.addEventListener("resize", () => {
+    const assetData = macroData.assets?.[currentAsset];
+    if (!assetData) return;
+    const seriesArr = getSeriesFor(currentAsset);
+    renderBloombergStructure(assetData, seriesArr);
   });
 </script>
   
