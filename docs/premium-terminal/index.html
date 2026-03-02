@@ -332,8 +332,15 @@
 .bb-chart-wrap{
   border:1px solid rgba(255,255,255,.08);
   border-radius:14px;
-  padding:10px;
+  padding:12px;                 /* un poco más de aire */
   background: rgba(0,0,0,.18);
+  overflow: hidden;             /* CLAVE: que no se salga nada */
+}
+
+.bb-chart-wrap canvas{
+  width: 100% !important;
+  height: 88px !important;      /* igual que tu height */
+  display:block;
 }
 
 .bb-meters{
@@ -502,551 +509,255 @@
     </div>
   </div>
 
-  <script>
-    let watchlistData = {};
-    let macroData = { meta: {}, assets: {}, series: {} };
-    let currentAsset = null;
+<script>
+  let watchlistData = {};
+  let macroData = { meta: {}, assets: {}, series: null }; // ✅ series puede ser null | array | object por símbolo
+  let currentAsset = null;
 
-    let refreshTimer = null;
-    let watchlistLoaded = false;
-    let lastSignal = {}; // por símbolo
+  let refreshTimer = null;
+  let watchlistLoaded = false;
+  let lastSignal = {}; // por símbolo
 
-    const REFRESH_MS = 60000; // 60s
-    const JSON_URL = "macro_data.json";
-    const FREEZE_WARN_MS = 10 * 60_000; // 10 min
+  const REFRESH_MS = 60000; // 60s
+  const JSON_URL = "macro_data.json";
+  const FREEZE_WARN_MS = 10 * 60_000; // 10 min
 
-    let lastUpdatedISO = null;
-    let lastUpdatedSeenAt = null;
+  let lastUpdatedISO = null;
+  let lastUpdatedSeenAt = null;
 
-    async function fetchJson(url) {
-      const r = await fetch(url + "?v=" + Date.now());
-      if (!r.ok) throw new Error(url + " HTTP " + r.status);
-      return await r.json();
+  async function fetchJson(url) {
+    const r = await fetch(url + "?v=" + Date.now());
+    if (!r.ok) throw new Error(url + " HTTP " + r.status);
+    return await r.json();
+  }
+
+  function setHealth(text, level = "good") {
+    const el = document.getElementById("dataHealth");
+    if (!el) return;
+    el.textContent = text;
+    el.classList.remove("good", "warn", "bad");
+    el.classList.add(level);
+  }
+
+  function fmtAge(ms) {
+    const s = Math.max(0, Math.floor(ms / 1000));
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return m <= 0 ? `${s}s` : `${m}m ${r}s`;
+  }
+
+  function parseUpdatedTs(macro) {
+    const iso = macro?.meta?.updated_utc || macro?.meta?.updated || macro?.updated || null;
+    if (!iso) return { iso: null, ts: null };
+    const ts = Date.parse(iso);
+    return { iso, ts: Number.isFinite(ts) ? ts : null };
+  }
+
+  // ✅ FUNCIÓN GLOBAL (NO dentro de clicks)
+  function getSeriesFor(sym){
+    const s = macroData?.series;
+
+    // A) series por símbolo: { "GC=F": [...] }
+    if (s && typeof s === "object" && !Array.isArray(s) && Array.isArray(s[sym])) {
+      return s[sym];
     }
 
-    function setHealth(text, level = "good") {
-      const el = document.getElementById("dataHealth");
-      if (!el) return;
-      el.textContent = text;
-      el.classList.remove("good", "warn", "bad");
-      el.classList.add(level);
+    // B) series global como array: [ ... ]
+    if (Array.isArray(s)) return s;
+
+    return null;
+  }
+
+  /* =========================
+     RADAR (GLOBAL ✅ ÚNICO)
+     ========================= */
+  function buildRadar() {
+    const radar = document.getElementById("radarList");
+    if (!radar) {
+      console.warn("No existe #radarList en el DOM");
+      return;
     }
 
-    function fmtAge(ms) {
-      const s = Math.max(0, Math.floor(ms / 1000));
-      const m = Math.floor(s / 60);
-      const r = s % 60;
-      return m <= 0 ? `${s}s` : `${m}m ${r}s`;
-    }
+    radar.innerHTML = "";
 
-    function parseUpdatedTs(macro) {
-      const iso = macro?.meta?.updated_utc || macro?.meta?.updated || macro?.updated || null;
-      if (!iso) return { iso: null, ts: null };
-      const ts = Date.parse(iso);
-      return { iso, ts: Number.isFinite(ts) ? ts : null };
-    }
+    const symbols = ["GC=F", "BTC-USD"];
 
-    /* =========================
-       RADAR (GLOBAL ✅ ÚNICO)
-       ========================= */
-    function buildRadar() {
-      const radar = document.getElementById("radarList");
-      if (!radar) {
-        console.warn("No existe #radarList en el DOM");
-        return;
-      }
-
-      radar.innerHTML = "";
-
-      // lista mínima segura (luego ampliamos)
-      const symbols = ["GC=F", "BTC-USD"];
-
-      symbols.forEach((sym) => {
-        const data = macroData.assets?.[sym];
-        if (!data) return;
-
-        let color = "#94a3b8";
-        if (data.signal === "explosion_up") color = "#22c55e";
-        if (data.signal === "explosion_down") color = "#ef4444";
-
-        const div = document.createElement("div");
-        div.className = "radarItem";
-        div.style.borderColor = color;
-
-        div.innerHTML = `
-          <div>
-            <div class="radarSym">${sym}</div>
-            <div class="radarMeta">${data.signal ?? "—"}</div>
-          </div>
-
-          <div></div>
-
-          <div>
-            <div class="radarPrice" style="color:${color}">${data.price ?? "—"}</div>
-            <div class="radarEma">EMA21: ${data.ema21 ?? "—"}</div>
-          </div>
-        `;
-
-        div.addEventListener("click", () => {
-          currentAsset = sym;
-          const sel = document.getElementById("assetSelect");
-          if (sel) sel.value = sym;
-          updateAssetView();
-        });
-
-        radar.appendChild(div);
-      });
-    }
-
-    function buildSelector() {
-      const select = document.getElementById("assetSelect");
-      if (!select) return;
-
-      select.innerHTML = "";
-
-      for (const category in watchlistData) {
-        const group = document.createElement("optgroup");
-        group.label = category;
-
-        (watchlistData[category] || []).forEach((asset) => {
-          const option = document.createElement("option");
-          option.value = asset.symbol;
-          option.textContent = asset.name;
-          group.appendChild(option);
-        });
-
-        select.appendChild(group);
-      }
-
-      select.addEventListener("change", () => {
-        currentAsset = select.value;
-        updateAssetView();
-      });
-
-      currentAsset = select.value;
-    }
-
-    function beep() {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.connect(g); g.connect(ctx.destination);
-        o.type = "sine";
-        o.frequency.value = 880;
-        g.gain.value = 0.05;
-        o.start();
-        setTimeout(() => { o.stop(); ctx.close(); }, 120);
-      } catch (e) {}
-    }
-
-    async function loadData() {
-      try {
-        if (!watchlistLoaded) {
-          watchlistData = await fetchJson("watchlist.json");
-          watchlistLoaded = true;
-          buildSelector();
-        }
-
-        macroData = await fetchJson(JSON_URL);
-
-        const { iso, ts } = parseUpdatedTs(macroData);
-        const now = Date.now();
-
-        if (iso && ts) {
-          const age = now - ts;
-
-          let level = "good";
-          if (age > 10 * 60_000) level = "bad";
-          else if (age > 5 * 60_000) level = "warn";
-
-          const frozen =
-            lastUpdatedISO &&
-            iso === lastUpdatedISO &&
-            lastUpdatedSeenAt &&
-            (now - lastUpdatedSeenAt) > FREEZE_WARN_MS;
-
-          if (frozen) {
-            setHealth(`⚠️ Datos congelados: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`, "bad");
-          } else {
-            setHealth(`✅ OK: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`, level);
-          }
-
-          if (iso !== lastUpdatedISO) {
-            lastUpdatedISO = iso;
-            lastUpdatedSeenAt = now;
-          } else if (!lastUpdatedSeenAt) {
-            lastUpdatedSeenAt = now;
-          }
-        } else {
-          setHealth(`⚠️ No encuentro updated en JSON | Fuente: ${JSON_URL}`, "warn");
-        }
-
-        if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {} };
-        if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
-        if (!macroData.series || typeof macroData.series !== "object") macroData.series = {};
-        const sel = document.getElementById("assetSelect");
-        if (!currentAsset && sel) currentAsset = sel.value;
-
-        updateAssetView();
-        buildRadar();
-
-      } catch (err) {
-        console.error(err);
-        setHealth(`❌ Error cargando JSON | Fuente: ${JSON_URL}`, "bad");
-        const title = document.getElementById("assetName");
-        if (title) title.textContent = "ERROR: " + err.message;
-      }
-    }
-
-    function updateAssetView() {
-      const select = document.getElementById("assetSelect");
-      const title  = document.getElementById("assetName");
-
-      const uiTrend   = document.getElementById("uiTrend");
-      const uiVol     = document.getElementById("uiVol");
-      const uiSignal  = document.getElementById("uiSignal");
-      const uiUpdated = document.getElementById("uiUpdated");
-
-      const gScore = document.getElementById("gScore");
-      const gFg    = document.getElementById("gFg");
-      const sigDot = document.getElementById("sigDot");
-
-      const uiStatePill = document.getElementById("uiStatePill");
-      const uiStateText = document.getElementById("uiStateText");
-      const uiStateHint = document.getElementById("uiStateHint");
-
-      if (!select || !title) return;
-
-      if (!currentAsset) currentAsset = select.value;
-      if (select.value !== currentAsset) select.value = currentAsset;
-
-      const assetName = select.selectedOptions?.[0]?.textContent || currentAsset || "Activo";
-      title.textContent = assetName;
-
-      const assetData = macroData.assets?.[currentAsset];
-      console.log("ASSET", currentAsset, "score=", assetData?.score, "trend=", assetData?.trend, "sig=", assetData?.signal);
-
-      const setState = (pillClass, pillText, text, hint) => {
-        if (uiStatePill) {
-          uiStatePill.className = `statePill ${pillClass}`;
-          uiStatePill.textContent = pillText;
-        }
-        if (uiStateText) uiStateText.textContent = text;
-        if (uiStateHint) uiStateHint.textContent = hint;
-      };
-
-      if (!assetData) {
-        title.textContent += " (sin datos aún)";
-        if (uiTrend) uiTrend.textContent = "—";
-        if (uiVol) uiVol.textContent = "—";
-        if (uiSignal) uiSignal.textContent = "—";
-        if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
-
-        if (sigDot) sigDot.className = "dot";
-        if (gScore) gScore.textContent = "—";
-        if (gFg) {
-          gFg.style.stroke = "#94a3b8";
-          gFg.style.strokeDashoffset = "251.2";
-        }
-
-        const mainCard = document.getElementById("mainCard");
-        if (mainCard) mainCard.classList.remove("tone-up","tone-down");
-
-        document.body.classList.remove("gauge-red","gauge-amber","gauge-green");
-
-        setState("neutral", "ESTADO", "Sin datos", "Esperando actualización");
-        return;
-      }
-
-      const trend = String(assetData.trend ?? "—");
-      const vol   = String(assetData.volatility ?? "—");
-      const sig   = String(assetData.signal ?? "—");
-
-      const mainCard = document.getElementById("mainCard");
-      if (mainCard){
-        mainCard.classList.remove("tone-up","tone-down");
-        if (sig === "explosion_up") mainCard.classList.add("tone-up");
-        if (sig === "explosion_down") mainCard.classList.add("tone-down");
-      }
-
-      const prevSig = lastSignal[currentAsset];
-      if (prevSig && prevSig !== sig) {
-        console.log(`[ALERTA] ${currentAsset}: ${prevSig} -> ${sig}`);
-        beep();
-        if (sig === "explosion_up") showToast(`${assetName} – EXPLOSION UP`, "up");
-        if (sig === "explosion_down") showToast(`${assetName} – EXPLOSION DOWN`, "down");
-      }
-      lastSignal[currentAsset] = sig;
-
-      // chips
-      const bSig = document.getElementById("badgeSignal");
-      const bTr  = document.getElementById("badgeTrend");
-      const bVol = document.getElementById("badgeVol");
-
-      function paint(el, color){
-        if (!el) return;
-        el.style.borderColor = color;
-        el.style.color = color;
-      }
-
-      if (sig === "explosion_up") paint(bSig, "#22c55e");
-      else if (sig === "explosion_down") paint(bSig, "#ef4444");
-      else paint(bSig, "#94a3b8");
-
-      if (trend.toLowerCase() === "bullish") paint(bTr, "#22c55e");
-      else if (trend.toLowerCase() === "bearish") paint(bTr, "#ef4444");
-      else paint(bTr, "#94a3b8");
-
-      if (vol.toLowerCase() === "low") paint(bVol, "#22c55e");
-      else if (vol.toLowerCase() === "high") paint(bVol, "#f59e0b");
-      else paint(bVol, "#94a3b8");
-
-      if (uiTrend) uiTrend.textContent = trend;
-      if (uiVol) uiVol.textContent = vol;
-      if (uiSignal) uiSignal.textContent = sig;
-      if (uiUpdated) uiUpdated.textContent = macroData?.meta?.updated_utc || "—";
-
-      // gauge
-      const score = Number(assetData.score ?? 0);
-      const clamped = Math.max(0, Math.min(100, score));
-
-      document.body.classList.remove("gauge-red","gauge-amber","gauge-green");
-      if (clamped < 40) document.body.classList.add("gauge-red");
-      else if (clamped <= 70) document.body.classList.add("gauge-amber");
-      else document.body.classList.add("gauge-green");
-
-      if (gScore) {
-        gScore.textContent = String(clamped);
-        if (clamped < 40) gScore.style.fill = "#ef4444";
-        else if (clamped <= 70) gScore.style.fill = "#f59e0b";
-        else gScore.style.fill = "#22c55e";
-      }
-
-      const total = 251.2;
-      const offset = total * (1 - clamped / 100);
+    symbols.forEach((sym) => {
+      const data = macroData.assets?.[sym];
+      if (!data) return;
 
       let color = "#94a3b8";
-      if (clamped < 40) color = "#ef4444";
-      else if (clamped <= 70) color = "#f59e0b";
-      else color = "#22c55e";
+      if (data.signal === "explosion_up") color = "#22c55e";
+      if (data.signal === "explosion_down") color = "#ef4444";
 
-      if (gFg) {
-        gFg.style.stroke = color;
-        gFg.style.strokeDasharray = String(total);
-        gFg.style.strokeDashoffset = String(offset);
+      const div = document.createElement("div");
+      div.className = "radarItem";
+      div.style.borderColor = color;
+
+      div.innerHTML = `
+        <div>
+          <div class="radarSym">${sym}</div>
+          <div class="radarMeta">${data.signal ?? "—"}</div>
+        </div>
+        <div></div>
+        <div>
+          <div class="radarPrice" style="color:${color}">${data.price ?? "—"}</div>
+          <div class="radarEma">EMA21: ${data.ema21 ?? "—"}</div>
+        </div>
+      `;
+
+      div.addEventListener("click", () => {
+        currentAsset = sym;
+        const sel = document.getElementById("assetSelect");
+        if (sel) sel.value = sym;
+        updateAssetView();
+      });
+
+      radar.appendChild(div);
+    });
+  }
+
+  function buildSelector() {
+    const select = document.getElementById("assetSelect");
+    if (!select) return;
+
+    select.innerHTML = "";
+
+    for (const category in watchlistData) {
+      const group = document.createElement("optgroup");
+      group.label = category;
+
+      (watchlistData[category] || []).forEach((asset) => {
+        const option = document.createElement("option");
+        option.value = asset.symbol;
+        option.textContent = asset.name;
+        group.appendChild(option);
+      });
+
+      select.appendChild(group);
+    }
+
+    select.addEventListener("change", () => {
+      currentAsset = select.value;
+      updateAssetView();
+    });
+
+    currentAsset = select.value;
+  }
+
+  function beep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = "sine";
+      o.frequency.value = 880;
+      g.gain.value = 0.05;
+      o.start();
+      setTimeout(() => { o.stop(); ctx.close(); }, 120);
+    } catch (e) {}
+  }
+
+  async function loadData() {
+    try {
+      if (!watchlistLoaded) {
+        watchlistData = await fetchJson("watchlist.json");
+        watchlistLoaded = true;
+        buildSelector();
       }
 
-      if (sigDot) {
-        sigDot.className = "dot";
-        if (sig === "explosion_up") sigDot.classList.add("up");
-        if (sig === "explosion_down") sigDot.classList.add("down");
-      }
+      macroData = await fetchJson(JSON_URL);
 
-      // Market state
-      const volLow = (vol.toLowerCase() === "low");
-      const bullish = (trend.toLowerCase() === "bullish");
-      const bearish = (trend.toLowerCase() === "bearish");
+      const { iso, ts } = parseUpdatedTs(macroData);
+      const now = Date.now();
 
-      if (clamped >= 75 && bullish && sig === "explosion_up") {
-        setState("up", "MOMENTUM", "Impulso fuerte", "Probable continuación (ojo pullbacks)");
-      } else if (sig === "explosion_down" || clamped <= 35) {
-        setState("down", "RIESGO", "Presión bajista", "Evitar FOMO / buscar confirmación");
-      } else if (volLow && clamped >= 40 && clamped <= 70) {
-        setState("neutral", "COMPR.", "Compresión", "Posible salida en breve (esperar señal)");
-      } else if (bearish && clamped < 55) {
-        setState("down", "BAJISTA", "Sesgo bajista", "Rebotes = posible venta");
+      if (iso && ts) {
+        const age = now - ts;
+
+        let level = "good";
+        if (age > 10 * 60_000) level = "bad";
+        else if (age > 5 * 60_000) level = "warn";
+
+        const frozen =
+          lastUpdatedISO &&
+          iso === lastUpdatedISO &&
+          lastUpdatedSeenAt &&
+          (now - lastUpdatedSeenAt) > FREEZE_WARN_MS;
+
+        if (frozen) {
+          setHealth(`⚠️ Datos congelados: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`, "bad");
+        } else {
+          setHealth(`✅ OK: updated=${iso} (edad ${fmtAge(age)}) | Fuente: ${JSON_URL}`, level);
+        }
+
+        if (iso !== lastUpdatedISO) {
+          lastUpdatedISO = iso;
+          lastUpdatedSeenAt = now;
+        } else if (!lastUpdatedSeenAt) {
+          lastUpdatedSeenAt = now;
+        }
       } else {
-        setState("neutral", "NEUTRAL", "Mercado mixto", "Esperar mejor ventana");
+        setHealth(`⚠️ No encuentro updated en JSON | Fuente: ${JSON_URL}`, "warn");
       }
-      
-            // ===== BLOOMBERG STRUCTURE (EMA) =====
-try {
-  const asset = { ...assetData };
 
-  // atr_pct a %
-  if (asset.atr_pct != null) {
-    const v = Number(asset.atr_pct);
-    asset.atr_pct = (Number.isFinite(v) && v < 1) ? (v * 100) : v;
-  }
+      // ✅ sanitizado SIN romper series (puede ser array)
+      if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {}, series: null };
+      if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
+      if (!("series" in macroData)) macroData.series = null; // ✅ no fuerces a {}
 
-  if (asset.ema50 == null) asset.ema50 = asset.ema21;
+      const sel = document.getElementById("assetSelect");
+      if (!currentAsset && sel) currentAsset = sel.value;
 
-  // ✅ series correcta desde TU macroData (macro_data.json)
-  const sym = currentAsset;
-  const seriesArr = macroData?.series?.[sym] || null; // ahora mismo será null
-  renderBloombergStructure(asset, seriesArr);
-  
-} catch (e) {
-  console.warn("Bloomberg Structure error:", e);
-}
-}
-    function startAutoRefresh() {
-      if (refreshTimer) clearInterval(refreshTimer);
-      refreshTimer = setInterval(loadData, REFRESH_MS);
+      updateAssetView();
+      buildRadar();
+
+    } catch (err) {
+      console.error(err);
+      setHealth(`❌ Error cargando JSON | Fuente: ${JSON_URL}`, "bad");
+      const title = document.getElementById("assetName");
+      if (title) title.textContent = "ERROR: " + err.message;
     }
+  }
 
-    function showToast(message, type){
-      const t = document.createElement("div");
-      t.className = `toast ${type}`;
-      t.textContent = message;
-      document.body.appendChild(t);
+  function updateAssetView() {
+    // ... tu código tal cual ...
 
-      setTimeout(() => t.classList.add("show"), 50);
+    // ✅ Solo cambia ESTE trocito Bloomberg:
+    try {
+      const assetData = macroData.assets?.[currentAsset];
+      if (!assetData) return;
 
-      setTimeout(() => {
-        t.classList.remove("show");
-        setTimeout(() => t.remove(), 300);
-      }, 4000);
+      const asset = { ...assetData };
+
+      if (asset.atr_pct != null) {
+        const v = Number(asset.atr_pct);
+        asset.atr_pct = (Number.isFinite(v) && v < 1) ? (v * 100) : v;
+      }
+
+      if (asset.ema50 == null) asset.ema50 = asset.ema21;
+
+      const sym = currentAsset;
+      const seriesArr = getSeriesFor(sym); // ✅ ahora sí existe
+      renderBloombergStructure(asset, seriesArr);
+
+    } catch (e) {
+      console.warn("Bloomberg Structure error:", e);
     }
-
-    document.addEventListener("DOMContentLoaded", () => {
-  loadData();
-  startAutoRefresh();
-
-  const rb = document.getElementById("refreshBtn");
-  if (rb) rb.addEventListener("click", loadData);
-});
-
-    function pct(n){ return (n*100).toFixed(2) + "%"; }
-function clamp01(x){ return Math.max(0, Math.min(1, x)); }
-
-// Clasificador de régimen Bloomberg-style
-function calcRegime({signal, score, ema21, ema50, atr_pct, spread_pct}) {
-  const trendBull = ema21 > ema50;
-  const highScore = score >= 75;
-  const medScore  = score >= 60 && score < 75;
-
-  const lowVol = atr_pct !== null && atr_pct <= 0.7;
-  const highVol = atr_pct !== null && atr_pct >= 1.2;
-
-  const compression = spread_pct !== null && spread_pct < 0.15; // % muy pegadas
-  const healthyExp  = spread_pct !== null && spread_pct >= 0.15 && spread_pct <= 0.80;
-  const extended    = spread_pct !== null && spread_pct > 0.80;
-
-  // Decisión base
-  if (highScore && !highVol && healthyExp && (signal === "explosion_up" || signal === "explosion_down")) {
-    return { mode: "MODO ATAQUE", sub: trendBull ? "Bull Expansion" : "Bear Expansion" };
-  }
-  if (compression && (medScore || highScore)) {
-    return { mode: "MODO VIGILANCIA", sub: "Compression / Pre-break" };
-  }
-  if (highVol || extended) {
-    return { mode: "MODO DEFENSA", sub: "High Risk / Extended" };
-  }
-  return { mode: "MODO ESPERA", sub: "No Edge" };
-}
-
-function setBar(el, value01, tone){
-  el.style.width = (value01*100).toFixed(0) + "%";
-  // tono: "green"|"yellow"|"red"
-  if (tone==="green") el.style.background = "rgba(130,255,180,.78)";
-  if (tone==="yellow") el.style.background = "rgba(255,210,120,.78)";
-  if (tone==="red") el.style.background = "rgba(255,120,140,.78)";
-}
-
-
-function renderBloombergStructure(asset, series){
-  const price = Number(asset.price);
-  const ema21 = Number(asset.ema21);
-  const ema50 = Number(asset.ema50);
-
-  // Mini chart (canvas): price + EMA21 + EMA50
-  let parsedSeries = null;
-  if (Array.isArray(series)) {
-    parsedSeries = {
-      price: series.map(x => x.price),
-      ema21: series.map(x => x.ema21),
-      ema50: series.map(x => x.ema50)
-    };
   }
 
-  drawEmaCanvas("emaCanvas", parsedSeries, { price, ema21, ema50 });
-}
-
-// Dibujo canvas sencillo (no depende de librerías)
-function drawEmaCanvas(canvasId, series, last){
-  const c = document.getElementById(canvasId);
-  if (!c) return;
-
-  const ctx = c.getContext("2d");
-  const w = c.width = c.parentElement.clientWidth - 2;
-  const h = c.height;
-
-  // Fondo
-  ctx.clearRect(0,0,w,h);
-  ctx.fillStyle = "rgba(0,0,0,.08)";
-  ctx.fillRect(0,0,w,h);
-
-  const p   = (series && series.price && series.price.length) ? series.price : [last.price];
-  const e21 = (series && series.ema21 && series.ema21.length) ? series.ema21 : [last.ema21];
-  const e50 = (series && series.ema50 && series.ema50.length) ? series.ema50 : [last.ema50];
-
-  const n = Math.max(p.length, e21.length, e50.length);
-  const get = (arr,i)=> arr[Math.min(arr.length-1,i)];
-
-  // rango
-  let min=Infinity,max=-Infinity;
-  for(let i=0;i<n;i++){
-    const a=[get(p,i),get(e21,i),get(e50,i)];
-    a.forEach(v=>{ min=Math.min(min,v); max=Math.max(max,v); });
+  function startAutoRefresh() {
+    if (refreshTimer) clearInterval(refreshTimer);
+    refreshTimer = setInterval(loadData, REFRESH_MS);
   }
-  if (!Number.isFinite(min) || !Number.isFinite(max) || min===max){ min-=1; max+=1; }
 
-  const X = i => (i/(n-1||1))*(w-16)+8;
-  const Y = v => (h-10) - ((v-min)/(max-min))*(h-20);
-
-  // banda entre EMAs
-  ctx.beginPath();
-  for(let i=0;i<n;i++){
-    const x=X(i), y=Y(get(e21,i));
-    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  }
-  for(let i=n-1;i>=0;i--){
-    const x=X(i), y=Y(get(e50,i));
-    ctx.lineTo(x,y);
-  }
-  ctx.closePath();
-  ctx.fillStyle = (last.ema21>last.ema50) ? "rgba(130,255,180,.10)" : "rgba(255,120,140,.10)";
-  ctx.fill();
-
-  // ema21
-  ctx.beginPath();
-  for(let i=0;i<n;i++){
-    const x=X(i), y=Y(get(e21,i));
-    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  }
-  ctx.strokeStyle = "rgba(130,255,180,.65)";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // ema50
-  ctx.beginPath();
-  for(let i=0;i<n;i++){
-    const x=X(i), y=Y(get(e50,i));
-    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  }
-  ctx.strokeStyle = "rgba(180,180,255,.55)";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // precio
-  ctx.beginPath();
-  for(let i=0;i<n;i++){
-    const x=X(i), y=Y(get(p,i));
-    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  }
-  ctx.strokeStyle = "rgba(255,255,255,.55)";
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-
-  // último punto
-  ctx.beginPath();
-  ctx.arc(X(n-1), Y(get(p,n-1)), 2.6, 0, Math.PI*2);
-  ctx.fillStyle = "rgba(255,255,255,.85)";
-  ctx.fill();
-}
-
+  document.addEventListener("DOMContentLoaded", () => {
+    loadData();
+    startAutoRefresh();
+    const rb = document.getElementById("refreshBtn");
+    if (rb) rb.addEventListener("click", loadData);
+  });
 </script>
+  
 </body>
 </html>
