@@ -2,7 +2,7 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-03-02T15:10:08+00:00"
+    "updated_utc": "2026-03-02T15:55:37+00:00"
   },
   "series": [
     {
@@ -5475,6 +5475,34 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-03-02T15:55:37+00:00",
+      "candle_ts": "2026-03-02T14:00:00+00:00",
+      "score": 25,
+      "bias": "SHORT_CUIDADO",
+      "gold": 5346.4,
+      "gold_ema9": 5387.31,
+      "gold_ema21": 5356.39,
+      "gold_ema50": 5297.13,
+      "gold_rsi14": 51.2,
+      "gold_rsi14_prev": 67.31,
+      "dxy": 98.405,
+      "dxy_ema21": 98.1239,
+      "tnx": 4.036,
+      "tnx_ema21": 4.0067,
+      "nasdaq": 22590.47,
+      "nasdaq_ema21": 22749.26,
+      "ema_spread_pct": 0.011085,
+      "atr": 34.545,
+      "atr_pct": 0.006461,
+      "ema21_slope_pct": -0.000187,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -5680,11 +5708,22 @@
       "ema21": 5356.39,
       "stop_price": 5354.42,
       "confirm_pct": 0.003
+    },
+    {
+      "ts": "2026-03-02T15:55:37+00:00",
+      "asset": "GOLD",
+      "type": "STOP_HIT",
+      "reason": "Stop tocado (SELL): 5357.20 > 5354.42",
+      "strength": 4,
+      "price": 5357.2,
+      "from_price": 5346.4,
+      "stop_price": 5354.42,
+      "source_ts": "2026-03-02T14:00:00+00:00"
     }
   ],
   "state": {
     "metrics": {
-      "ema_spread": 59.2634,
+      "ema_spread": 59.2633,
       "ema_spread_pct": 0.011085,
       "atr": 34.545,
       "atr_pct": 0.006461,
@@ -5696,16 +5735,6 @@
         "ATR_LEN": 14
       }
     },
-    "market_state": "NORMAL",
-    "pending_confirm": {
-      "direction": "DOWN",
-      "from_ts": "2026-03-02T14:00:00+00:00",
-      "from_price": 5346.39990234375,
-      "threshold_pct": 0.003,
-      "stop_price": 5354.4195021972655,
-      "warmup_bars": 1,
-      "source_type": "SELL",
-      "created_at": "2026-03-02T15:10:08+00:00"
-    }
+    "market_state": "NORMAL"
   }
 }
