@@ -864,6 +864,30 @@
 
     const seriesArr = getSeriesFor(currentAsset);
     renderBloombergStructure(asset, seriesArr);
+    // ===== SCORE GAUGE =====
+const score = Number(asset.score);
+const gFg = document.getElementById("gFg");
+const gScore = document.getElementById("gScore");
+const gauge = document.getElementById("scoreGauge");
+
+if (Number.isFinite(score)) {
+  const percent = Math.max(0, Math.min(100, score));
+  const offset = 251.2 - (251.2 * percent / 100);
+
+  if (gFg) gFg.style.strokeDashoffset = offset;
+  if (gScore) gScore.textContent = percent.toFixed(0);
+
+  if (gauge) {
+    gauge.classList.remove("gauge-red","gauge-amber","gauge-green");
+
+    if (percent < 35) gauge.classList.add("gauge-red");
+    else if (percent < 65) gauge.classList.add("gauge-amber");
+    else gauge.classList.add("gauge-green");
+  }
+
+} else {
+  if (gScore) gScore.textContent = "—";
+}
 
     // aquí puedes seguir con tu UI antigua (badges, gauge, etc.)
   }
