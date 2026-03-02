@@ -873,13 +873,10 @@ try {
   if (asset.ema50 == null) asset.ema50 = asset.ema21;
 
   // ✅ series correcta desde TU macroData (macro_data.json)
-  const sym = currentAsset; 
-  const seriesArr = (macroData && macroData.series && macroData.series[sym]) ? macroData.series[sym] : null;
-
-  console.log("SERIES OK?", sym, Array.isArray(seriesArr), seriesArr?.length);
-
+  const sym = currentAsset;
+  const seriesArr = macroData?.series?.[sym] || null; // ahora mismo será null
   renderBloombergStructure(asset, seriesArr);
-
+  
 } catch (e) {
   console.warn("Bloomberg Structure error:", e);
 }
