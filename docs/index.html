@@ -194,6 +194,8 @@ let scoreChartInstance = null;
 let clockTimer = null;
 let liveTicker = null;
 let lastDataCache = null;
+let lastUpdatedUtc = null;
+let offlineSince = null; 
 
 function fmt(n, d=2){
   if (n === undefined || n === null || Number.isNaN(n)) return "—";
@@ -446,8 +448,20 @@ async function loadData() {
     lastDataCache = data;
     const last = series[series.length - 1];
 
-    document.getElementById("updated").innerText =
-      "Actualizado: " + new Date(data.meta.updated_utc).toLocaleString("es-ES", { timeZone: "Europe/Madrid" });
+const updUtc = data?.meta?.updated_utc || null;
+const updMadrid = updUtc
+  ? new Date(updUtc).toLocaleString("es-ES", { timeZone: "Europe/Madrid", hour12:false })
+  : "—";
+
+const changed = (updUtc && updUtc !== lastUpdatedUtc);
+lastUpdatedUtc = updUtc;
+
+// si veníamos de offline, lo limpiamos al recuperar
+offlineSince = null;
+
+const extra = changed ? "✅ actualizado" : "🟡 sin cambios (backend aún no publicó)";
+document.getElementById("updated").innerText =
+  `Actualizado (snapshot): ${updMadrid} · ${extra} · Ahora: ${madridNowStr()}`;
 
     document.getElementById("score").innerText = (last.score ?? "—") + "/100";
 
@@ -521,16 +535,19 @@ async function loadData() {
       data: { labels, datasets: [{ label: "Score", data: series.map(x => x.score) }] },
       options: { responsive: true, maintainAspectRatio: false }
     });
-
   }catch(e){
-    console.error("loadData ERROR:", e);
-    const upd = document.getElementById("updated");
-    if (upd) upd.innerText = "ERROR cargando macro_data.json (mira Console)";
+  console.error("loadData ERROR:", e);
+  const upd = document.getElementById("updated");
+  if (upd){
+    if (!offlineSince) offlineSince = Date.now();
+    const secs = Math.floor((Date.now() - offlineSince)/1000);
+    upd.innerText = `🔴 OFFLINE (${secs}s) · No se pudo cargar macro_data.json · Ahora: ${madridNowStr()}`;
   }
-}
+  }  // cierra catch
+  }  // cierra loadData
 
 function hookRefreshButton(){
-  const btn = document.getElementById("btnRefresh");
+   const btn = document.getElementById("btnRefresh");
   if (!btn) return;
 
   btn.addEventListener("click", async () => {
@@ -546,12 +563,23 @@ function hookRefreshButton(){
   });
 }
 
+// 1) PRIMERO: funciones helper (antes de loadData)
+function madridNowStr(){
+  return new Date().toLocaleString("es-ES", {
+    timeZone: "Europe/Madrid",
+    hour12: false
+  });
+}
+
+// ... aquí van tus otras funciones (startClockAll, loadData, hookRefreshButton, etc.)
+
+// 2) AL FINAL DEL SCRIPT: arranque (boot)
 startClockAll();
 startLiveTicker();
 hookRefreshButton();
 loadData();
 setInterval(loadData, 30000);
+  
 </script>
-
 </body>
 </html>
