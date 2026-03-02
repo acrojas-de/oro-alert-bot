@@ -883,7 +883,7 @@ try {
 } catch (e) {
   console.warn("Bloomberg Structure error:", e);
 }
-
+}
     function startAutoRefresh() {
       if (refreshTimer) clearInterval(refreshTimer);
       refreshTimer = setInterval(loadData, REFRESH_MS);
@@ -1032,7 +1032,7 @@ if (Array.isArray(series)) {
 }
 
 drawEmaCanvas("emaCanvas", parsedSeries, { price, ema21, ema50 });
-
+}
 // Dibujo canvas sencillo (no depende de librerías)
 function drawEmaCanvas(canvasId, series, last){
   const c = document.getElementById(canvasId);
@@ -1040,7 +1040,7 @@ function drawEmaCanvas(canvasId, series, last){
   const ctx = c.getContext("2d");
   const w = c.width = c.parentElement.clientWidth - 2;
   const h = c.height;
-
+}
   // Fondo
   ctx.clearRect(0,0,w,h);
   ctx.fillStyle = "rgba(0,0,0,.08)";
@@ -1114,6 +1114,7 @@ function drawEmaCanvas(canvasId, series, last){
   ctx.fillStyle = "rgba(255,255,255,.85)";
   ctx.fill();
 }
-  </script>
+  
+</script>
 </body>
 </html>
