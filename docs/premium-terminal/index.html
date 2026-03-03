@@ -531,7 +531,7 @@
   let lastUpdatedSeenAt = null;
 
   async function fetchJson(url) {
-    const r = await fetch(url + "?v=" + Date.now());
+    const r = await fetch(url + "?v=" + Date.now(), { cache: "no-store" });
     if (!r.ok) throw new Error(url + " HTTP " + r.status);
     return await r.json();
   }
@@ -563,6 +563,18 @@
     if (s && typeof s === "object" && !Array.isArray(s) && Array.isArray(s[sym])) return s[sym];
     if (Array.isArray(s)) return s;
     return null;
+  }
+
+  // ✅ helper: nombre por símbolo desde watchlist.json
+  function getNameForSymbol(sym){
+    try{
+      for (const cat in watchlistData){
+        const arr = watchlistData[cat] || [];
+        const hit = arr.find(a => a.symbol === sym);
+        if (hit) return hit.name || sym;
+      }
+    } catch(e){}
+    return sym;
   }
 
   /* =========================
@@ -861,41 +873,98 @@
 
     const asset = { ...assetData };
 
+    // normaliza ATR%
     if (asset.atr_pct != null) {
       const v = Number(asset.atr_pct);
       asset.atr_pct = (Number.isFinite(v) && v < 1) ? (v * 100) : v;
     }
 
+    // fallback EMA50
     if (asset.ema50 == null) asset.ema50 = asset.ema21;
 
+    // render structure
     const seriesArr = getSeriesFor(currentAsset);
     renderBloombergStructure(asset, seriesArr);
+
     // ===== SCORE GAUGE =====
-const score = Number(asset.score);
-const gFg = document.getElementById("gFg");
-const gScore = document.getElementById("gScore");
-const gauge = document.getElementById("scoreGauge");
+    const score = Number(asset.score);
+    const gFg = document.getElementById("gFg");
+    const gScore = document.getElementById("gScore");
+    const gauge = document.getElementById("scoreGauge");
 
-if (Number.isFinite(score)) {
-  const percent = Math.max(0, Math.min(100, score));
-  const offset = 251.2 - (251.2 * percent / 100);
+    if (Number.isFinite(score)) {
+      const percent = Math.max(0, Math.min(100, score));
+      const offset = 251.2 - (251.2 * percent / 100);
 
-  if (gFg) gFg.style.strokeDashoffset = offset;
-  if (gScore) gScore.textContent = percent.toFixed(0);
+      if (gFg) gFg.style.strokeDashoffset = offset;
+      if (gScore) gScore.textContent = percent.toFixed(0);
 
-  if (gauge) {
-    gauge.classList.remove("gauge-red","gauge-amber","gauge-green");
+      if (gauge) {
+        gauge.classList.remove("gauge-red","gauge-amber","gauge-green");
+        if (percent < 35) gauge.classList.add("gauge-red");
+        else if (percent < 65) gauge.classList.add("gauge-amber");
+        else gauge.classList.add("gauge-green");
+      }
+    } else {
+      if (gScore) gScore.textContent = "—";
+    }
 
-    if (percent < 35) gauge.classList.add("gauge-red");
-    else if (percent < 65) gauge.classList.add("gauge-amber");
-    else gauge.classList.add("gauge-green");
-  }
+    // ✅ ===== UI CHIPS / ESTADO / TONE =====
+    const title = document.getElementById("assetName");
+    if (title) title.textContent = getNameForSymbol(currentAsset);
 
-} else {
-  if (gScore) gScore.textContent = "—";
-}
+    const uiSignal = document.getElementById("uiSignal");
+    const uiTrend  = document.getElementById("uiTrend");
+    const uiVol    = document.getElementById("uiVol");
+    const uiUpd    = document.getElementById("uiUpdated");
 
-    // aquí puedes seguir con tu UI antigua (badges, gauge, etc.)
+    if (uiSignal) uiSignal.textContent = asset.signal ?? "—";
+    if (uiTrend)  uiTrend.textContent  = asset.trend ?? "—";
+    if (uiVol)    uiVol.textContent    = asset.volatility ?? "—";
+
+    const updIso = macroData?.meta?.updated_utc || macroData?.meta?.updated || macroData?.updated || null;
+    if (uiUpd) uiUpd.textContent = updIso ? updIso.replace("T"," ").replace("Z","") : "—";
+
+    const sigDot   = document.getElementById("sigDot");
+    const mainCard = document.getElementById("mainCard");
+
+    if (sigDot){
+      sigDot.classList.remove("up","down");
+      if (asset.signal === "explosion_up") sigDot.classList.add("up");
+      else if (asset.signal === "explosion_down") sigDot.classList.add("down");
+    }
+
+    if (mainCard){
+      mainCard.classList.remove("tone-up","tone-down");
+      if (asset.signal === "explosion_up") mainCard.classList.add("tone-up");
+      else if (asset.signal === "explosion_down") mainCard.classList.add("tone-down");
+    }
+
+    const pill = document.getElementById("uiStatePill");
+    const stxt = document.getElementById("uiStateText");
+    const shin = document.getElementById("uiStateHint");
+
+    let state = "neutral";
+    let stateText = "Sin señal";
+    let hint = "Esperando confirmación";
+
+    if (asset.signal === "explosion_up") {
+      state = "up";
+      stateText = "Impulso alcista";
+      hint = "Vigilar continuidad / pullback";
+    } else if (asset.signal === "explosion_down") {
+      state = "down";
+      stateText = "Impulso bajista";
+      hint = "Vigilar continuidad / rebote";
+    }
+
+    if (pill){
+      pill.classList.remove("up","down","neutral");
+      pill.classList.add(state);
+      pill.textContent = "ESTADO";
+    }
+    if (stxt) stxt.textContent = stateText;
+    if (shin) shin.textContent = hint;
   }
 
   async function loadData() {
