@@ -430,16 +430,6 @@
   grid-column: 1 / -1;   /* ocupa todo el ancho */
   order: -1;
 }  
-
- .modal.hidden{display:none}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:9999}
-.modalBox{width:min(1100px,92vw);height:min(720px,88vh);background:#0b0f14;border:1px solid rgba(255,255,255,.12);border-radius:14px;overflow:hidden}
-.modalTop{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.10)}
-.modalTitle{font-weight:800}
-.modalClose{background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer}
-.modalFrame{width:100%;height:calc(100% - 44px);border:0;background:#000}
-.modalHint{padding:8px 12px;font-size:12px;opacity:.8;border-top:1px solid rgba(255,255,255,.10)}   
-    
   </style>
 </head>
 
@@ -547,18 +537,6 @@
     </div>
   </div>
 
-<!-- ===== TRADE MODAL ===== -->
-<div id="tradeModal" class="modal hidden">
-  <div class="modalBox">
-    <div class="modalTop">
-      <div id="tradeTitle" class="modalTitle">Trade</div>
-      <button id="tradeClose" class="modalClose">✕</button>
-    </div>
-    <iframe id="tradeFrame" class="modalFrame" loading="lazy"></iframe>
-    <div class="modalHint" id="tradeHint"></div>
-  </div>
-</div>
-  
 <script>
   let watchlistData = {};
   let macroData = { meta: {}, assets: {}, series: null };
@@ -615,65 +593,18 @@
   function getNameForSymbol(sym){
     try{
       for (const cat in watchlistData){
-        const arr = watchlistData[cat] || []; 
+        const arr = watchlistData[cat] || [];
         const hit = arr.find(a => a.symbol === sym);
         if (hit) return hit.name || sym;
       }
     } catch(e){}
     return sym;
   }
+  
+  /* =========================
+   RADAR (SEMAFORO)
+   ========================= */
 
- // ==========================
-// TRADE (SIMPLE) - eToro en pestaña nueva
-// ==========================
-function getTradeUrl(sym){
-  // Opción A: si en el futuro lo metes directo en macroData.assets[sym].tradeUrl
-  const direct = macroData?.assets?.[sym]?.tradeUrl;
-  if (direct) return direct;
-
-  function closeTradeModal(){
-  const modal = document.getElementById("tradeModal");
-  const frame = document.getElementById("tradeFrame");
-  if (modal) modal.classList.add("hidden");
-  if (frame) frame.src = "about:blank";
-}
-
-function openTrade(sym){
-  const url = getTradeUrl(sym);
-  if (!url){
-    alert("No hay tradeUrl para " + sym + ". Añádelo en watchlist.json");
-    return;
-  }
-  window.open(url, "_blank", "noopener,noreferrer");
-}
-
-  // Opción B: tu watchlist.json por categorías con arrays
-  try{
-    for (const cat in watchlistData){
-      const arr = watchlistData[cat] || [];
-      const hit = arr.find(a => a.symbol === sym);
-      if (hit?.tradeUrl) return hit.tradeUrl;
-      if (hit?.url) return hit.url; // por si lo llamas "url"
-    }
-  }catch(e){}
-  return null;
-}
-
-function openTrade(sym){
-  const url = getTradeUrl(sym);
-  if (!url){
-    alert("No hay tradeUrl para " + sym + ". Añádelo en watchlist.json");
-    return;
-  }
-  window.open(url, "_blank", "noopener,noreferrer");
-}
-
-
-// ==========================
-// RADAR (SEMAFORO)
-// 1 click: seleccionar activo
-// doble click: abrir eToro
-// ==========================
 function trafficLight(asset){
   if (!asset) return { cls: "w", label: "no-data" };
 
@@ -732,18 +663,13 @@ function buildRadar() {
     div.className = "radarItem";
     div.style.borderColor = color;
 
-    // ✅ SOLO HTML AQUÍ
     div.innerHTML = `
       <div>
         <div class="radarSym">${getNameForSymbol(sym)}</div>
         <div class="radarMeta radarMetaRow">
           <span class="tl ${tl.cls}"></span>
           <span>${data.signal ?? "—"}</span>
-          <span class="radarScore">${
-            Number.isFinite(Number(data.score))
-              ? ("Score " + Number(data.score).toFixed(0))
-              : ""
-          }</span>
+          <span class="radarScore">${Number.isFinite(Number(data.score)) ? ("Score " + Number(data.score).toFixed(0)) : ""}</span>
         </div>
       </div>
       <div></div>
@@ -753,15 +679,12 @@ function buildRadar() {
       </div>
     `;
 
-    // ✅ EVENTOS FUERA DEL HTML
     div.addEventListener("click", () => {
       currentAsset = sym;
       const sel = document.getElementById("assetSelect");
       if (sel) sel.value = sym;
       updateAssetView();
     });
-
-    div.addEventListener("dblclick", () => openTrade(sym));
 
     radar.appendChild(div);
   });
@@ -1178,13 +1101,19 @@ function buildRadar() {
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-  loadData();
-  startAutoRefresh();
+    loadData();
+    startAutoRefresh();
+    const rb = document.getElementById("refreshBtn");
+    if (rb) rb.addEventListener("click", loadData);
+  });
 
-  const rb = document.getElementById("refreshBtn");
-  if (rb) rb.addEventListener("click", loadData);
-
-
-</script> 
+  window.addEventListener("resize", () => {
+    const assetData = macroData.assets?.[currentAsset];
+    if (!assetData) return;
+    const seriesArr = getSeriesFor(currentAsset);
+    renderBloombergStructure(assetData, seriesArr);
+  });
+</script>
+  
 </body>
 </html>
