@@ -757,10 +757,16 @@ function buildRadar() {
         <div class="radarPrice" style="color:${color}">${data.price ?? "—"}</div>
         <div class="radarEma">EMA21: ${data.ema21 ?? "—"}</div>
       </div>
-    `;
+      
+   div.addEventListener("click", () => {
+  currentAsset = sym;
+  const sel = document.getElementById("assetSelect");
+  if (sel) sel.value = sym;
+  updateAssetView();
+});
 
-   div.addEventListener("click", () => openTrade(sym));
-
+div.addEventListener("dblclick", () => openTrade(sym));
+  
     radar.appendChild(div);
   });
 }
