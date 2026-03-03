@@ -470,28 +470,7 @@
         <span id="uiStateHint" class="stateHint">—</span>
       </div>
 
-      <!-- ===== GAUGE + RADAR (PRO) ===== -->
-      <div class="layout2">
-        <div class="leftPane">
-          <div class="gaugeWrap">
-            <svg id="scoreGauge" viewBox="0 0 200 120" class="gauge">
-              <path id="gBg" d="M 20 100 A 80 80 0 0 1 180 100" class="gBg"></path>
-              <path id="gFg" d="M 20 100 A 80 80 0 0 1 180 100" class="gFg"></path>
-
-              <text id="gScore" x="100" y="78" text-anchor="middle" class="gScore">—</text>
-              <text id="gLabel" x="100" y="98" text-anchor="middle" class="gLabel">Score</text>
-            </svg>
-          </div>
-        </div>
-
-        <div class="rightPane">
-          <div class="radarHeader">
-            <div class="radarTitle">RADAR</div>
-            <div class="radarHint">Señal · Precio · EMA21</div>
-          </div>
-          <div id="radarList" class="radarList"></div>
-
-          <!-- ===== BLOOMBERG STRUCTURE (EMA) ===== -->
+        <!-- ===== BLOOMBERG STRUCTURE (EMA) ===== -->
 <section class="bloomberg-structure">
   <div class="bb-head">
     <div class="bb-title">STRUCTURE</div>
@@ -532,10 +511,29 @@
     <div class="bb-decision-line" id="bbLine2">—</div>
   </div>
 </section>
-          
+      
+      <!-- ===== GAUGE + RADAR (PRO) ===== -->
+      <div class="layout2">
+        <div class="leftPane">
+          <div class="gaugeWrap">
+            <svg id="scoreGauge" viewBox="0 0 200 120" class="gauge">
+              <path id="gBg" d="M 20 100 A 80 80 0 0 1 180 100" class="gBg"></path>
+              <path id="gFg" d="M 20 100 A 80 80 0 0 1 180 100" class="gFg"></path>
+
+              <text id="gScore" x="100" y="78" text-anchor="middle" class="gScore">—</text>
+              <text id="gLabel" x="100" y="98" text-anchor="middle" class="gLabel">Score</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="rightPane">
+          <div class="radarHeader">
+            <div class="radarTitle">RADAR</div>
+            <div class="radarHint">Señal · Precio · EMA21</div>
+          </div>
+          <div id="radarList" class="radarList"></div>
         </div>
       </div>
-
     </div>
   </div>
 
