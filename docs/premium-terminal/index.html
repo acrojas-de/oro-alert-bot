@@ -623,13 +623,15 @@
     return sym;
   }
 
- // ===== TRADE MODAL (con fallback) =====
+ // ==========================
+// TRADE (SIMPLE) - eToro en pestaña nueva
+// ==========================
 function getTradeUrl(sym){
   // Opción A: si en el futuro lo metes directo en macroData.assets[sym].tradeUrl
   const direct = macroData?.assets?.[sym]?.tradeUrl;
   if (direct) return direct;
 
-  // Opción B (tu watchlist.json actual es por categorías con arrays)
+  // Opción B: tu watchlist.json por categorías con arrays
   try{
     for (const cat in watchlistData){
       const arr = watchlistData[cat] || [];
@@ -641,13 +643,6 @@ function getTradeUrl(sym){
   return null;
 }
 
-function closeTradeModal(){
-  const modal = document.getElementById("tradeModal");
-  const frame = document.getElementById("tradeFrame");
-  if (modal) modal.classList.add("hidden");
-  if (frame) frame.src = "about:blank";
-}  // ← ESTA LLAVE FALTABA
-
 function openTrade(sym){
   const url = getTradeUrl(sym);
   if (!url){
@@ -657,36 +652,12 @@ function openTrade(sym){
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
-  const modal = document.getElementById("tradeModal");
-  const frame = document.getElementById("tradeFrame");
-  const title = document.getElementById("tradeTitle");
-  const hint  = document.getElementById("tradeHint");
 
-  if (title) title.textContent = "Trade — " + getNameForSymbol(sym);
-  if (hint) hint.textContent = "Si el broker bloquea esta vista interna, se abrirá en pestaña nueva.";
-
-  // Abre modal
-  if (modal) modal.classList.remove("hidden");
-
-  // Intenta iframe
-  if (frame) frame.src = url;
-
-  // Fallback: si bloquea iframe, abrimos pestaña nueva y cerramos modal
-  setTimeout(() => {
-    try{
-      void frame.contentWindow; // si está bloqueado, aquí puede fallar
-    }catch(e){
-      window.open(url, "_blank", "noopener,noreferrer");
-      closeTradeModal();
-    }
-  }, 1200);
-}
-  
-  
-  /* =========================
-   RADAR (SEMAFORO)
-   ========================= */
-
+// ==========================
+// RADAR (SEMAFORO)
+// 1 click: seleccionar activo
+// doble click: abrir eToro
+// ==========================
 function trafficLight(asset){
   if (!asset) return { cls: "w", label: "no-data" };
 
@@ -715,11 +686,12 @@ function buildRadar() {
         if (a?.symbol) symbols.push(a.symbol);
       });
     }
-  } catch(e){}
+  }catch(e){}
 
   if (!symbols.length) symbols = ["GC=F", "BTC-USD"];
   symbols = Array.from(new Set(symbols));
 
+  // Orden por score desc
   symbols.sort((a,b)=>{
     const sa = Number(macroData.assets?.[a]?.score);
     const sb = Number(macroData.assets?.[b]?.score);
@@ -745,13 +717,16 @@ function buildRadar() {
     div.className = "radarItem";
     div.style.borderColor = color;
 
+    // ✅ AQUÍ SOLO HTML (nada de JS dentro)
     div.innerHTML = `
       <div>
         <div class="radarSym">${getNameForSymbol(sym)}</div>
         <div class="radarMeta radarMetaRow">
           <span class="tl ${tl.cls}"></span>
           <span>${data.signal ?? "—"}</span>
-          <span class="radarScore">${Number.isFinite(Number(data.score)) ? ("Score " + Number(data.score).toFixed(0)) : ""}</span>
+          <span class="radarScore">
+            ${Number.isFinite(Number(data.score)) ? ("Score " + Number(data.score).toFixed(0)) : ""}
+          </span>
         </div>
       </div>
       <div></div>
@@ -759,16 +734,23 @@ function buildRadar() {
         <div class="radarPrice" style="color:${color}">${data.price ?? "—"}</div>
         <div class="radarEma">EMA21: ${data.ema21 ?? "—"}</div>
       </div>
-      
-   div.addEventListener("click", () => {
-  currentAsset = sym;
-  const sel = document.getElementById("assetSelect");
-  if (sel) sel.value = sym;
-  updateAssetView();
-});
+    `;
 
-div.addEventListener("dblclick", () => openTrade(sym));
-  
+    // ✅ 1 click = seleccionar activo
+    div.addEventListener("click", () => {
+      currentAsset = sym;
+      const sel = document.getElementById("assetSelect");
+      if (sel) sel.value = sym;
+      updateAssetView();
+    });
+
+    // ✅ doble click = abrir trade
+    div.addEventListener("dblclick", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openTrade(sym);
+    });
+
     radar.appendChild(div);
   });
 }
@@ -1190,14 +1172,6 @@ div.addEventListener("dblclick", () => openTrade(sym));
   const rb = document.getElementById("refreshBtn");
   if (rb) rb.addEventListener("click", loadData);
 
-  const tc = document.getElementById("tradeClose");
-  if (tc) tc.addEventListener("click", closeTradeModal);
-
-  const tm = document.getElementById("tradeModal");
-  if (tm) tm.addEventListener("click", (e) => {
-    if (e.target.id === "tradeModal") closeTradeModal();
-  });
-});
 
 </script> 
 </body>
