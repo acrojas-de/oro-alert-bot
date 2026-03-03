@@ -624,7 +624,6 @@ function buildRadar() {
 
   radar.innerHTML = "";
 
-  // 1) sacamos símbolos de la watchlist (si existe)
   let symbols = [];
   try{
     for (const cat in watchlistData){
@@ -634,13 +633,9 @@ function buildRadar() {
     }
   } catch(e){}
 
-  // fallback si watchlist aún no cargó
   if (!symbols.length) symbols = ["GC=F", "BTC-USD"];
-
-  // únicos
   symbols = Array.from(new Set(symbols));
 
-  // orden por score desc si existe
   symbols.sort((a,b)=>{
     const sa = Number(macroData.assets?.[a]?.score);
     const sb = Number(macroData.assets?.[b]?.score);
@@ -668,7 +663,7 @@ function buildRadar() {
 
     div.innerHTML = `
       <div>
-        <div class="radarSym">${sym}</div>
+        <div class="radarSym">${getNameForSymbol(sym)}</div>
         <div class="radarMeta radarMetaRow">
           <span class="tl ${tl.cls}"></span>
           <span>${data.signal ?? "—"}</span>
@@ -1088,38 +1083,8 @@ function buildRadar() {
       if (!currentAsset && sel) currentAsset = sel.value;
 
       updateAssetView();
-     
-      function trafficLight(asset){
-      if (!asset) return { cls: "w", label: "no-data" };
-
-      const sig = asset.signal || "neutral";
-      const score = Number(asset.score);
-
-      if (sig === "explosion_up" || (Number.isFinite(score) && score >= 65)) {
-       return { cls: "g", label: "bull" };
-  }
-      if (sig === "explosion_down" || (Number.isFinite(score) && score <= 35)) {
-      return { cls: "r", label: "bear" };
-  }
-      return { cls: "y", label: "neutral" };
-}
-      function trafficLight(asset){
-  if (!asset) return { cls: "w", label: "no-data" };
-
-  const sig = asset.signal || "neutral";
-  const score = Number(asset.score);
-
-  if (sig === "explosion_up" || (Number.isFinite(score) && score >= 65)) {
-    return { cls: "g", label: "bull" };
-  }
-  if (sig === "explosion_down" || (Number.isFinite(score) && score <= 35)) {
-    return { cls: "r", label: "bear" };
-  }
-  return { cls: "y", label: "neutral" };
-}
-      
       buildRadar();
-
+     
     } catch (err) {
       console.error(err);
       setHealth(`❌ Error cargando JSON | Fuente: ${JSON_URL}`, "bad");
