@@ -2,7 +2,7 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-03-03T01:09:05+00:00"
+    "updated_utc": "2026-03-03T03:41:23+00:00"
   },
   "series": [
     {
@@ -5923,6 +5923,34 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-03-03T03:41:23+00:00",
+      "candle_ts": "2026-03-03T02:00:00+00:00",
+      "score": 50,
+      "bias": "MIXTO_ESPERAR",
+      "gold": 5380.0,
+      "gold_ema9": 5357.25,
+      "gold_ema21": 5350.87,
+      "gold_ema50": 5314.08,
+      "gold_rsi14": 58.36,
+      "gold_rsi14_prev": 52.86,
+      "dxy": 98.516,
+      "dxy_ema21": 98.3998,
+      "tnx": 4.052,
+      "tnx_ema21": 4.0219,
+      "nasdaq": 22689.58,
+      "nasdaq_ema21": 22737.74,
+      "ema_spread_pct": 0.006837,
+      "atr": 32.7247,
+      "atr_pct": 0.006083,
+      "ema21_slope_pct": 0.000542,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -6194,15 +6222,33 @@
       "ema21": 5345.76,
       "stop_price": 5351.06,
       "confirm_pct": 0.003
+    },
+    {
+      "ts": "2026-03-03T03:41:23+00:00",
+      "asset": "GOLD",
+      "type": "CONFIRM_UP",
+      "reason": "Confirmación alcista: 0.40% (+21.40$) desde cruce 5359.10",
+      "strength": 3,
+      "price": 5380.5,
+      "from_price": 5359.1,
+      "move": 21.4,
+      "move_pct": 0.003993,
+      "threshold_pct": 0.003,
+      "stop_price": 5351.06,
+      "source_ts": "2026-03-02T23:00:00+00:00",
+      "source_type": "BUY",
+      "exec_timeframe": "5m",
+      "warmup_bars": 1,
+      "p_base": 5385.1
     }
   ],
   "state": {
     "metrics": {
-      "ema_spread": 38.2926,
-      "ema_spread_pct": 0.007145,
-      "atr": 32.1423,
-      "atr_pct": 0.005998,
-      "ema21_slope_pct": 0.000249,
+      "ema_spread": 36.7832,
+      "ema_spread_pct": 0.006837,
+      "atr": 32.7247,
+      "atr_pct": 0.006083,
+      "ema21_slope_pct": 0.000542,
       "thresholds": {
         "COMP_EMA_PCT": 0.0015,
         "COMP_ATR_PCT": 0.0018,
@@ -6210,16 +6256,6 @@
         "ATR_LEN": 14
       }
     },
-    "market_state": "NORMAL",
-    "pending_confirm": {
-      "direction": "UP",
-      "from_ts": "2026-03-02T23:00:00+00:00",
-      "from_price": 5359.10009765625,
-      "threshold_pct": 0.003,
-      "stop_price": 5351.061447509766,
-      "warmup_bars": 1,
-      "source_type": "BUY",
-      "created_at": "2026-03-03T01:09:05+00:00"
-    }
+    "market_state": "NORMAL"
   }
 }
