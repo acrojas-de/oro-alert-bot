@@ -646,7 +646,7 @@ function closeTradeModal(){
   const frame = document.getElementById("tradeFrame");
   if (modal) modal.classList.add("hidden");
   if (frame) frame.src = "about:blank";
-
+}  // ← ESTA LLAVE FALTABA
 
 function openTrade(sym){
   const url = getTradeUrl(sym);
