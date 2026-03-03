@@ -522,7 +522,9 @@
   let watchlistLoaded = false;
 
   const REFRESH_MS = 60000;
-  const JSON_URL = "macro_data.json";
+  const BASE = new URL(".", location.href);
+  const JSON_URL = new URL("macro_data.json", BASE).toString();
+  const WATCH_URL = new URL("watchlist.json", BASE).toString();
   const FREEZE_WARN_MS = 10 * 60_000;
 
   let lastUpdatedISO = null;
@@ -899,7 +901,7 @@ if (Number.isFinite(score)) {
   async function loadData() {
     try {
       if (!watchlistLoaded) {
-        watchlistData = await fetchJson("watchlist.json");
+        watchlistData = await fetchJson(WATCH_URL);
         watchlistLoaded = true;
         buildSelector();
       }
