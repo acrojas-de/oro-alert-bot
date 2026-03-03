@@ -654,6 +654,8 @@ function openTrade(sym){
     alert("No hay tradeUrl para " + sym + ". Añádelo en watchlist.json");
     return;
   }
+  window.open(url, "_blank", "noopener,noreferrer");
+}
 
   const modal = document.getElementById("tradeModal");
   const frame = document.getElementById("tradeFrame");
