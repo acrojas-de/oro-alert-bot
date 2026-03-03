@@ -615,7 +615,7 @@
   function getNameForSymbol(sym){
     try{
       for (const cat in watchlistData){
-        const arr = watchlistData[cat] || [];
+        const arr = watchlistData[cat] || []; 
         const hit = arr.find(a => a.symbol === sym);
         if (hit) return hit.name || sym;
       }
