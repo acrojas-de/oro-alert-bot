@@ -631,6 +631,22 @@ function getTradeUrl(sym){
   const direct = macroData?.assets?.[sym]?.tradeUrl;
   if (direct) return direct;
 
+  function closeTradeModal(){
+  const modal = document.getElementById("tradeModal");
+  const frame = document.getElementById("tradeFrame");
+  if (modal) modal.classList.add("hidden");
+  if (frame) frame.src = "about:blank";
+}
+
+function openTrade(sym){
+  const url = getTradeUrl(sym);
+  if (!url){
+    alert("No hay tradeUrl para " + sym + ". Añádelo en watchlist.json");
+    return;
+  }
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
   // Opción B: tu watchlist.json por categorías con arrays
   try{
     for (const cat in watchlistData){
@@ -686,12 +702,11 @@ function buildRadar() {
         if (a?.symbol) symbols.push(a.symbol);
       });
     }
-  }catch(e){}
+  } catch(e){}
 
   if (!symbols.length) symbols = ["GC=F", "BTC-USD"];
   symbols = Array.from(new Set(symbols));
 
-  // Orden por score desc
   symbols.sort((a,b)=>{
     const sa = Number(macroData.assets?.[a]?.score);
     const sb = Number(macroData.assets?.[b]?.score);
@@ -717,16 +732,18 @@ function buildRadar() {
     div.className = "radarItem";
     div.style.borderColor = color;
 
-    // ✅ AQUÍ SOLO HTML (nada de JS dentro)
+    // ✅ SOLO HTML AQUÍ
     div.innerHTML = `
       <div>
         <div class="radarSym">${getNameForSymbol(sym)}</div>
         <div class="radarMeta radarMetaRow">
           <span class="tl ${tl.cls}"></span>
           <span>${data.signal ?? "—"}</span>
-          <span class="radarScore">
-            ${Number.isFinite(Number(data.score)) ? ("Score " + Number(data.score).toFixed(0)) : ""}
-          </span>
+          <span class="radarScore">${
+            Number.isFinite(Number(data.score))
+              ? ("Score " + Number(data.score).toFixed(0))
+              : ""
+          }</span>
         </div>
       </div>
       <div></div>
@@ -736,7 +753,7 @@ function buildRadar() {
       </div>
     `;
 
-    // ✅ 1 click = seleccionar activo
+    // ✅ EVENTOS FUERA DEL HTML
     div.addEventListener("click", () => {
       currentAsset = sym;
       const sel = document.getElementById("assetSelect");
@@ -744,12 +761,7 @@ function buildRadar() {
       updateAssetView();
     });
 
-    // ✅ doble click = abrir trade
-    div.addEventListener("dblclick", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      openTrade(sym);
-    });
+    div.addEventListener("dblclick", () => openTrade(sym));
 
     radar.appendChild(div);
   });
