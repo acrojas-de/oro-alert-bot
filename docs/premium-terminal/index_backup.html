@@ -179,7 +179,47 @@
 
     .pulseTf{ font-size:11px; color:#94a3b8; }
     .pulseMini{ font-size:11px; color:#94a3b8; display:flex; justify-content:space-between; }
+
+    .pressureWrap{
+  margin-top:16px;
+  padding:14px;
+  border:1px solid #1e293b;
+  border-radius:10px;
+  background:#0f172a;
+}
+
+.pressureTitle{
+  font-size:13px;
+  font-weight:700;
+  opacity:.8;
+  margin-bottom:10px;
+}
+
+.pressureGrid{
+  display:flex;
+  gap:14px;
+}
+
+.pressureBox{
+  flex:1;
+  padding:10px;
+  border:1px solid #334155;
+  border-radius:8px;
+  text-align:center;
+}
+
+.pressureName{
+  font-size:12px;
+  opacity:.7;
+}
+
+.pressureValue{
+  font-size:16px;
+  font-weight:700;
+  margin-top:4px;
+}
   </style>
+
 </head>
 
 <body>
@@ -225,7 +265,30 @@
           <div class="pulseHint">Click: seleccionar · Doble click: trade</div>
         </div>
         <div id="pulseGrid" class="pulseGrid"></div>
-      </div>
+</div>
+
+<!-- ===== MARKET PRESSURE ===== -->
+<div class="pressureWrap">
+  <div class="pressureTitle">MARKET PRESSURE</div>
+  <div class="pressureGrid">
+
+    <div class="pressureBox">
+      <div class="pressureName">CRYPTO</div>
+      <div id="pressureCrypto" class="pressureValue">—</div>
+    </div>
+
+    <div class="pressureBox">
+      <div class="pressureName">TECH</div>
+      <div id="pressureTech" class="pressureValue">—</div>
+    </div>
+
+    <div class="pressureBox">
+      <div class="pressureName">MACRO</div>
+      <div id="pressureMacro" class="pressureValue">—</div>
+    </div>
+
+  </div>
+</div>>
 
       <!-- ===== BLOOMBERG STRUCTURE (EMA) ===== -->
       <section class="bloomberg-structure">
@@ -452,6 +515,7 @@
           const sel = document.getElementById("assetSelect");
           if (sel) sel.value = sym;
           updateAssetView();
+          updateMarketPressure();
         });
 
         div.addEventListener("dblclick", () => {
@@ -464,6 +528,40 @@
       });
     }
 
+   function updateMarketPressure(){
+
+  const crypto = ["BTC-USD","ETH-USD","SOL-USD","XRP-USD","BNB-USD"];
+  const tech = ["MSFT","GOOGL","NVDA","AMD","AAPL"];
+  const macro = ["GC=F","SI=F","^IXIC"];
+
+  function calcPressure(list){
+    let up = 0;
+    let total = 0;
+
+    list.forEach(sym=>{
+      const data = macroData.assets[sym];
+      if(!data) return;
+
+      total++;
+
+      if(data.signal === "explosion_up") up++;
+    });
+
+    if(total === 0) return "—";
+
+    const pct = Math.round((up/total)*100);
+
+    if(pct > 60) return "🟢 "+pct+"%";
+    if(pct < 40) return "🔴 "+pct+"%";
+
+    return "🟡 "+pct+"%";
+  }
+
+  document.getElementById("pressureCrypto").textContent = calcPressure(crypto);
+  document.getElementById("pressureTech").textContent = calcPressure(tech);
+  document.getElementById("pressureMacro").textContent = calcPressure(macro);
+}
+    
     /* =========================
        MARKET PULSE (LED arriba)
        ========================= */
@@ -933,6 +1031,7 @@
         updateAssetView();
         buildRadar();
         buildPulseGrid("1H");
+        updateMarketPressure();
 
       } catch (err) {
         console.error(err);
