@@ -130,6 +130,25 @@
 
     .radarMetaRow{ display:flex; align-items:center; gap:8px; }
     .radarScore{ font-size:12px; color:#94a3b8; font-weight:800; }
+
+  .tradeLink{
+  display:inline-block;
+  margin-top:6px;
+  font-size:12px;
+  font-weight:800;
+  padding:6px 10px;
+  border:1px solid #334155;
+  border-radius:999px;
+  text-decoration:none;
+  color:#e2e8f0;
+  background: rgba(15,23,42,0.55);
+}
+.tradeLink:hover{ background: rgba(15,23,42,0.85); }
+.tradeLink.disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+    
   </style>
 </head>
 
@@ -367,34 +386,49 @@
         div.className = "radarItem";
         div.style.borderColor = color;
 
-        div.innerHTML = `
-          <div>
-            <div class="radarSym">${getNameForSymbol(sym)}</div>
-            <div class="radarMeta radarMetaRow">
-              <span class="tl ${tl.cls}"></span>
-              <span>${data.signal ?? "—"}</span>
-              <span class="radarScore">${Number.isFinite(Number(data.score)) ? ("Score " + Number(data.score).toFixed(0)) : ""}</span>
-            </div>
-          </div>
-          <div></div>
-          <div>
-            <div class="radarPrice" style="color:${color}">${data.price ?? "—"}</div>
-            <div class="radarEma">EMA21: ${data.ema21 ?? "—"}</div>
-          </div>
-        `;
+      const turl = getTradeUrl(sym);
 
-        div.addEventListener("click", () => {
-          currentAsset = sym;
-          const sel = document.getElementById("assetSelect");
-          if (sel) sel.value = sym;
-          updateAssetView();
-        });
+div.innerHTML = `
+  <div>
+    <div class="radarSym">${getNameForSymbol(sym)}</div>
+    <div class="radarMeta radarMetaRow">
+      <span class="tl ${tl.cls}"></span>
+      <span>${data.signal ?? "—"}</span>
+      <span class="radarScore">${
+        Number.isFinite(Number(data.score)) ? ("Score " + Number(data.score).toFixed(0)) : ""
+      }</span>
+    </div>
+  </div>
 
-        div.addEventListener("dblclick", () => openTrade(sym));
+  <div></div>
 
-        radar.appendChild(div);
-      });
+  <div style="text-align:right;">
+    <div class="radarPrice" style="color:${color}">${data.price ?? "—"}</div>
+    <div class="radarEma">EMA21: ${data.ema21 ?? "—"}</div>
+
+    ${
+      turl
+        ? `<a class="tradeLink" href="${turl}" target="_blank" rel="noopener noreferrer">Trade ↗</a>`
+        : `<span class="tradeLink disabled">Trade —</span>`
     }
+  </div>
+`;
+
+div.addEventListener("click", () => {
+  currentAsset = sym;
+  const sel = document.getElementById("assetSelect");
+  if (sel) sel.value = sym;
+  updateAssetView();
+});
+
+// Doble click: si hay url, abre SIN popup-blocker
+div.addEventListener("dblclick", () => {
+  const url = getTradeUrl(sym);
+  if (!url) return alert("No hay tradeUrl para " + sym + ". Añádelo en watchlist.json");
+  window.location.href = url; // <- nunca lo bloquea Chrome
+});
+
+radar.appendChild(div);
 
     function buildSelector() {
       const select = document.getElementById("assetSelect");
