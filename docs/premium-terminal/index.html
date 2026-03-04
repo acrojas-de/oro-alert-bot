@@ -130,6 +130,11 @@
 
     .radarMetaRow{ display:flex; align-items:center; gap:8px; }
     .radarScore{ font-size:12px; color:#94a3b8; font-weight:800; }
+
+   #dataHealth.good{ color:#22c55e; }
+   #dataHealth.warn{ color:#f59e0b; }
+   #dataHealth.bad { color:#ef4444; }
+    
   </style>
 </head>
 
@@ -254,10 +259,12 @@
     }
 
     function setHealth(text, level = "good") {
-      const el = document.getElementById("dataHealth");
-      if (!el) return;
-      el.textContent = text;
-    }
+    const el = document.getElementById("dataHealth");
+    if (!el) return;
+    el.textContent = text;
+    el.classList.remove("good","warn","bad");
+    el.classList.add(level);
+   }
 
     function fmtAge(ms) {
       const s = Math.max(0, Math.floor(ms / 1000));
@@ -390,7 +397,11 @@
           updateAssetView();
         });
 
-        div.addEventListener("dblclick", () => openTrade(sym));
+      div.addEventListener("dblclick", () => {
+      const url = getTradeUrl(sym);
+      if (!url) return alert("No hay tradeUrl para " + sym);
+      window.location.href = url;
+      });
 
         radar.appendChild(div);
       });
@@ -760,11 +771,24 @@
         if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
         if (!("series" in macroData)) macroData.series = null;
 
-        const sel = document.getElementById("assetSelect");
-        if (!currentAsset && sel) currentAsset = sel.value;
+       const sel = document.getElementById("assetSelect");
 
-        updateAssetView();
-        buildRadar();
+      // 1) intenta coger del selector
+      if ((!currentAsset || !macroData.assets?.[currentAsset]) && sel && sel.value) {
+      currentAsset = sel.value;
+      }
+
+      // 2) si aún no vale, coge el primer asset del JSON
+      if (!currentAsset || !macroData.assets?.[currentAsset]) {
+      const first = Object.keys(macroData.assets || {})[0];
+      if (first) currentAsset = first;
+      }
+
+      // 3) sincroniza el selector con el asset real
+      if (sel && currentAsset) sel.value = currentAsset;
+
+      updateAssetView();
+      buildRadar();
 
       } catch (err) {
         console.error(err);
