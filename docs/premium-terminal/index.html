@@ -218,6 +218,83 @@
   font-weight:700;
   margin-top:4px;
 }
+
+   .tradeZoneWrap{
+  margin-top:10px;
+  text-align:center;
+}
+
+.tradeZoneTitle{
+  font-size:12px;
+  opacity:.7;
+}
+
+.tradeZone{
+  margin-top:6px;
+  padding:8px 12px;
+  border-radius:6px;
+  font-weight:700;
+  background:#334155;
+}
+
+  /* ===== TRADE CARD + MARKET PULSE (LATERAL) ===== */
+.tradeRow{
+  display:flex;
+  gap:14px;
+  align-items:stretch;
+  margin-top:14px;
+}
+
+.tradeCard{
+  width:240px;
+  min-width:220px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:12px;
+  background: rgba(0,0,0,.12);
+}
+
+.tradeCardTitle{
+  font-weight:900;
+  letter-spacing:.12em;
+  font-size:12px;
+  opacity:.9;
+  margin-bottom:10px;
+}
+
+.tradeCardLine{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  font-size:12px;
+  color:#94a3b8;
+  margin:6px 0;
+}
+.tradeCardLine b{ color:#e2e8f0; }
+
+.tradeBadge{
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  padding:8px 10px;
+  border-radius:10px;
+  font-weight:900;
+  letter-spacing:.06em;
+  border:1px solid #334155;
+  background: rgba(15,23,42,0.35);
+  margin-top:8px;
+}
+.tradeBadge.buy{ border-color: rgba(34,197,94,.45); }
+.tradeBadge.sell{ border-color: rgba(239,68,68,.45); }
+.tradeBadge.wait{ border-color: rgba(245,158,11,.45); }
+
+.tradePulse{ flex:1; min-width:0; } /* aquí vive tu pulseWrap */
+
+@media (max-width: 980px){
+  .tradeRow{ flex-direction:column; }
+  .tradeCard{ width:auto; }
+}  
+    
   </style>
 
 </head>
@@ -258,15 +335,33 @@
         <span id="uiStateHint" class="stateHint">—</span>
       </div>
 
-      <!-- ===== MARKET PULSE (LED GRID) ===== -->
-      <div class="pulseWrap">
-        <div class="pulseHeader">
-          <div class="pulseTitle">MARKET PULSE</div>
-          <div class="pulseHint">Click: seleccionar · Doble click: trade</div>
-        </div>
-        <div id="pulseGrid" class="pulseGrid"></div>
-</div>
+    <!-- ===== TRADE CARD + MARKET PULSE ===== -->
+<div class="tradeRow">
 
+  <!-- TRADE CARD (LATERAL IZQUIERDA) -->
+  <div class="tradeCard">
+    <div class="tradeCardTitle">TRADE CARD</div>
+
+    <div id="tradeBias" class="tradeBadge wait">WAIT</div>
+
+    <div class="tradeCardLine"><span>Zona</span><b id="tradeZone">—</b></div>
+    <div class="tradeCardLine"><span>Trigger</span><b id="tradeTrigger">—</b></div>
+    <div class="tradeCardLine"><span>Stop</span><b id="tradeStop">—</b></div>
+    <div class="tradeCardLine"><span>Risk (ATR%)</span><b id="tradeRisk">—</b></div>
+  </div>
+
+  <!-- MARKET PULSE (A LA DERECHA) -->
+  <div class="tradePulse">
+    <div class="pulseWrap">
+      <div class="pulseHeader">
+        <div class="pulseTitle">MARKET PULSE</div>
+        <div class="pulseHint">Click: seleccionar · Doble click: trade</div>
+      </div>
+      <div id="pulseGrid" class="pulseGrid"></div>
+    </div>
+  </div>
+
+</div>
 <!-- ===== MARKET PRESSURE ===== -->
 <div class="pressureWrap">
   <div class="pressureTitle">MARKET PRESSURE</div>
@@ -288,7 +383,7 @@
     </div>
 
   </div>
-</div>>
+</div>
 
       <!-- ===== BLOOMBERG STRUCTURE (EMA) ===== -->
       <section class="bloomberg-structure">
@@ -893,6 +988,62 @@
       }
     }
 
+    function updateTradeCard(asset){
+  const biasEl = document.getElementById("tradeBias");
+  const zoneEl = document.getElementById("tradeZone");
+  const trigEl = document.getElementById("tradeTrigger");
+  const stopEl = document.getElementById("tradeStop");
+  const riskEl = document.getElementById("tradeRisk");
+  if (!biasEl || !zoneEl || !trigEl || !stopEl || !riskEl) return;
+
+  if (!asset){
+    biasEl.className = "tradeBadge wait";
+    biasEl.textContent = "WAIT";
+    zoneEl.textContent = "—";
+    trigEl.textContent = "—";
+    stopEl.textContent = "—";
+    riskEl.textContent = "—";
+    return;
+  }
+
+  const price = Number(asset.price);
+  const ema21 = Number(asset.ema21);
+  const ema50 = Number(asset.ema50 ?? asset.ema21);
+  const atrp  = asset.atr_pct != null ? Number(asset.atr_pct) : null;
+  const atrPct = (atrp != null && Number.isFinite(atrp)) ? (atrp < 1 ? atrp*100 : atrp) : null;
+
+  // Bias simple y robusto
+  const up = Number.isFinite(ema21) && Number.isFinite(ema50) ? (ema21 > ema50) : null;
+
+  let bias = "WAIT";
+  let zone = "—";
+  let trigger = "—";
+  let stop = "—";
+
+  if (up === true){
+    bias = "BUY";
+    zone = "Pullback / Continuidad";
+    trigger = "Precio > EMA21";
+    stop = "Bajo EMA50";
+    biasEl.className = "tradeBadge buy";
+  } else if (up === false){
+    bias = "SELL";
+    zone = "Rebote / Continuidad";
+    trigger = "Precio < EMA21";
+    stop = "Sobre EMA50";
+    biasEl.className = "tradeBadge sell";
+  } else {
+    biasEl.className = "tradeBadge wait";
+  }
+
+  biasEl.textContent = bias;
+  zoneEl.textContent = zone;
+  trigEl.textContent = trigger;
+  stopEl.textContent = stop;
+  riskEl.textContent = (atrPct == null || !Number.isFinite(atrPct)) ? "—" : atrPct.toFixed(2) + "%";
+}
+
+    
     function updateAssetView() {
       const assetData = macroData.assets?.[currentAsset];
       if (!assetData) return;
@@ -904,6 +1055,7 @@
         asset.atr_pct = (Number.isFinite(v) && v < 1) ? (v * 100) : v;
       }
       if (asset.ema50 == null) asset.ema50 = asset.ema21;
+      updateTradeCard(asset); // ✅ AQUÍ
 
       const seriesArr = getSeriesFor(currentAsset);
       renderBloombergStructure(asset, seriesArr);
