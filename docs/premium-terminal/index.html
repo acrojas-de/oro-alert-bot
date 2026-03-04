@@ -1021,9 +1021,7 @@
     const ema50 = Number(asset.ema50 ?? asset.ema21);
 
     // ATR% normalizado
-    const atrpRaw = asset.atr_pct != null ? Number(asset.atr_pct) : null;
-    const atrPct = (atrpRaw != null && Number.isFinite(atrpRaw)) ? (atrpRaw < 1 ? atrpRaw*100 : atrpRaw) : null;
-
+    const atrPct = (asset.atr_pct != null) ? normalizePct(asset.atr_pct) : null;
     // ATR absoluto (si tu JSON lo incluye como "atr")
     const atrAbs = asset.atr != null ? Number(asset.atr) : null;
     const hasAtrAbs = (atrAbs != null && Number.isFinite(atrAbs) && atrAbs > 0);
@@ -1080,9 +1078,9 @@
     const asset = { ...assetData };
 
     if (asset.atr_pct != null) {
-      const v = Number(asset.atr_pct);
-      asset.atr_pct = (Number.isFinite(v) && v < 1) ? (v * 100) : v;
-    }
+  const v = normalizePct(asset.atr_pct);
+  if (v != null) asset.atr_pct = v;
+}
     if (asset.ema50 == null) asset.ema50 = asset.ema21;
 
     updateTradeCard(asset); // ✅ AQUÍ (después de normalizar)
