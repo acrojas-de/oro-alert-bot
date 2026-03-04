@@ -131,10 +131,54 @@
     .radarMetaRow{ display:flex; align-items:center; gap:8px; }
     .radarScore{ font-size:12px; color:#94a3b8; font-weight:800; }
 
-   #dataHealth.good{ color:#22c55e; }
-   #dataHealth.warn{ color:#f59e0b; }
-   #dataHealth.bad { color:#ef4444; }
-    
+    #dataHealth.good{ color:#22c55e; }
+    #dataHealth.warn{ color:#f59e0b; }
+    #dataHealth.bad { color:#ef4444; }
+
+    /* ===== MARKET PULSE ===== */
+    .pulseWrap{
+      margin-top:14px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      padding:12px;
+      background: rgba(0,0,0,.12);
+    }
+    .pulseHeader{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:10px; }
+    .pulseTitle{ font-weight:900; letter-spacing:.12em; font-size:12px; opacity:.9; }
+    .pulseHint{ font-size:12px; color:#94a3b8; }
+
+    .pulseGrid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+      gap:10px;
+    }
+    .pulseCell{
+      border:1px solid #334155;
+      border-radius:12px;
+      padding:10px;
+      background: rgba(15,23,42,0.35);
+      cursor:pointer;
+      transition: all .15s ease;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-height:62px;
+    }
+    .pulseCell:hover{ background: rgba(15,23,42,0.60); transform: translateY(-1px); }
+
+    .pulseTop{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .pulseSym{ font-weight:900; font-size:13px; }
+    .pulseLed{
+      width:10px; height:10px; border-radius:999px;
+      background:#94a3b8;
+      box-shadow:0 0 0 3px rgba(148,163,184,.12);
+    }
+    .pulseLed.g{ background:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,.15); }
+    .pulseLed.r{ background:#ef4444; box-shadow:0 0 0 3px rgba(239,68,68,.15); }
+    .pulseLed.y{ background:#f59e0b; box-shadow:0 0 0 3px rgba(245,158,11,.15); }
+
+    .pulseTf{ font-size:11px; color:#94a3b8; }
+    .pulseMini{ font-size:11px; color:#94a3b8; display:flex; justify-content:space-between; }
   </style>
 </head>
 
@@ -148,6 +192,7 @@
 
   <div class="content">
     <div id="mainCard" class="card">
+
       <div class="rowTop">
         <div>
           <h3 id="assetName" style="margin:0;">Selecciona un activo</h3>
@@ -171,6 +216,15 @@
           <span id="uiStateText" class="stateText">—</span>
         </div>
         <span id="uiStateHint" class="stateHint">—</span>
+      </div>
+
+      <!-- ===== MARKET PULSE (LED GRID) ===== -->
+      <div class="pulseWrap">
+        <div class="pulseHeader">
+          <div class="pulseTitle">MARKET PULSE</div>
+          <div class="pulseHint">Click: seleccionar · Doble click: trade</div>
+        </div>
+        <div id="pulseGrid" class="pulseGrid"></div>
       </div>
 
       <!-- ===== BLOOMBERG STRUCTURE (EMA) ===== -->
@@ -232,6 +286,7 @@
           <div id="radarList" class="radarList"></div>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -252,6 +307,8 @@
     let lastUpdatedISO = null;
     let lastUpdatedSeenAt = null;
 
+    let lastAlignedKey = null;
+
     async function fetchJson(url) {
       const r = await fetch(url + "?v=" + Date.now(), { cache: "no-store" });
       if (!r.ok) throw new Error(url + " HTTP " + r.status);
@@ -259,12 +316,12 @@
     }
 
     function setHealth(text, level = "good") {
-    const el = document.getElementById("dataHealth");
-    if (!el) return;
-    el.textContent = text;
-    el.classList.remove("good","warn","bad");
-    el.classList.add(level);
-   }
+      const el = document.getElementById("dataHealth");
+      if (!el) return;
+      el.textContent = text;
+      el.classList.remove("good","warn","bad");
+      el.classList.add(level);
+    }
 
     function fmtAge(ms) {
       const s = Math.max(0, Math.floor(ms / 1000));
@@ -298,7 +355,7 @@
       return sym;
     }
 
-    // ===== TRADE URL + OPEN (simple) =====
+    // ===== TRADE URL =====
     function getTradeUrl(sym){
       const direct = macroData?.assets?.[sym]?.tradeUrl;
       if (direct) return direct;
@@ -397,16 +454,108 @@
           updateAssetView();
         });
 
-      div.addEventListener("dblclick", () => {
-      const url = getTradeUrl(sym);
-      if (!url) return alert("No hay tradeUrl para " + sym);
-      window.location.href = url;
-      });
+        div.addEventListener("dblclick", () => {
+          const url = getTradeUrl(sym);
+          if (!url) return alert("No hay tradeUrl para " + sym);
+          window.location.href = url;
+        });
 
         radar.appendChild(div);
       });
     }
 
+    /* =========================
+       MARKET PULSE (LED arriba)
+       ========================= */
+    function alignmentState(asset){
+      if (!asset) return { cls:"y", dir:"none", ok:false };
+      const sig = asset.signal || "neutral";
+      const score = Number(asset.score);
+
+      if (sig === "explosion_up" && Number.isFinite(score) && score >= 65) {
+        return { cls:"g", dir:"up", ok:true };
+      }
+      if (sig === "explosion_down" && Number.isFinite(score) && score <= 35) {
+        return { cls:"r", dir:"down", ok:true };
+      }
+      return { cls:"y", dir:"none", ok:false };
+    }
+
+    function triggerAlignmentAlert(tfLabel="1H"){
+      let best = null;
+
+      for (const sym in (macroData.assets || {})){
+        const a = macroData.assets[sym];
+        const st = alignmentState(a);
+        if (!st.ok) continue;
+
+        const sc = Number(a.score);
+        if (!best || sc > best.score) best = { sym, score: sc, dir: st.dir };
+      }
+
+      if (!best) return;
+
+      const key = `${tfLabel}:${best.sym}:${best.dir}:${best.score.toFixed(0)}`;
+      if (key === lastAlignedKey) return;
+      lastAlignedKey = key;
+
+      alert(`🚨 ALINEACIÓN (${tfLabel})\n${best.sym} ${best.dir.toUpperCase()} · Score ${best.score.toFixed(0)}`);
+    }
+
+    function buildPulseGrid(tfLabel="1H"){
+      const grid = document.getElementById("pulseGrid");
+      if (!grid) return;
+      grid.innerHTML = "";
+
+      let symbols = [];
+      try{
+        for (const cat in watchlistData){
+          (watchlistData[cat]||[]).forEach(a => a?.symbol && symbols.push(a.symbol));
+        }
+      } catch(e){}
+
+      symbols = Array.from(new Set(symbols));
+
+      symbols.forEach(sym=>{
+        const data = macroData.assets?.[sym];
+        if (!data) return;
+
+        const st = alignmentState(data);
+
+        const cell = document.createElement("div");
+        cell.className = "pulseCell";
+        cell.innerHTML = `
+          <div class="pulseTop">
+            <div class="pulseSym">${sym}</div>
+            <div class="pulseLed ${st.cls}"></div>
+          </div>
+          <div class="pulseMini">
+            <span>${data.signal ?? "—"}</span>
+            <span>${Number.isFinite(Number(data.score)) ? Number(data.score).toFixed(0) : "—"}</span>
+          </div>
+          <div class="pulseTf">${tfLabel}</div>
+        `;
+
+        cell.addEventListener("click", ()=>{
+          currentAsset = sym;
+          const sel = document.getElementById("assetSelect");
+          if (sel) sel.value = sym;
+          updateAssetView();
+        });
+
+        cell.addEventListener("dblclick", ()=>{
+          const url = getTradeUrl(sym);
+          if (!url) return alert("No hay tradeUrl para " + sym);
+          window.location.href = url;
+        });
+
+        grid.appendChild(cell);
+      });
+
+      triggerAlignmentAlert(tfLabel);
+    }
+
+    /* ===== Selector ===== */
     function buildSelector() {
       const select = document.getElementById("assetSelect");
       if (!select) return;
@@ -420,7 +569,7 @@
         (watchlistData[category] || []).forEach((asset) => {
           const option = document.createElement("option");
           option.value = asset.symbol;
-          option.textContent = asset.name;
+          option.textContent = asset.name || asset.symbol;
           group.appendChild(option);
         });
 
@@ -646,7 +795,6 @@
       }
     }
 
-    /* ===== UPDATE VIEW ===== */
     function updateAssetView() {
       const assetData = macroData.assets?.[currentAsset];
       if (!assetData) return;
@@ -662,7 +810,6 @@
       const seriesArr = getSeriesFor(currentAsset);
       renderBloombergStructure(asset, seriesArr);
 
-      // Gauge
       const score = Number(asset.score);
       const gFg = document.getElementById("gFg");
       const gScore = document.getElementById("gScore");
@@ -684,7 +831,6 @@
         if (gScore) gScore.textContent = "—";
       }
 
-      // UI
       const title = document.getElementById("assetName");
       if (title) title.textContent = getNameForSymbol(currentAsset);
 
@@ -771,24 +917,22 @@
         if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
         if (!("series" in macroData)) macroData.series = null;
 
-       const sel = document.getElementById("assetSelect");
+        const sel = document.getElementById("assetSelect");
 
-      // 1) intenta coger del selector
-      if ((!currentAsset || !macroData.assets?.[currentAsset]) && sel && sel.value) {
-      currentAsset = sel.value;
-      }
+        if ((!currentAsset || !macroData.assets?.[currentAsset]) && sel && sel.value) {
+          currentAsset = sel.value;
+        }
 
-      // 2) si aún no vale, coge el primer asset del JSON
-      if (!currentAsset || !macroData.assets?.[currentAsset]) {
-      const first = Object.keys(macroData.assets || {})[0];
-      if (first) currentAsset = first;
-      }
+        if (!currentAsset || !macroData.assets?.[currentAsset]) {
+          const first = Object.keys(macroData.assets || {})[0];
+          if (first) currentAsset = first;
+        }
 
-      // 3) sincroniza el selector con el asset real
-      if (sel && currentAsset) sel.value = currentAsset;
+        if (sel && currentAsset) sel.value = currentAsset;
 
-      updateAssetView();
-      buildRadar();
+        updateAssetView();
+        buildRadar();
+        buildPulseGrid("1H");
 
       } catch (err) {
         console.error(err);
