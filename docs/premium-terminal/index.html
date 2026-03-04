@@ -130,25 +130,6 @@
 
     .radarMetaRow{ display:flex; align-items:center; gap:8px; }
     .radarScore{ font-size:12px; color:#94a3b8; font-weight:800; }
-
-  .tradeLink{
-  display:inline-block;
-  margin-top:6px;
-  font-size:12px;
-  font-weight:800;
-  padding:6px 10px;
-  border:1px solid #334155;
-  border-radius:999px;
-  text-decoration:none;
-  color:#e2e8f0;
-  background: rgba(15,23,42,0.55);
-}
-.tradeLink:hover{ background: rgba(15,23,42,0.85); }
-.tradeLink.disabled{
-  opacity:.45;
-  cursor:not-allowed;
-}
-    
   </style>
 </head>
 
@@ -310,122 +291,110 @@
       return sym;
     }
 
-   // ===== TRADE URL (desde watchlist.json o macro_data.json) =====
-function getTradeUrl(sym){
-  const direct = macroData?.assets?.[sym]?.tradeUrl;
-  if (direct) return direct;
+    // ===== TRADE URL + OPEN (simple) =====
+    function getTradeUrl(sym){
+      const direct = macroData?.assets?.[sym]?.tradeUrl;
+      if (direct) return direct;
 
-  try{
-    for (const cat in watchlistData){
-      const arr = watchlistData[cat] || [];
-      const hit = arr.find(a => a.symbol === sym);
-      if (hit?.tradeUrl) return hit.tradeUrl;
-      if (hit?.url) return hit.url;
+      try{
+        for (const cat in watchlistData){
+          const arr = watchlistData[cat] || [];
+          const hit = arr.find(a => a.symbol === sym);
+          if (hit?.tradeUrl) return hit.tradeUrl;
+          if (hit?.url) return hit.url;
+        }
+      }catch(e){}
+      return null;
     }
-  }catch(e){}
-  return null;
-}
 
-/* =========================
-   RADAR (SEMAFORO)
-   ========================= */
-function trafficLight(asset){
-  if (!asset) return { cls: "w", label: "no-data" };
+    function openTrade(sym){
+      const url = getTradeUrl(sym);
+      if (!url){
+        alert("No hay tradeUrl para " + sym + ". Añádelo en watchlist.json");
+        return;
+      }
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
 
-  const sig = asset.signal || "neutral";
-  const score = Number(asset.score);
+    /* ===== RADAR ===== */
+    function trafficLight(asset){
+      if (!asset) return { cls: "w", label: "no-data" };
+      const sig = asset.signal || "neutral";
+      const score = Number(asset.score);
 
-  if (sig === "explosion_up" || (Number.isFinite(score) && score >= 65)) {
-    return { cls: "g", label: "bull" };
-  }
-  if (sig === "explosion_down" || (Number.isFinite(score) && score <= 35)) {
-    return { cls: "r", label: "bear" };
-  }
-  return { cls: "y", label: "neutral" };
-}
+      if (sig === "explosion_up" || (Number.isFinite(score) && score >= 65)) return { cls: "g", label: "bull" };
+      if (sig === "explosion_down" || (Number.isFinite(score) && score <= 35)) return { cls: "r", label: "bear" };
+      return { cls: "y", label: "neutral" };
+    }
 
-function buildRadar() {
-  const radar = document.getElementById("radarList");
-  if (!radar) return;
+    function buildRadar() {
+      const radar = document.getElementById("radarList");
+      if (!radar) return;
+      radar.innerHTML = "";
 
-  radar.innerHTML = "";
+      let symbols = [];
+      try{
+        for (const cat in watchlistData){
+          (watchlistData[cat] || []).forEach(a => { if (a?.symbol) symbols.push(a.symbol); });
+        }
+      } catch(e){}
 
-  // 1) sacar símbolos desde watchlist
-  let symbols = [];
-  try{
-    for (const cat in watchlistData){
-      (watchlistData[cat] || []).forEach(a => {
-        if (a?.symbol) symbols.push(a.symbol);
+      if (!symbols.length) symbols = ["GC=F", "BTC-USD"];
+      symbols = Array.from(new Set(symbols));
+
+      symbols.sort((a,b)=>{
+        const sa = Number(macroData.assets?.[a]?.score);
+        const sb = Number(macroData.assets?.[b]?.score);
+        const va = Number.isFinite(sa) ? sa : -9999;
+        const vb = Number.isFinite(sb) ? sb : -9999;
+        return vb - va;
+      });
+
+      const MAX = 14;
+
+      symbols.slice(0, MAX).forEach((sym) => {
+        const data = macroData.assets?.[sym];
+        if (!data) return;
+
+        const tl = trafficLight(data);
+
+        const color =
+          tl.cls === "g" ? "#22c55e" :
+          tl.cls === "r" ? "#ef4444" :
+          tl.cls === "y" ? "#f59e0b" : "#94a3b8";
+
+        const div = document.createElement("div");
+        div.className = "radarItem";
+        div.style.borderColor = color;
+
+        div.innerHTML = `
+          <div>
+            <div class="radarSym">${getNameForSymbol(sym)}</div>
+            <div class="radarMeta radarMetaRow">
+              <span class="tl ${tl.cls}"></span>
+              <span>${data.signal ?? "—"}</span>
+              <span class="radarScore">${Number.isFinite(Number(data.score)) ? ("Score " + Number(data.score).toFixed(0)) : ""}</span>
+            </div>
+          </div>
+          <div></div>
+          <div>
+            <div class="radarPrice" style="color:${color}">${data.price ?? "—"}</div>
+            <div class="radarEma">EMA21: ${data.ema21 ?? "—"}</div>
+          </div>
+        `;
+
+        div.addEventListener("click", () => {
+          currentAsset = sym;
+          const sel = document.getElementById("assetSelect");
+          if (sel) sel.value = sym;
+          updateAssetView();
+        });
+
+        div.addEventListener("dblclick", () => openTrade(sym));
+
+        radar.appendChild(div);
       });
     }
-  }catch(e){}
-
-  if (!symbols.length) symbols = ["GC=F", "BTC-USD"];
-  symbols = Array.from(new Set(symbols));
-
-  // 2) ordenar por score desc
-  symbols.sort((a,b)=>{
-    const sa = Number(macroData.assets?.[a]?.score);
-    const sb = Number(macroData.assets?.[b]?.score);
-    const va = Number.isFinite(sa) ? sa : -9999;
-    const vb = Number.isFinite(sb) ? sb : -9999;
-    return vb - va;
-  });
-
-  const MAX = 14;
-
-  symbols.slice(0, MAX).forEach((sym) => {
-    const data = macroData.assets?.[sym];
-    if (!data) return;
-
-    const tl = trafficLight(data);
-
-    const color =
-      tl.cls === "g" ? "#22c55e" :
-      tl.cls === "r" ? "#ef4444" :
-      tl.cls === "y" ? "#f59e0b" : "#94a3b8";
-
-    const div = document.createElement("div");
-    div.className = "radarItem";
-    div.style.borderColor = color;
-
-    // ✅ SOLO HTML AQUÍ DENTRO (NADA de addEventListener)
-    div.innerHTML = `
-      <div>
-        <div class="radarSym">${getNameForSymbol(sym)}</div>
-        <div class="radarMeta radarMetaRow">
-          <span class="tl ${tl.cls}"></span>
-          <span>${data.signal ?? "—"}</span>
-          <span class="radarScore">
-            ${Number.isFinite(Number(data.score)) ? ("Score " + Number(data.score).toFixed(0)) : ""}
-          </span>
-        </div>
-      </div>
-      <div></div>
-      <div>
-        <div class="radarPrice" style="color:${color}">${data.price ?? "—"}</div>
-        <div class="radarEma">EMA21: ${data.ema21 ?? "—"}</div>
-      </div>
-    `;
-
-    // ✅ Eventos FUERA del template literal
-    div.addEventListener("click", () => {
-      currentAsset = sym;
-      const sel = document.getElementById("assetSelect");
-      if (sel) sel.value = sym;
-      updateAssetView();
-    });
-
-    // ✅ Doble click: abrir trade (sin popup-blocker)
-    div.addEventListener("dblclick", () => {
-      const url = getTradeUrl(sym);
-      if (!url) return alert("No hay tradeUrl para " + sym + ". Añádelo en watchlist.json");
-      window.location.href = url; // no lo bloquea Chrome
-    });
-
-    radar.appendChild(div);
-  });
-}
 
     function buildSelector() {
       const select = document.getElementById("assetSelect");
