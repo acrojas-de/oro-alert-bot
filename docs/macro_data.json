@@ -2,7 +2,7 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-03-04T06:00:05+00:00"
+    "updated_utc": "2026-03-04T06:55:30+00:00"
   },
   "series": [
     {
@@ -6875,6 +6875,34 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-03-04T06:55:30+00:00",
+      "candle_ts": "2026-03-04T05:00:00+00:00",
+      "score": 25,
+      "bias": "SHORT_CUIDADO",
+      "gold": 5169.5,
+      "gold_ema9": 5156.83,
+      "gold_ema21": 5181.5,
+      "gold_ema50": 5229.74,
+      "gold_rsi14": 46.2,
+      "gold_rsi14_prev": 46.32,
+      "dxy": 99.188,
+      "dxy_ema21": 99.0622,
+      "tnx": 4.054,
+      "tnx_ema21": 4.0435,
+      "nasdaq": 22530.34,
+      "nasdaq_ema21": 22606.27,
+      "ema_spread_pct": 0.009331,
+      "atr": 49.4562,
+      "atr_pct": 0.009567,
+      "ema21_slope_pct": -0.000232,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -7190,11 +7218,11 @@
   ],
   "state": {
     "metrics": {
-      "ema_spread": 49.4961,
-      "ema_spread_pct": 0.009573,
-      "atr": 51.9759,
-      "atr_pct": 0.010052,
-      "ema21_slope_pct": -0.000236,
+      "ema_spread": 48.2375,
+      "ema_spread_pct": 0.009331,
+      "atr": 49.4562,
+      "atr_pct": 0.009567,
+      "ema21_slope_pct": -0.000232,
       "thresholds": {
         "COMP_EMA_PCT": 0.0015,
         "COMP_ATR_PCT": 0.0018,
