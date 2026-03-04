@@ -388,29 +388,19 @@
 
       const turl = getTradeUrl(sym);
 
-div.innerHTML = `
+    div.innerHTML = `
   <div>
     <div class="radarSym">${getNameForSymbol(sym)}</div>
     <div class="radarMeta radarMetaRow">
       <span class="tl ${tl.cls}"></span>
       <span>${data.signal ?? "—"}</span>
-      <span class="radarScore">${
-        Number.isFinite(Number(data.score)) ? ("Score " + Number(data.score).toFixed(0)) : ""
-      }</span>
+      <span class="radarScore">${Number.isFinite(Number(data.score)) ? ("Score " + Number(data.score).toFixed(0)) : ""}</span>
     </div>
   </div>
-
   <div></div>
-
-  <div style="text-align:right;">
+  <div>
     <div class="radarPrice" style="color:${color}">${data.price ?? "—"}</div>
     <div class="radarEma">EMA21: ${data.ema21 ?? "—"}</div>
-
-    ${
-      turl
-        ? `<a class="tradeLink" href="${turl}" target="_blank" rel="noopener noreferrer">Trade ↗</a>`
-        : `<span class="tradeLink disabled">Trade —</span>`
-    }
   </div>
 `;
 
@@ -421,11 +411,10 @@ div.addEventListener("click", () => {
   updateAssetView();
 });
 
-// Doble click: si hay url, abre SIN popup-blocker
 div.addEventListener("dblclick", () => {
   const url = getTradeUrl(sym);
   if (!url) return alert("No hay tradeUrl para " + sym + ". Añádelo en watchlist.json");
-  window.location.href = url; // <- nunca lo bloquea Chrome
+  window.location.href = url;
 });
 
 radar.appendChild(div);
