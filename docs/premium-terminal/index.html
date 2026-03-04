@@ -304,6 +304,10 @@
     <h2 style="margin:0;">Premium Terminal V1 (1H)</h2>
     <select id="assetSelect"></select>
     <button id="refreshBtn" class="refreshBtn">↻ Refresh</button>
+
+    <button id="refreshBtn" class="refreshBtn">↻ Refresh</button>
+    <div id="dataHealth" style="opacity:.85;font-size:12px;"></div>
+    
     <div id="dataHealth" style="opacity:.85;font-size:12px;"></div>
   </header>
 
@@ -993,10 +997,76 @@
      TRADE CARD (NUMÉRICA PRO)
      ========================= */
   function fmtNum(x, d=2){
-    const n = Number(x);
-    if (!Number.isFinite(n)) return "—";
-    return n.toFixed(d);
+  const n = Number(x);
+  if (!Number.isFinite(n)) return "—";
+  return n.toFixed(d);
+}
+
+
+// ===== SOUND ENGINE (beep + voz opcional) =====
+let audioCtx = null;
+let soundEnabled = false;
+
+function initAudio(){
+  if (audioCtx) return true;
+  try{
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return true;
+  }catch(e){
+    console.warn("AudioContext no disponible", e);
+    return false;
   }
+}
+
+function beep(freq=880, ms=180, gain=0.08){
+  if (!soundEnabled) return;
+  if (!initAudio()) return;
+
+  if (audioCtx.state === "suspended") audioCtx.resume();
+
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = "sine";
+  o.frequency.value = freq;
+  g.gain.value = gain;
+
+  o.connect(g); 
+  g.connect(audioCtx.destination);
+  o.start();
+
+  setTimeout(()=>{ o.stop(); }, ms);
+}
+
+function say(text){
+  if (!soundEnabled) return;
+  if (!("speechSynthesis" in window)) return;
+
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "es-ES";
+  u.rate = 1.0;
+
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  const btn = document.getElementById("soundBtn");
+  const st  = document.getElementById("soundState");
+
+  if (btn){
+    btn.addEventListener("click", ()=>{
+      soundEnabled = true;
+      initAudio();
+
+      if (audioCtx?.state === "suspended") audioCtx.resume();
+
+      if (st) st.textContent = "(sonido ON)";
+
+      beep(880,140);
+      beep(1320,120);
+    });
+  }
+});
 
   function updateTradeCard(asset){
     const biasEl = document.getElementById("tradeBias");
