@@ -168,6 +168,30 @@
 @media (max-width: 900px){
   .clockBig{ font-size:26px; }
 }
+
+.marketTable{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  overflow:hidden;
+  border-radius:12px;
+  border:1px solid var(--border);
+}
+.marketTable th, .marketTable td{
+  padding:10px 12px;
+  border-bottom:1px solid rgba(51,65,85,.55);
+  font-size:13px;
+}
+.marketTable th{
+  text-align:left;
+  background:rgba(15,23,42,.55);
+  color:var(--muted);
+  font-weight:900;
+}
+.marketTable tr:last-child td{ border-bottom:none; }
+.badgeOpen{ color:rgba(34,197,94,.95); font-weight:900; }
+.badgeClosed{ color:rgba(239,68,68,.95); font-weight:900; }
+.badgeSoon{ color:rgba(245,158,11,.95); font-weight:900; }
     
   </style>
 </head>
@@ -240,6 +264,16 @@
         </div>
       </div>
 
+      <!-- MARKET HOURS -->
+<div class="card" style="grid-column: span 12;">
+  <div class="cardTitle">
+    <div>🕒 Horarios de Mercados</div>
+    <div class="muted" id="marketNowLine">—</div>
+  </div>
+  <div id="marketHours"></div>
+</div>
+
+      
       <!-- RADAR -->
       <div class="card" style="grid-column: span 8;">
         <div class="cardTitle">
@@ -394,12 +428,159 @@
   function nowISO(){ return new Date().toISOString(); }
   function msToMin(ms){ return Math.round(ms/60000); }
 
+   // ===== CLOCK (HEADER) =====
+function pad2(n){ return String(n).padStart(2,"0"); }
+
+function startHeaderClock(){
+  const el = document.getElementById("clockBig");
+  const elUtc = document.getElementById("clockUtc");
+  const elTz = document.getElementById("clockTz");
+  if (!el) return;
+
+  const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone || "Local";
+  if (elTz) elTz.textContent = tzName;
+
+  function tick(){
+    const d = new Date();
+    const hh = pad2(d.getHours());
+    const mm = pad2(d.getMinutes());
+    const ss = pad2(d.getSeconds());
+    el.textContent = `${hh}:${mm}:${ss}`;
+
+    const uh = pad2(d.getUTCHours());
+    const um = pad2(d.getUTCMinutes());
+    const us = pad2(d.getUTCSeconds());
+    if (elUtc) elUtc.textContent = `UTC ${uh}:${um}:${us}`;
+  }
+
+  tick();
+  setInterval(tick, 250);
+}
+
+// ===== MARKET HOURS =====
+const MARKETS = [
+  { name:"🇺🇸 NYSE / Nasdaq", tz:"America/New_York", sessions:[[9*60+30, 16*60]], days:[1,2,3,4,5] },
+  { name:"🇬🇧 London (LSE)",  tz:"Europe/London",    sessions:[[8*60, 16*60+30]], days:[1,2,3,4,5] },
+  { name:"🇩🇪 Xetra",        tz:"Europe/Berlin",    sessions:[[9*60, 17*60+30]], days:[1,2,3,4,5] },
+  { name:"🇯🇵 Tokyo (TSE)",  tz:"Asia/Tokyo",       sessions:[[9*60, 11*60+30],[12*60+30, 15*60]], days:[1,2,3,4,5] },
+  { name:"🪙 Crypto (24/7)", tz:"UTC",              sessions:[[0, 24*60]], days:[0,1,2,3,4,5,6] },
+];
+
+function tzNowParts(timeZone){
+  const fmt = new Intl.DateTimeFormat("en-GB", {
+    timeZone, weekday:"short", hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:false
+  });
+  const parts = fmt.formatToParts(new Date());
+  const get = (t)=> parts.find(p=>p.type===t)?.value;
+  const wd = get("weekday");
+  const hh = Number(get("hour"));
+  const mm = Number(get("minute"));
+  const ss = Number(get("second"));
+  const dowMap = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
+  return { dow: dowMap[wd] ?? 0, minutes: hh*60+mm, sec:ss, time:`${pad2(hh)}:${pad2(mm)}:${pad2(ss)}` };
+}
+
+function inAnySession(mins, sessions){
+  for (const [a,b] of sessions){
+    if (mins >= a && mins < b) return { open:true, until:b };
+  }
+  let next = null;
+  for (const [a] of sessions){
+    if (mins < a) { next = a; break; }
+  }
+  return { open:false, next };
+}
+
+function fmtHhMm(mins){
+  const h = Math.floor(mins/60), m = mins%60;
+  return `${pad2(h)}:${pad2(m)}`;
+}
+
+function minsToCountdown(mins){
+  const h = Math.floor(mins/60);
+  const m = mins%60;
+  return (h>0) ? `${h}h ${m}m` : `${m}m`;
+}
+
+function renderMarketHours(){
+  const host = document.getElementById("marketHours");
+  const nowLine = document.getElementById("marketNowLine");
+  if (!host) return;
+
+  const local = new Date();
+  const localTime = `${pad2(local.getHours())}:${pad2(local.getMinutes())}:${pad2(local.getSeconds())}`;
+  if (nowLine) nowLine.textContent = `Hora local: ${localTime}`;
+
+  const rows = MARKETS.map(m=>{
+    const t = tzNowParts(m.tz);
+    const isDay = m.days.includes(t.dow);
+
+    let status = "CERRADO";
+    let badge = "badgeClosed";
+    let detail = "";
+
+    if (!isDay){
+      detail = "Fuera de sesión (finde)";
+    }else{
+      const state = inAnySession(t.minutes, m.sessions);
+      if (state.open){
+        status = "ABIERTO";
+        badge = "badgeOpen";
+        const minsLeft = Math.max(0, state.until - t.minutes);
+        detail = `cierra en ${minsToCountdown(minsLeft)}`;
+      }else if (state.next !== null){
+        const minsTo = Math.max(0, state.next - t.minutes);
+        status = (minsTo <= 30) ? "ABRE PRONTO" : "CERRADO";
+        badge  = (minsTo <= 30) ? "badgeSoon" : "badgeClosed";
+        detail = `abre en ${minsToCountdown(minsTo)} (${fmtHhMm(state.next)})`;
+      }else{
+        detail = "sesión terminada hoy";
+      }
+    }
+
+    const sessionTxt = m.sessions.map(([a,b])=> `${fmtHhMm(a)}–${fmtHhMm(b)}`).join(" | ");
+    return `
+      <tr>
+        <td><b>${m.name}</b><div class="muted">TZ: ${m.tz}</div></td>
+        <td>${t.time}</td>
+        <td class="${badge}">${status}</td>
+        <td>${sessionTxt}</td>
+        <td class="muted">${detail}</td>
+      </tr>
+    `;
+  }).join("");
+
+  host.innerHTML = `
+    <table class="marketTable">
+      <thead>
+        <tr>
+          <th>Mercado</th>
+          <th>Hora ahora</th>
+          <th>Estado</th>
+          <th>Horario</th>
+          <th>Info</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function startMarketHoursClock(){
+  renderMarketHours();
+  setInterval(renderMarketHours, 1000);
+}
+
+  
   async function fetchJson(url){
     const r = await fetch(url + "?v=" + Date.now(), { cache:"no-store" });
     if (!r.ok) throw new Error(url + " HTTP " + r.status);
     return await r.json();
   }
 
+    
+
+  
   function setHealth(text, level="good"){
     healthText.textContent = text;
     healthDot.classList.remove("good","warn","bad");
@@ -793,6 +974,8 @@
   renderAlertButtons();
   renderLog();
   loadData();
+  startMarketHoursClock();
+  startHeaderClock();
 
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(loadData, REFRESH_MS);
