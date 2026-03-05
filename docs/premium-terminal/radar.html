@@ -705,6 +705,63 @@
 
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(loadData, REFRESH_MS);
+
+  function updateExtraModules(data){
+
+  const assets = data.assets || {};
+
+  let crypto=0, tech=0, macro=0, gold=0;
+
+  let explosions=[];
+
+  Object.entries(assets).forEach(([sym,a])=>{
+
+    const score=a.score||50;
+    const signal=a.signal||"";
+
+    if(sym.includes("BTC")||sym.includes("ETH")||sym.includes("SOL")||sym.includes("XRP"))
+      crypto+=score;
+
+    if(["AAPL","MSFT","NVDA","AMD","GOOGL"].includes(sym))
+      tech+=score;
+
+    if(sym.includes("DX")||sym.includes("TNX")||sym.includes("IXIC"))
+      macro+=score;
+
+    if(sym.includes("GC"))
+      gold=score;
+
+    if(signal.includes("explosion"))
+      explosions.push(`${sym} ${signal}`);
+  });
+
+  document.getElementById("liquidityFlow").innerHTML=
+  `
+  Crypto ${arrow(crypto)}
+  <br>Tech ${arrow(tech)}
+  <br>Macro ${arrow(macro)}
+  <br>Gold ${arrow(gold)}
+  `;
+
+  document.getElementById("momentumAlerts").innerHTML=
+  explosions.length ? explosions.join("<br>") : "No explosions detected";
+
+  const g=assets["GC=F"]||{};
+  document.getElementById("goldRadar").innerHTML=
+  `
+  Trend: ${g.trend || "-"}<br>
+  Signal: ${g.signal || "-"}<br>
+  Score: ${g.score || "-"}
+  `;
+}
+
+function arrow(v){
+  if(v>200) return "↑↑";
+  if(v>120) return "↑";
+  if(v>80) return "→";
+  if(v>40) return "↓";
+  return "↓↓";
+}
 </script>
 </body>
 </html>
