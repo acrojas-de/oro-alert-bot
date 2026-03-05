@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head>
+  <link rel="icon" href="favicon.png">
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Macro Radar Global (Premium)</title>
@@ -686,42 +687,56 @@
 
   // ========= main loader =========
   async function loadData(){
-    try{
-      const macro = await fetchJson(JSON_URL);
-      lastDataCache = macro;
+  try{
+    const macro = await fetchJson(JSON_URL);
+    lastDataCache = macro;
 
-      // updated / freeze
-      const updated = macro?.meta?.updated || macro?.updated || null;
-      lastUpdatedISO = updated || lastUpdatedISO;
+    // updated / freeze
+    const updated = macro?.meta?.updated || macro?.updated || null;
+    lastUpdatedISO = updated || lastUpdatedISO;
 
-      if (lastUpdatedISO){
-        updatedText.textContent = lastUpdatedISO;
-        const ageMs = Date.now() - new Date(lastUpdatedISO).getTime();
-        if (ageMs > FREEZE_WARN_MS){
-          setHealth(`Datos congelados (edad ${msToMin(ageMs)}m)`, "warn");
-        }else{
-          setHealth(`OK (edad ${msToMin(ageMs)}m)`, "good");
-        }
+    if (lastUpdatedISO){
+      updatedText.textContent = lastUpdatedISO;
+      const ageMs = Date.now() - new Date(lastUpdatedISO).getTime();
+      if (ageMs > FREEZE_WARN_MS){
+        setHealth(`Datos congelados (edad ${msToMin(ageMs)}m)`, "warn");
       }else{
-        updatedText.textContent = "—";
-        setHealth("OK", "good");
+        setHealth(`OK (edad ${msToMin(ageMs)}m)`, "good");
       }
-
-      renderProbability(macro);
-      renderAssets(macro);
-      renderSelected(macro);
-
-      
-
-      // alert check on fresh data
-      await checkAlerts(macro);
-
-    }catch(e){
-      setHealth("Error cargando datos", "bad");
-      console.error(e);
+    }else{
+      updatedText.textContent = "—";
+      setHealth("OK", "good");
     }
-  }
 
+    renderProbability(macro);
+    renderAssets(macro);
+    renderSelected(macro);
+
+    // ✅ módulos extra
+    updateExtraModules(macro);
+
+    // alert check on fresh data
+    await checkAlerts(macro);
+
+  }catch(e){
+    console.error(e);
+
+    // ✅ si tenemos caché, seguimos funcionando
+    if (lastDataCache){
+      setHealth("Sin conexión: usando último dato en caché", "warn");
+      renderProbability(lastDataCache);
+      renderAssets(lastDataCache);
+      renderSelected(lastDataCache);
+      updateExtraModules(lastDataCache);
+      return;
+    }
+
+    // si no hay caché, error total
+    setHealth("Error cargando datos (sin conexión)", "bad");
+  }
+}
+
+  
   // test alert button
   btnTestAlert.onclick = async ()=>{
     const sym = settings.selected || "TEST";
