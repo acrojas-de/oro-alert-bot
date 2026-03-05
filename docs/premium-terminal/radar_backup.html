@@ -1,1 +1,767 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Macro Radar Global (Premium)</title>
 
+  <style>
+    :root{
+      --bg:#0f172a;
+      --panel:#1e293b;
+      --panel2:#111827;
+      --border:#334155;
+      --text:#e2e8f0;
+      --muted:rgba(226,232,240,.75);
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --blue:#60a5fa;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family: Arial, sans-serif; background:var(--bg); color:var(--text); }
+    a{ color:inherit; text-decoration:none; }
+
+    header{
+      padding:14px 16px; background:var(--panel);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px; flex-wrap:wrap;
+      border-bottom:1px solid var(--border);
+      position:sticky; top:0; z-index:20;
+    }
+    .hLeft{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .brand{ font-weight:900; letter-spacing:.2px; }
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid var(--border); background:var(--panel2);
+      font-size:12px; color:var(--muted);
+      white-space:nowrap;
+    }
+    .dot{ width:10px; height:10px; border-radius:999px; background:var(--border); }
+    .dot.good{ background:var(--good); }
+    .dot.warn{ background:var(--warn); }
+    .dot.bad{ background:var(--bad); }
+
+    .hRight{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    button, select{
+      padding:8px 12px; border-radius:10px;
+      border:1px solid var(--border);
+      background:var(--panel2); color:var(--text);
+      cursor:pointer; font-weight:700;
+    }
+    button:hover{ filter:brightness(1.05); }
+    button:active{ transform:scale(.99); }
+
+    .wrap{ padding:18px; max-width:1200px; margin:0 auto; }
+    .grid{
+      display:grid; gap:14px;
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+      min-height:90px;
+    }
+    .cardTitle{ font-weight:900; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .muted{ color:var(--muted); font-size:13px; }
+    .big{ font-size:28px; font-weight:900; }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .pill{
+      border:1px solid var(--border);
+      background:var(--panel2);
+      border-radius:999px;
+      padding:4px 10px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .pill.good{ border-color:rgba(34,197,94,.4); color:rgba(34,197,94,.95); }
+    .pill.warn{ border-color:rgba(245,158,11,.4); color:rgba(245,158,11,.95); }
+    .pill.bad{ border-color:rgba(239,68,68,.4); color:rgba(239,68,68,.95); }
+
+    /* radar cards */
+    .assetGrid{ display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin-top:10px; }
+    .asset{
+      background:rgba(15,23,42,.55);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .asset:hover{ filter:brightness(1.05); }
+    .assetTop{ display:flex; justify-content:space-between; gap:10px; align-items:center; }
+    .assetSym{ font-weight:900; }
+    .assetMeta{ margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
+    .mini{ font-size:12px; color:var(--muted); }
+
+    /* toggles */
+    .toggleBtn.on{
+      border-color: rgba(34,197,94,.7);
+      box-shadow: 0 0 0 2px rgba(34,197,94,.12) inset;
+    }
+
+    /* log */
+    .log{
+      background:rgba(15,23,42,.55);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
+      max-height:260px;
+      overflow:auto;
+      font-size:13px;
+    }
+    .logItem{ padding:8px 6px; border-bottom:1px dashed rgba(51,65,85,.6); }
+    .logItem:last-child{ border-bottom:none; }
+    .logTime{ color:var(--muted); font-size:12px; }
+
+    /* flash overlay */
+    .flashOverlay{
+      position:fixed; inset:0;
+      pointer-events:none;
+      opacity:0;
+      transition:opacity .12s ease;
+      z-index:9999;
+      background:rgba(255,255,255,.14);
+    }
+    .flashOverlay.on{ opacity:1; }
+
+    @media (max-width: 700px){
+      .big{ font-size:24px; }
+      .wrap{ padding:12px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="hLeft">
+      <div class="brand">📡 Macro Radar Global</div>
+      <div class="chip" id="healthChip"><span class="dot" id="healthDot"></span><span id="healthText">Cargando…</span></div>
+      <div class="chip">⏱️ <span id="updatedText">—</span></div>
+      <div class="chip">📦 fuente: <span id="jsonPath">macro_data.json</span></div>
+    </div>
+
+    <div class="hRight">
+      <button id="btnOpenTerminal">🖥️ Terminal</button>
+      <button id="btnRefresh">⟳ Refresh</button>
+
+      <button id="btnSound" class="toggleBtn">🔔 Sonido: OFF</button>
+      <button id="btnFlash" class="toggleBtn">⚡ Flash: OFF</button>
+      <button id="btnTelegram" class="toggleBtn">📩 Telegram: OFF</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="grid">
+      <!-- PROBABILITY -->
+      <div class="card" style="grid-column: span 12;">
+        <div class="cardTitle">
+          <div>🎯 Probabilidad Global (UP vs DOWN)</div>
+          <div class="row">
+            <span class="pill" id="pillRegime">Regime: —</span>
+            <span class="pill" id="pillBias">Bias: —</span>
+            <span class="pill" id="pillRisk">Riesgo: —</span>
+          </div>
+        </div>
+
+        <div class="row" style="align-items:flex-end; justify-content:space-between;">
+          <div>
+            <div class="muted">Dirección más probable (heurística)</div>
+            <div class="big" id="probHeadline">—</div>
+            <div class="muted" id="probExplain">—</div>
+          </div>
+          <div style="min-width:280px; width:340px;">
+            <div class="muted">UP</div>
+            <div style="height:14px;border:1px solid var(--border);border-radius:999px;background:rgba(15,23,42,.55);overflow:hidden;">
+              <div id="barUp" style="height:100%;width:50%;background:rgba(34,197,94,.8);"></div>
+            </div>
+            <div class="muted" style="margin-top:8px;">DOWN</div>
+            <div style="height:14px;border:1px solid var(--border);border-radius:999px;background:rgba(15,23,42,.55);overflow:hidden;">
+              <div id="barDown" style="height:100%;width:50%;background:rgba(239,68,68,.8);"></div>
+            </div>
+            <div class="row" style="margin-top:10px; justify-content:space-between;">
+              <span class="pill good" id="pctUp">UP 50%</span>
+              <span class="pill bad" id="pctDown">DOWN 50%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RADAR -->
+      <div class="card" style="grid-column: span 8;">
+        <div class="cardTitle">
+          <div>📍 Radar de Activos</div>
+          <div class="muted">Click en un activo para “fijarlo” y evaluar sus condiciones</div>
+        </div>
+        <div class="assetGrid" id="assetGrid"></div>
+      </div>
+
+      <!-- SELECTED -->
+      <div class="card" style="grid-column: span 4;">
+        <div class="cardTitle">
+          <div>🧩 Activo Seleccionado</div>
+          <span class="pill" id="selSym">—</span>
+        </div>
+        <div class="row">
+          <span class="pill" id="selSignal">Señal: —</span>
+          <span class="pill" id="selTrend">Tendencia: —</span>
+          <span class="pill" id="selVol">Vol: —</span>
+        </div>
+
+        <div style="margin-top:12px;">
+          <div class="muted">Score</div>
+          <div class="big" id="selScore">—</div>
+          <div class="muted" id="selDetail">—</div>
+        </div>
+
+        <div style="margin-top:12px;" class="row">
+          <button id="btnTestAlert">🧪 Test alerta</button>
+          <button id="btnClearLog">🧹 Limpiar log</button>
+        </div>
+
+        <div style="margin-top:10px" class="muted">
+          Nota: el disparo real lo hace el filtro (score fuerte / señal) cuando llegan datos nuevos.
+        </div>
+      </div>
+
+      <!-- EVENT LOG -->
+      <div class="card" style="grid-column: span 12;">
+        <div class="cardTitle">
+          <div>🧾 Log de eventos (últimas alertas)</div>
+          <div class="muted">Se guarda localmente. Si refrescas, no se pierde.</div>
+        </div>
+        <div class="log" id="eventLog"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="flashOverlay" class="flashOverlay"></div>
+
+<script>
+  // ========= CONFIG =========
+  const BASE = new URL(".", location.href);
+  const JSON_URL = new URL("macro_data.json", BASE).toString();
+  const WATCH_URL = new URL("watchlist.json", BASE).toString(); // opcional, por si existe
+  const REFRESH_MS = 60000;
+  const FREEZE_WARN_MS = 10 * 60_000;
+
+  // Telegram relay (NO token aquí)
+  const TELEGRAM_RELAY_URL = null; // ej: "https://tu-relay.com/telegram"
+
+  // ========= SETTINGS (persistentes) =========
+  const ALERT_KEYS = {
+    sound: "alerts_sound",
+    flash: "alerts_flash",
+    telegram: "alerts_telegram",
+    selected: "radar_selected_asset",
+    log: "radar_event_log"
+  };
+
+  const settings = {
+    sound: localStorage.getItem(ALERT_KEYS.sound) === "1",
+    flash: localStorage.getItem(ALERT_KEYS.flash) === "1",
+    telegram: localStorage.getItem(ALERT_KEYS.telegram) === "1",
+    selected: localStorage.getItem(ALERT_KEYS.selected) || "",
+  };
+
+  function setSetting(k, v){
+    settings[k] = !!v;
+    localStorage.setItem(ALERT_KEYS[k], settings[k] ? "1" : "0");
+    renderAlertButtons();
+  }
+
+  // ========= UI refs =========
+  const healthText = document.getElementById("healthText");
+  const healthDot = document.getElementById("healthDot");
+  const updatedText = document.getElementById("updatedText");
+  document.getElementById("jsonPath").textContent = "macro_data.json";
+
+  const btnRefresh = document.getElementById("btnRefresh");
+  const btnOpenTerminal = document.getElementById("btnOpenTerminal");
+
+  const btnSound = document.getElementById("btnSound");
+  const btnFlash = document.getElementById("btnFlash");
+  const btnTelegram = document.getElementById("btnTelegram");
+
+  const assetGrid = document.getElementById("assetGrid");
+
+  const selSym = document.getElementById("selSym");
+  const selSignal = document.getElementById("selSignal");
+  const selTrend = document.getElementById("selTrend");
+  const selVol = document.getElementById("selVol");
+  const selScore = document.getElementById("selScore");
+  const selDetail = document.getElementById("selDetail");
+
+  const pillRegime = document.getElementById("pillRegime");
+  const pillBias = document.getElementById("pillBias");
+  const pillRisk = document.getElementById("pillRisk");
+
+  const probHeadline = document.getElementById("probHeadline");
+  const probExplain = document.getElementById("probExplain");
+  const barUp = document.getElementById("barUp");
+  const barDown = document.getElementById("barDown");
+  const pctUp = document.getElementById("pctUp");
+  const pctDown = document.getElementById("pctDown");
+
+  const eventLogEl = document.getElementById("eventLog");
+  const btnTestAlert = document.getElementById("btnTestAlert");
+  const btnClearLog = document.getElementById("btnClearLog");
+
+  // ========= helpers =========
+  function fmt(n, d=2){
+    if (n === undefined || n === null || Number.isNaN(n)) return "—";
+    return Number(n).toFixed(d);
+  }
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+  function nowISO(){ return new Date().toISOString(); }
+  function msToMin(ms){ return Math.round(ms/60000); }
+
+  async function fetchJson(url){
+    const r = await fetch(url + "?v=" + Date.now(), { cache:"no-store" });
+    if (!r.ok) throw new Error(url + " HTTP " + r.status);
+    return await r.json();
+  }
+
+  function setHealth(text, level="good"){
+    healthText.textContent = text;
+    healthDot.classList.remove("good","warn","bad");
+    healthDot.classList.add(level);
+  }
+
+  // ========= alert actions =========
+  function doFlash(){
+    const el = document.getElementById("flashOverlay");
+    el.classList.add("on");
+    setTimeout(()=> el.classList.remove("on"), 180);
+  }
+
+  function doBeep(){
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = 880;
+      g.gain.value = 0.05;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      setTimeout(()=>{ o.stop(); ctx.close(); }, 120);
+    }catch(e){}
+  }
+
+  async function doTelegram(message){
+    if (!TELEGRAM_RELAY_URL) return;
+    try{
+      await fetch(TELEGRAM_RELAY_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ message })
+      });
+    }catch(e){}
+  }
+
+  // ========= event log =========
+  function loadLog(){
+    try{
+      return JSON.parse(localStorage.getItem(ALERT_KEYS.log) || "[]");
+    }catch(e){ return []; }
+  }
+  function saveLog(items){
+    localStorage.setItem(ALERT_KEYS.log, JSON.stringify(items.slice(0, 60))); // max 60
+  }
+  function pushLog(item){
+    const items = loadLog();
+    items.unshift(item);
+    saveLog(items);
+    renderLog();
+  }
+  function renderLog(){
+    const items = loadLog();
+    if (!items.length){
+      eventLogEl.innerHTML = `<div class="muted">Sin eventos todavía.</div>`;
+      return;
+    }
+    eventLogEl.innerHTML = items.map(x => `
+      <div class="logItem">
+        <div><b>${x.symbol}</b> | ${x.signal} | score=${x.score} | price=${x.price ?? "—"}</div>
+        <div class="logTime">${x.time}</div>
+      </div>
+    `).join("");
+  }
+
+  // ========= toggle buttons =========
+  function renderAlertButtons(){
+    btnSound.classList.toggle("on", settings.sound);
+    btnFlash.classList.toggle("on", settings.flash);
+    btnTelegram.classList.toggle("on", settings.telegram);
+
+    btnSound.textContent = `🔔 Sonido: ${settings.sound ? "ON" : "OFF"}`;
+    btnFlash.textContent = `⚡ Flash: ${settings.flash ? "ON" : "OFF"}`;
+    btnTelegram.textContent = `📩 Telegram: ${settings.telegram ? "ON" : "OFF"}`;
+  }
+
+  btnSound.onclick = ()=> setSetting("sound", !settings.sound);
+  btnFlash.onclick = ()=> setSetting("flash", !settings.flash);
+  btnTelegram.onclick = ()=> setSetting("telegram", !settings.telegram);
+
+  btnOpenTerminal.onclick = ()=> window.location.href = "./index.html";
+  btnRefresh.onclick = ()=> loadData();
+
+  btnClearLog.onclick = ()=>{
+    localStorage.removeItem(ALERT_KEYS.log);
+    renderLog();
+  };
+
+  // ========= data + logic =========
+  let refreshTimer = null;
+  let lastUpdatedISO = null;
+  let lastDataCache = null;
+
+  // Heurística global:
+  // - Suma "momentum" de activos claves (DXY, TNX, NASDAQ, BTC, GOLD, etc.)
+  // - Usa score / trend / signal si existen.
+  // Output: upPct/downPct + texto explicación.
+  function computeGlobalProbability(macro){
+    const assets = macro?.assets || {};
+    const keys = Object.keys(assets);
+
+    // pesos (ajústalos cuando quieras)
+    const W = {
+      "GC=F": 1.2,  // GOLD
+      "SI=F": 0.6,  // Silver
+      "^TNX": 0.9,  // US 10Y
+      "DX-Y.NYB": 0.9, // DXY
+      "^IXIC": 0.7, // Nasdaq
+      "BTC-USD": 0.7,
+      "ETH-USD": 0.4,
+      "AAPL": 0.3,
+      "MSFT": 0.3,
+      "NVDA": 0.3,
+      "AMD": 0.25,
+      "GOOGL": 0.25,
+      "SOL-USD": 0.2,
+      "XRP-USD": 0.2,
+      "BNB-USD": 0.2
+    };
+
+    function dirScore(a){
+      // - Señal / trend / score -> devuelve de -1 a +1
+      const score = (a?.score ?? 50);
+      const signal = (a?.signal || a?.status || "").toString().toLowerCase();
+      const trend = (a?.trend || "").toString().toLowerCase();
+
+      let s = 0;
+      // score empuja suave
+      s += clamp((score - 50) / 25, -1, 1) * 0.55;
+
+      // señal empuja fuerte
+      if (signal.includes("buy") || signal.includes("long") || signal.includes("explosion_up")) s += 0.55;
+      if (signal.includes("sell") || signal.includes("short") || signal.includes("explosion_down")) s -= 0.55;
+
+      // trend empuja medio
+      if (trend.includes("bull")) s += 0.25;
+      if (trend.includes("bear")) s -= 0.25;
+
+      return clamp(s, -1, 1);
+    }
+
+    let totalW = 0;
+    let sum = 0;
+
+    for (const k of keys){
+      const w = (W[k] ?? 0.15);
+      const a = assets[k];
+      const d = dirScore(a);
+      sum += d * w;
+      totalW += w;
+    }
+
+    if (totalW <= 0) totalW = 1;
+    const norm = sum / totalW; // -1..+1
+
+    // convertir a porcentaje con una curva suave
+    const up = clamp(50 + norm*22, 5, 95);
+    const down = 100 - up;
+
+    // Regime / bias / risk (best effort)
+    const gold = assets["GC=F"] || assets["GOLD"] || null;
+    const gTrend = (gold?.trend || "").toString().toLowerCase();
+    const risk = gold?.risk || gold?.atr_pct || gold?.atrPct || null;
+
+    const regime =
+      Math.abs(norm) < 0.12 ? "RANGO" :
+      norm > 0 ? "RISK-ON" : "RISK-OFF";
+
+    const bias =
+      norm > 0.18 ? "ALCISTA" :
+      norm < -0.18 ? "BAJISTA" : "NEUTRO";
+
+    const riskTxt =
+      risk === null ? "—" :
+      (Number(risk) <= 1.0 ? "bajo" : (Number(risk) <= 2.2 ? "medio" : "alto"));
+
+    const explain = `Lectura global: ${regime}. Sesgo ${bias}. (Basado en score/señal/tendencia del pack macro.)`;
+
+    return { up, down, regime, bias, riskTxt, explain };
+  }
+
+  function assetToUI(symbol, a){
+    const score = a?.score ?? 50;
+    const trend = (a?.trend || "—");
+    const signal = (a?.signal || a?.status || "neutral");
+    const tf = (a?.tf || a?.timeframe || "—");
+
+    // color
+    let level = "warn";
+    if (score >= 70) level = "good";
+    else if (score <= 30) level = "bad";
+
+    const vol = (a?.volatility || a?.vol || "—");
+
+    return { symbol, score, trend, signal, tf, vol, level };
+  }
+
+  function renderAssets(macro){
+    const assets = macro?.assets || {};
+    const symbols = Object.keys(assets);
+
+    // ordenar por score desc para ver "lo caliente arriba"
+    const items = symbols
+      .map(sym => assetToUI(sym, assets[sym]))
+      .sort((x,y)=> (y.score - x.score));
+
+    assetGrid.innerHTML = items.map(x => `
+      <div class="asset" data-sym="${x.symbol}">
+        <div class="assetTop">
+          <div class="assetSym">${x.symbol}</div>
+          <span class="pill ${x.level}">${Math.round(x.score)}</span>
+        </div>
+        <div class="assetMeta">
+          <span class="pill">sig: ${x.signal}</span>
+          <span class="pill">trend: ${x.trend}</span>
+          <span class="pill">vol: ${x.vol}</span>
+          <span class="pill">tf: ${x.tf}</span>
+        </div>
+      </div>
+    `).join("");
+
+    // click handler
+    assetGrid.querySelectorAll(".asset").forEach(el=>{
+      el.addEventListener("click", ()=>{
+        const sym = el.getAttribute("data-sym");
+        settings.selected = sym;
+        localStorage.setItem(ALERT_KEYS.selected, sym);
+        renderSelected(macro);
+      });
+    });
+  }
+
+  function renderSelected(macro){
+    const assets = macro?.assets || {};
+    const sym = settings.selected || Object.keys(assets)[0] || "";
+    const a = assets[sym] || null;
+
+    selSym.textContent = sym || "—";
+
+    if (!a){
+      selSignal.textContent = "Señal: —";
+      selTrend.textContent = "Tendencia: —";
+      selVol.textContent = "Vol: —";
+      selScore.textContent = "—";
+      selDetail.textContent = "—";
+      return;
+    }
+
+    const ui = assetToUI(sym, a);
+
+    selSignal.textContent = `Señal: ${ui.signal}`;
+    selTrend.textContent = `Tendencia: ${ui.trend}`;
+    selVol.textContent = `Vol: ${ui.vol}`;
+    selScore.textContent = `${Math.round(ui.score)}`;
+    selDetail.textContent = `TF ${ui.tf} | score=${fmt(ui.score,0)} | (click en radar para cambiar activo)`;
+  }
+
+  // Disparo “francotirador”: score >=70 o <=30
+  async function fireAlert(payload){
+    const msg = `🚨 ${payload.symbol} | ${payload.signal} | score=${payload.score} | price=${payload.price ?? "—"}`;
+
+    if (settings.sound) doBeep();
+    if (settings.flash) doFlash();
+    if (settings.telegram) await doTelegram(msg);
+
+    pushLog({
+      time: new Date().toLocaleString(),
+      symbol: payload.symbol,
+      signal: payload.signal,
+      score: payload.score,
+      price: payload.price ?? "—"
+    });
+  }
+
+  function shouldTrigger(a){
+    const score = a?.score ?? 50;
+    const signal = (a?.signal || a?.status || "").toString().toLowerCase();
+    const strong = (score >= 70 || score <= 30);
+    const hasDirection = (signal.includes("buy") || signal.includes("sell") || signal.includes("explosion_"));
+    return strong && hasDirection;
+  }
+
+  // Evitar spameo: recordamos último disparo por símbolo+signal
+  const lastShot = {};
+
+  async function checkAlerts(macro){
+    const assets = macro?.assets || {};
+    for (const sym of Object.keys(assets)){
+      const a = assets[sym];
+      if (!shouldTrigger(a)) continue;
+
+      const signal = (a?.signal || a?.status || "signal").toString();
+      const key = sym + "::" + signal;
+      const score = Math.round(a?.score ?? 50);
+
+      // cooldown 5 min por misma señal
+      const now = Date.now();
+      const prev = lastShot[key] || 0;
+      if (now - prev < 5*60_000) continue;
+      lastShot[key] = now;
+
+      await fireAlert({
+        symbol: sym,
+        signal,
+        score,
+        price: a?.price || a?.close || a?.last || null
+      });
+    }
+  }
+
+  function renderProbability(macro){
+    const p = computeGlobalProbability(macro);
+
+    pillRegime.textContent = `Regime: ${p.regime}`;
+    pillBias.textContent = `Bias: ${p.bias}`;
+    pillRisk.textContent = `Riesgo: ${p.riskTxt}`;
+
+    const up = Math.round(p.up);
+    const down = 100 - up;
+
+    barUp.style.width = up + "%";
+    barDown.style.width = down + "%";
+    pctUp.textContent = `UP ${up}%`;
+    pctDown.textContent = `DOWN ${down}%`;
+
+    probHeadline.textContent = up >= down ? `⬆️ UP ${up}%` : `⬇️ DOWN ${down}%`;
+    probExplain.textContent = p.explain;
+  }
+
+  // ========= main loader =========
+  async function loadData(){
+    try{
+      const macro = await fetchJson(JSON_URL);
+      lastDataCache = macro;
+
+      // updated / freeze
+      const updated = macro?.meta?.updated || macro?.updated || null;
+      lastUpdatedISO = updated || lastUpdatedISO;
+
+      if (lastUpdatedISO){
+        updatedText.textContent = lastUpdatedISO;
+        const ageMs = Date.now() - new Date(lastUpdatedISO).getTime();
+        if (ageMs > FREEZE_WARN_MS){
+          setHealth(`Datos congelados (edad ${msToMin(ageMs)}m)`, "warn");
+        }else{
+          setHealth(`OK (edad ${msToMin(ageMs)}m)`, "good");
+        }
+      }else{
+        updatedText.textContent = "—";
+        setHealth("OK", "good");
+      }
+
+      renderProbability(macro);
+      renderAssets(macro);
+      renderSelected(macro);
+
+      // alert check on fresh data
+      await checkAlerts(macro);
+
+    }catch(e){
+      setHealth("Error cargando datos", "bad");
+      console.error(e);
+    }
+  }
+
+  // test alert button
+  btnTestAlert.onclick = async ()=>{
+    const sym = settings.selected || "TEST";
+    await fireAlert({ symbol:sym, signal:"TEST_BUY", score: 78, price:"—" });
+  };
+
+  // ========= init =========
+  renderAlertButtons();
+  renderLog();
+  loadData();
+
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(loadData, REFRESH_MS);
+
+  function updateExtraModules(data){
+
+  const assets = data.assets || {};
+
+  let crypto=0, tech=0, macro=0, gold=0;
+
+  let explosions=[];
+
+  Object.entries(assets).forEach(([sym,a])=>{
+
+    const score=a.score||50;
+    const signal=a.signal||"";
+
+    if(sym.includes("BTC")||sym.includes("ETH")||sym.includes("SOL")||sym.includes("XRP"))
+      crypto+=score;
+
+    if(["AAPL","MSFT","NVDA","AMD","GOOGL"].includes(sym))
+      tech+=score;
+
+    if(sym.includes("DX")||sym.includes("TNX")||sym.includes("IXIC"))
+      macro+=score;
+
+    if(sym.includes("GC"))
+      gold=score;
+
+    if(signal.includes("explosion"))
+      explosions.push(`${sym} ${signal}`);
+  });
+
+  document.getElementById("liquidityFlow").innerHTML=
+  `
+  Crypto ${arrow(crypto)}
+  <br>Tech ${arrow(tech)}
+  <br>Macro ${arrow(macro)}
+  <br>Gold ${arrow(gold)}
+  `;
+
+  document.getElementById("momentumAlerts").innerHTML=
+  explosions.length ? explosions.join("<br>") : "No explosions detected";
+
+  const g=assets["GC=F"]||{};
+  document.getElementById("goldRadar").innerHTML=
+  `
+  Trend: ${g.trend || "-"}<br>
+  Signal: ${g.signal || "-"}<br>
+  Score: ${g.score || "-"}
+  `;
+}
+
+function arrow(v){
+  if(v>200) return "↑↑";
+  if(v>120) return "↑";
+  if(v>80) return "→";
+  if(v>40) return "↓";
+  return "↓↓";
+}
+</script>
+</body>
+</html>
