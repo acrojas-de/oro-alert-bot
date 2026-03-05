@@ -181,127 +181,99 @@
     .pulseMini{ font-size:11px; color:#94a3b8; display:flex; justify-content:space-between; }
 
     .pressureWrap{
-  margin-top:16px;
-  padding:14px;
-  border:1px solid #1e293b;
-  border-radius:10px;
-  background:#0f172a;
-}
+      margin-top:16px;
+      padding:14px;
+      border:1px solid #1e293b;
+      border-radius:10px;
+      background:#0f172a;
+    }
+    .pressureTitle{
+      font-size:13px;
+      font-weight:700;
+      opacity:.8;
+      margin-bottom:10px;
+    }
+    .pressureGrid{
+      display:flex;
+      gap:14px;
+    }
+    .pressureBox{
+      flex:1;
+      padding:10px;
+      border:1px solid #334155;
+      border-radius:8px;
+      text-align:center;
+    }
+    .pressureName{
+      font-size:12px;
+      opacity:.7;
+    }
+    .pressureValue{
+      font-size:16px;
+      font-weight:700;
+      margin-top:4px;
+    }
 
-.pressureTitle{
-  font-size:13px;
-  font-weight:700;
-  opacity:.8;
-  margin-bottom:10px;
-}
+    /* ===== TRADE CARD + MARKET PULSE (LATERAL) ===== */
+    .tradeRow{
+      display:flex;
+      gap:14px;
+      align-items:stretch;
+      margin-top:14px;
+    }
+    .tradeCard{
+      width:240px;
+      min-width:220px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      padding:12px;
+      background: rgba(0,0,0,.12);
+    }
+    .tradeCardTitle{
+      font-weight:900;
+      letter-spacing:.12em;
+      font-size:12px;
+      opacity:.9;
+      margin-bottom:10px;
+    }
+    .tradeCardLine{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      font-size:12px;
+      color:#94a3b8;
+      margin:6px 0;
+    }
+    .tradeCardLine b{ color:#e2e8f0; }
 
-.pressureGrid{
-  display:flex;
-  gap:14px;
-}
+    .tradeBadge{
+      display:inline-flex;
+      justify-content:center;
+      align-items:center;
+      padding:8px 10px;
+      border-radius:10px;
+      font-weight:900;
+      letter-spacing:.06em;
+      border:1px solid #334155;
+      background: rgba(15,23,42,0.35);
+      margin-top:8px;
+    }
+    .tradeBadge.buy{ border-color: rgba(34,197,94,.45); }
+    .tradeBadge.sell{ border-color: rgba(239,68,68,.45); }
+    .tradeBadge.wait{ border-color: rgba(245,158,11,.45); }
 
-.pressureBox{
-  flex:1;
-  padding:10px;
-  border:1px solid #334155;
-  border-radius:8px;
-  text-align:center;
-}
+    .tradePulse{ flex:1; min-width:0; }
 
-.pressureName{
-  font-size:12px;
-  opacity:.7;
-}
-
-.pressureValue{
-  font-size:16px;
-  font-weight:700;
-  margin-top:4px;
-}
-
-   .tradeZoneWrap{
-  margin-top:10px;
-  text-align:center;
-}
-
-.tradeZoneTitle{
-  font-size:12px;
-  opacity:.7;
-}
-
-.tradeZone{
-  margin-top:6px;
-  padding:8px 12px;
-  border-radius:6px;
-  font-weight:700;
-  background:#334155;
-}
-
-  /* ===== TRADE CARD + MARKET PULSE (LATERAL) ===== */
-.tradeRow{
-  display:flex;
-  gap:14px;
-  align-items:stretch;
-  margin-top:14px;
-}
-
-.tradeCard{
-  width:240px;
-  min-width:220px;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:16px;
-  padding:12px;
-  background: rgba(0,0,0,.12);
-}
-
-.tradeCardTitle{
-  font-weight:900;
-  letter-spacing:.12em;
-  font-size:12px;
-  opacity:.9;
-  margin-bottom:10px;
-}
-
-.tradeCardLine{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  font-size:12px;
-  color:#94a3b8;
-  margin:6px 0;
-}
-.tradeCardLine b{ color:#e2e8f0; }
-
-.tradeBadge{
-  display:inline-flex;
-  justify-content:center;
-  align-items:center;
-  padding:8px 10px;
-  border-radius:10px;
-  font-weight:900;
-  letter-spacing:.06em;
-  border:1px solid #334155;
-  background: rgba(15,23,42,0.35);
-  margin-top:8px;
-}
-.tradeBadge.buy{ border-color: rgba(34,197,94,.45); }
-.tradeBadge.sell{ border-color: rgba(239,68,68,.45); }
-.tradeBadge.wait{ border-color: rgba(245,158,11,.45); }
-
-.tradePulse{ flex:1; min-width:0; } /* aquí vive tu pulseWrap */
-
-@media (max-width: 980px){
-  .tradeRow{ flex-direction:column; }
-  .tradeCard{ width:auto; }
-}  
-    
+    @media (max-width: 980px){
+      .tradeRow{ flex-direction:column; }
+      .tradeCard{ width:auto; }
+    }
   </style>
-
 </head>
 
 <body>
-  <header>
-   <header>
+
+<header>
   <h2 style="margin:0;">Premium Terminal V1 (1H)</h2>
   <select id="assetSelect"></select>
 
@@ -313,148 +285,147 @@
   <div id="dataHealth" style="opacity:.85;font-size:12px;"></div>
 </header>
 
-  <div class="content">
-    <div id="mainCard" class="card">
+<div class="content">
+  <div id="mainCard" class="card">
 
-      <div class="rowTop">
-        <div>
-          <h3 id="assetName" style="margin:0;">Selecciona un activo</h3>
+    <div class="rowTop">
+      <div>
+        <h3 id="assetName" style="margin:0;">Selecciona un activo</h3>
 
-          <div class="badges">
-            <span id="badgeSignal" class="badge">
-              <span id="sigDot" class="dot"></span>
-              <b>Señal</b> <span id="uiSignal">—</span>
-            </span>
-            <span id="badgeTrend" class="badge"><b>Tendencia</b> <span id="uiTrend">—</span></span>
-            <span id="badgeVol" class="badge"><b>Volatilidad</b> <span id="uiVol">—</span></span>
-            <span class="badge"><b>Updated</b> <span id="uiUpdated">—</span></span>
-            <span class="badge"><b>TF</b> 1H</span>
-          </div>
+        <div class="badges">
+          <span id="badgeSignal" class="badge">
+            <span id="sigDot" class="dot"></span>
+            <b>Señal</b> <span id="uiSignal">—</span>
+          </span>
+          <span id="badgeTrend" class="badge"><b>Tendencia</b> <span id="uiTrend">—</span></span>
+          <span id="badgeVol" class="badge"><b>Volatilidad</b> <span id="uiVol">—</span></span>
+          <span class="badge"><b>Updated</b> <span id="uiUpdated">—</span></span>
+          <span class="badge"><b>TF</b> 1H</span>
         </div>
       </div>
+    </div>
 
-      <div class="stateBar">
-        <div class="stateLeft">
-          <span id="uiStatePill" class="statePill neutral">ESTADO</span>
-          <span id="uiStateText" class="stateText">—</span>
-        </div>
-        <span id="uiStateHint" class="stateHint">—</span>
+    <div class="stateBar">
+      <div class="stateLeft">
+        <span id="uiStatePill" class="statePill neutral">ESTADO</span>
+        <span id="uiStateText" class="stateText">—</span>
       </div>
+      <span id="uiStateHint" class="stateHint">—</span>
+    </div>
 
     <!-- ===== TRADE CARD + MARKET PULSE ===== -->
-<div class="tradeRow">
+    <div class="tradeRow">
 
-  <!-- TRADE CARD (LATERAL IZQUIERDA) -->
-  <div class="tradeCard">
-    <div class="tradeCardTitle">TRADE CARD</div>
+      <div class="tradeCard">
+        <div class="tradeCardTitle">TRADE CARD</div>
 
-    <div id="tradeBias" class="tradeBadge wait">WAIT</div>
+        <div id="tradeBias" class="tradeBadge wait">WAIT</div>
 
-    <div class="tradeCardLine"><span>Zona</span><b id="tradeZone">—</b></div>
-    <div class="tradeCardLine"><span>Trigger</span><b id="tradeTrigger">—</b></div>
-    <div class="tradeCardLine"><span>Stop</span><b id="tradeStop">—</b></div>
-    <div class="tradeCardLine"><span>Risk (ATR%)</span><b id="tradeRisk">—</b></div>
-  </div>
-
-  <!-- MARKET PULSE (A LA DERECHA) -->
-  <div class="tradePulse">
-    <div class="pulseWrap">
-      <div class="pulseHeader">
-        <div class="pulseTitle">MARKET PULSE</div>
-        <div class="pulseHint">Click: seleccionar · Doble click: trade</div>
+        <div class="tradeCardLine"><span>Zona</span><b id="tradeZone">—</b></div>
+        <div class="tradeCardLine"><span>Trigger</span><b id="tradeTrigger">—</b></div>
+        <div class="tradeCardLine"><span>Stop</span><b id="tradeStop">—</b></div>
+        <div class="tradeCardLine"><span>Risk (ATR%)</span><b id="tradeRisk">—</b></div>
       </div>
-      <div id="pulseGrid" class="pulseGrid"></div>
-    </div>
-  </div>
 
-</div>
-<!-- ===== MARKET PRESSURE ===== -->
-<div class="pressureWrap">
-  <div class="pressureTitle">MARKET PRESSURE</div>
-  <div class="pressureGrid">
-
-    <div class="pressureBox">
-      <div class="pressureName">CRYPTO</div>
-      <div id="pressureCrypto" class="pressureValue">—</div>
-    </div>
-
-    <div class="pressureBox">
-      <div class="pressureName">TECH</div>
-      <div id="pressureTech" class="pressureValue">—</div>
-    </div>
-
-    <div class="pressureBox">
-      <div class="pressureName">MACRO</div>
-      <div id="pressureMacro" class="pressureValue">—</div>
-    </div>
-
-  </div>
-</div>
-
-      <!-- ===== BLOOMBERG STRUCTURE (EMA) ===== -->
-      <section class="bloomberg-structure">
-        <div class="bb-head">
-          <div class="bb-title">STRUCTURE</div>
-          <div class="bb-sub" id="bbRegime">—</div>
-        </div>
-
-        <div class="bb-chart-wrap">
-          <canvas id="emaCanvas" height="88"></canvas>
-        </div>
-
-        <div class="bb-meters">
-          <div class="bb-meter">
-            <div class="bb-meter-label">
-              <span>EMA SPREAD</span>
-              <span id="bbSpreadVal">—</span>
-            </div>
-            <div class="bb-bar"><div class="bb-bar-fill" id="bbSpreadFill"></div></div>
-            <div class="bb-meter-hint" id="bbSpreadHint">—</div>
+      <div class="tradePulse">
+        <div class="pulseWrap">
+          <div class="pulseHeader">
+            <div class="pulseTitle">MARKET PULSE</div>
+            <div class="pulseHint">Click: seleccionar · Doble click: trade</div>
           </div>
-
-          <div class="bb-meter">
-            <div class="bb-meter-label">
-              <span>RISK (ATR%)</span>
-              <span id="bbAtrVal">—</span>
-            </div>
-            <div class="bb-bar"><div class="bb-bar-fill" id="bbAtrFill"></div></div>
-            <div class="bb-meter-hint" id="bbAtrHint">—</div>
-          </div>
-        </div>
-
-        <div class="bb-decision">
-          <div class="bb-decision-mode" id="bbMode">—</div>
-          <div class="bb-decision-line" id="bbLine1">—</div>
-          <div class="bb-decision-line" id="bbLine2">—</div>
-        </div>
-      </section>
-
-      <!-- ===== GAUGE + RADAR ===== -->
-      <div class="layout2">
-        <div class="leftPane">
-          <div class="gaugeWrap">
-            <svg id="scoreGauge" viewBox="0 0 200 120" class="gauge">
-              <path d="M 20 100 A 80 80 0 0 1 180 100" class="gBg"></path>
-              <path id="gFg" d="M 20 100 A 80 80 0 0 1 180 100" class="gFg"></path>
-              <text id="gScore" x="100" y="78" text-anchor="middle" class="gScore">—</text>
-              <text x="100" y="98" text-anchor="middle" class="gLabel">Score</text>
-            </svg>
-          </div>
-        </div>
-
-        <div class="rightPane">
-          <div class="radarHeader">
-            <div class="radarTitle">RADAR</div>
-            <div class="radarHint">Click: seleccionar · Doble click: abrir trade</div>
-          </div>
-          <div id="radarList" class="radarList"></div>
+          <div id="pulseGrid" class="pulseGrid"></div>
         </div>
       </div>
 
     </div>
-  </div>
 
- <script>
+    <!-- ===== MARKET PRESSURE ===== -->
+    <div class="pressureWrap">
+      <div class="pressureTitle">MARKET PRESSURE</div>
+      <div class="pressureGrid">
+
+        <div class="pressureBox">
+          <div class="pressureName">CRYPTO</div>
+          <div id="pressureCrypto" class="pressureValue">—</div>
+        </div>
+
+        <div class="pressureBox">
+          <div class="pressureName">TECH</div>
+          <div id="pressureTech" class="pressureValue">—</div>
+        </div>
+
+        <div class="pressureBox">
+          <div class="pressureName">MACRO</div>
+          <div id="pressureMacro" class="pressureValue">—</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== BLOOMBERG STRUCTURE (EMA) ===== -->
+    <section class="bloomberg-structure">
+      <div class="bb-head">
+        <div class="bb-title">STRUCTURE</div>
+        <div class="bb-sub" id="bbRegime">—</div>
+      </div>
+
+      <div class="bb-chart-wrap">
+        <canvas id="emaCanvas" height="88"></canvas>
+      </div>
+
+      <div class="bb-meters">
+        <div class="bb-meter">
+          <div class="bb-meter-label">
+            <span>EMA SPREAD</span>
+            <span id="bbSpreadVal">—</span>
+          </div>
+          <div class="bb-bar"><div class="bb-bar-fill" id="bbSpreadFill"></div></div>
+          <div class="bb-meter-hint" id="bbSpreadHint">—</div>
+        </div>
+
+        <div class="bb-meter">
+          <div class="bb-meter-label">
+            <span>RISK (ATR%)</span>
+            <span id="bbAtrVal">—</span>
+          </div>
+          <div class="bb-bar"><div class="bb-bar-fill" id="bbAtrFill"></div></div>
+          <div class="bb-meter-hint" id="bbAtrHint">—</div>
+        </div>
+      </div>
+
+      <div class="bb-decision">
+        <div class="bb-decision-mode" id="bbMode">—</div>
+        <div class="bb-decision-line" id="bbLine1">—</div>
+        <div class="bb-decision-line" id="bbLine2">—</div>
+      </div>
+    </section>
+
+    <!-- ===== GAUGE + RADAR ===== -->
+    <div class="layout2">
+      <div class="leftPane">
+        <div class="gaugeWrap">
+          <svg id="scoreGauge" viewBox="0 0 200 120" class="gauge">
+            <path d="M 20 100 A 80 80 0 0 1 180 100" class="gBg"></path>
+            <path id="gFg" d="M 20 100 A 80 80 0 0 1 180 100" class="gFg"></path>
+            <text id="gScore" x="100" y="78" text-anchor="middle" class="gScore">—</text>
+            <text x="100" y="98" text-anchor="middle" class="gLabel">Score</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="rightPane">
+        <div class="radarHeader">
+          <div class="radarTitle">RADAR</div>
+          <div class="radarHint">Click: seleccionar · Doble click: abrir trade</div>
+        </div>
+        <div id="radarList" class="radarList"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
   let watchlistData = {};
   let macroData = { meta: {}, assets: {}, series: null };
   let currentAsset = null;
@@ -470,7 +441,6 @@
 
   let lastUpdatedISO = null;
   let lastUpdatedSeenAt = null;
-
   let lastAlignedKey = null;
 
   async function fetchJson(url) {
@@ -519,11 +489,9 @@
     return sym;
   }
 
-  // ===== TRADE URL =====
   function getTradeUrl(sym){
     const direct = macroData?.assets?.[sym]?.tradeUrl;
     if (direct) return direct;
-
     try{
       for (const cat in watchlistData){
         const arr = watchlistData[cat] || [];
@@ -641,7 +609,6 @@
       list.forEach(sym=>{
         const data = macroData.assets[sym];
         if(!data) return;
-
         total++;
         if(data.signal === "explosion_up") up++;
       });
@@ -999,82 +966,100 @@
      TRADE CARD (NUMÉRICA PRO)
      ========================= */
   function fmtNum(x, d=2){
-  const n = Number(x);
-  if (!Number.isFinite(n)) return "—";
-  return n.toFixed(d);
-}
-
- function normalizePct(v){
-  const n = Number(v);
-  if (!Number.isFinite(n)) return null;
-  return n < 1 ? n * 100 : n;
-}  
-
-
-// ===== SOUND ENGINE (beep + voz opcional) =====
-let audioCtx = null;
-let soundEnabled = false;
-
-function initAudio(){
-  if (audioCtx) return true;
-  try{
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    return true;
-  }catch(e){
-    console.warn("AudioContext no disponible", e);
-    return false;
+    const n = Number(x);
+    if (!Number.isFinite(n)) return "—";
+    return n.toFixed(d);
   }
-}
 
-function beep(freq=880, ms=180, gain=0.08){
-  if (!soundEnabled) return;
-  if (!initAudio()) return;
-
-  if (audioCtx.state === "suspended") audioCtx.resume();
-
-  const o = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o.type = "sine";
-  o.frequency.value = freq;
-  g.gain.value = gain;
-
-  o.connect(g); 
-  g.connect(audioCtx.destination);
-  o.start();
-
-  setTimeout(()=>{ o.stop(); }, ms);
-}
-
-function say(text){
-  if (!soundEnabled) return;
-  if (!("speechSynthesis" in window)) return;
-
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "es-ES";
-  u.rate = 1.0;
-
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(u);
-}
-
-document.addEventListener("DOMContentLoaded", ()=>{
-  const btn = document.getElementById("soundBtn");
-  const st  = document.getElementById("soundState");
-
-  if (btn){
-    btn.addEventListener("click", ()=>{
-      soundEnabled = true;
-      initAudio();
-
-      if (audioCtx?.state === "suspended") audioCtx.resume();
-
-      if (st) st.textContent = "(sonido ON)";
-
-      beep(880,140);
-      beep(1320,120);
-    });
+  function normalizePct(v){
+    const n = Number(v);
+    if (!Number.isFinite(n)) return null;
+    return n < 1 ? n * 100 : n;
   }
-});
+
+  /* =========================
+     SOUND ENGINE
+     ========================= */
+  let audioCtx = null;
+  let soundEnabled = false;
+
+  function initAudio(){
+    if (audioCtx) return true;
+    try{
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return true;
+    }catch(e){
+      console.warn("AudioContext no disponible", e);
+      return false;
+    }
+  }
+
+  function beep(freq=880, ms=180, gain=0.08){
+    if (!soundEnabled) return;
+    if (!initAudio()) return;
+    if (audioCtx.state === "suspended") audioCtx.resume();
+
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "sine";
+    o.frequency.value = freq;
+    g.gain.value = gain;
+
+    o.connect(g);
+    g.connect(audioCtx.destination);
+    o.start();
+
+    setTimeout(()=>{ o.stop(); }, ms);
+  }
+
+  function say(text){
+    if (!soundEnabled) return;
+    if (!("speechSynthesis" in window)) return;
+
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "es-ES";
+    u.rate = 1.0;
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  }
+
+  document.addEventListener("DOMContentLoaded", ()=>{
+    const btn = document.getElementById("soundBtn");
+    const st  = document.getElementById("soundState");
+
+    if (btn){
+      btn.addEventListener("click", ()=>{
+        soundEnabled = true;
+        initAudio();
+        if (audioCtx?.state === "suspended") audioCtx.resume();
+        if (st) st.textContent = "(sonido ON)";
+        beep(880,140); beep(1320,120);
+      });
+    }
+  });
+
+  // 🔊 Antirepetición de señal
+  let lastBeepKey = null;
+
+  function maybeBeepForAsset(sym, asset){
+    if (!soundEnabled) return;
+    if (!asset) return;
+
+    const sig = asset.signal || "neutral";
+    const key = `${sym}:${sig}:${Number(asset.score ?? 0).toFixed(0)}`;
+
+    if (key === lastBeepKey) return;
+    lastBeepKey = key;
+
+    if (sig === "explosion_up"){
+      beep(880,140); beep(1320,120);
+      // say(`${sym} impulso alcista`);
+    } else if (sig === "explosion_down"){
+      beep(330,180); beep(220,220);
+      // say(`${sym} impulso bajista`);
+    }
+  }
 
   function updateTradeCard(asset){
     const biasEl = document.getElementById("tradeBias");
@@ -1098,13 +1083,10 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const ema21 = Number(asset.ema21);
     const ema50 = Number(asset.ema50 ?? asset.ema21);
 
-    // ATR% normalizado
     const atrPct = (asset.atr_pct != null) ? normalizePct(asset.atr_pct) : null;
-    // ATR absoluto (si tu JSON lo incluye como "atr")
     const atrAbs = asset.atr != null ? Number(asset.atr) : null;
     const hasAtrAbs = (atrAbs != null && Number.isFinite(atrAbs) && atrAbs > 0);
 
-    // Sesgo por EMAs
     const up = (Number.isFinite(ema21) && Number.isFinite(ema50)) ? (ema21 > ema50) : null;
 
     let bias = "WAIT";
@@ -1112,11 +1094,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
     let trigger = "—";
     let stop = "—";
 
-    // ===== LONG =====
     if (up === true){
       bias = "BUY";
       biasEl.className = "tradeBadge buy";
-
       zone = (Number.isFinite(price) && Number.isFinite(ema21) && price >= ema21) ? "Continuidad" : "Pullback";
       trigger = `Price ${fmtNum(price,2)} > EMA21 (${fmtNum(ema21,2)})`;
 
@@ -1124,12 +1104,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
         const stopLvl = hasAtrAbs ? (ema50 - 0.5 * atrAbs) : ema50;
         stop = `${hasAtrAbs ? "EMA50-0.5ATR" : "EMA50"} (${fmtNum(stopLvl, 2)})`;
       }
-
-    // ===== SHORT =====
     } else if (up === false){
       bias = "SELL";
       biasEl.className = "tradeBadge sell";
-
       zone = (Number.isFinite(price) && Number.isFinite(ema21) && price <= ema21) ? "Continuidad" : "Rebote";
       trigger = `Price ${fmtNum(price,2)} < EMA21 (${fmtNum(ema21,2)})`;
 
@@ -1137,7 +1114,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
         const stopLvl = hasAtrAbs ? (ema50 + 0.5 * atrAbs) : ema50;
         stop = `${hasAtrAbs ? "EMA50+0.5ATR" : "EMA50"} (${fmtNum(stopLvl, 2)})`;
       }
-
     } else {
       biasEl.className = "tradeBadge wait";
     }
@@ -1155,17 +1131,21 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
     const asset = { ...assetData };
 
+    // normaliza ATR% y EMA50
     if (asset.atr_pct != null) {
-  const v = normalizePct(asset.atr_pct);
-  if (v != null) asset.atr_pct = v;
-}
+      const v = normalizePct(asset.atr_pct);
+      if (v != null) asset.atr_pct = v;
+    }
     if (asset.ema50 == null) asset.ema50 = asset.ema21;
 
-    updateTradeCard(asset); // ✅ AQUÍ (después de normalizar)
+    // Trade card
+    updateTradeCard(asset);
 
+    // ✅ Canvas + meters (una sola vez)
     const seriesArr = getSeriesFor(currentAsset);
     renderBloombergStructure(asset, seriesArr);
 
+    // Gauge score
     const score = Number(asset.score);
     const gFg = document.getElementById("gFg");
     const gScore = document.getElementById("gScore");
@@ -1187,9 +1167,11 @@ document.addEventListener("DOMContentLoaded", ()=>{
       if (gScore) gScore.textContent = "—";
     }
 
+    // Title
     const title = document.getElementById("assetName");
     if (title) title.textContent = getNameForSymbol(currentAsset);
 
+    // Badges
     const uiSignal = document.getElementById("uiSignal");
     const uiTrend  = document.getElementById("uiTrend");
     const uiVol    = document.getElementById("uiVol");
@@ -1202,6 +1184,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const updIso = macroData?.meta?.updated_utc || macroData?.meta?.updated || macroData?.updated || null;
     if (uiUpd) uiUpd.textContent = updIso ? updIso.replace("T"," ").replace("Z","") : "—";
 
+    // Dot signal
     const sigDot = document.getElementById("sigDot");
     if (sigDot){
       sigDot.classList.remove("up","down");
@@ -1209,6 +1192,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
       else if (asset.signal === "explosion_down") sigDot.classList.add("down");
     }
 
+    // State pill
     const pill = document.getElementById("uiStatePill");
     const stxt = document.getElementById("uiStateText");
     const shin = document.getElementById("uiStateHint");
@@ -1238,16 +1222,23 @@ document.addEventListener("DOMContentLoaded", ()=>{
         buildSelector();
       }
 
-     macroData = await fetchJson(JSON_URL);
+      macroData = await fetchJson(JSON_URL);
 
-    // asegura currentAsset
-    const sel = document.getElementById("assetSelect");
-    if ((!currentAsset || !macroData.assets?.[currentAsset]) && sel && sel.value) currentAsset = sel.value;
-    if (!currentAsset || !macroData.assets?.[currentAsset]) currentAsset = Object.keys(macroData.assets||{})[0] || null;
+      // sanity
+      if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {}, series: null };
+      if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
+      if (!("series" in macroData)) macroData.series = null;
 
-    // 🔊 beep si hay señal nueva
-    maybeBeepForAsset(currentAsset, macroData.assets?.[currentAsset]);
+      // asegura currentAsset
+      const sel = document.getElementById("assetSelect");
+      if ((!currentAsset || !macroData.assets?.[currentAsset]) && sel && sel.value) currentAsset = sel.value;
+      if (!currentAsset || !macroData.assets?.[currentAsset]) currentAsset = Object.keys(macroData.assets||{})[0] || null;
+      if (sel && currentAsset) sel.value = currentAsset;
 
+      // 🔊 beep (SOLO una vez)
+      maybeBeepForAsset(currentAsset, macroData.assets?.[currentAsset]);
+
+      // health
       const { iso, ts } = parseUpdatedTs(macroData);
       const now = Date.now();
 
@@ -1277,24 +1268,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
         setHealth(`⚠️ No encuentro updated en JSON | ${JSON_URL}`, "warn");
       }
 
-      if (!macroData || typeof macroData !== "object") macroData = { meta: {}, assets: {}, series: null };
-      if (!macroData.assets || typeof macroData.assets !== "object") macroData.assets = {};
-      if (!("series" in macroData)) macroData.series = null;
-
-      const sel = document.getElementById("assetSelect");
-
-      if ((!currentAsset || !macroData.assets?.[currentAsset]) && sel && sel.value) {
-        currentAsset = sel.value;
-      }
-
-      if (!currentAsset || !macroData.assets?.[currentAsset]) {
-        const first = Object.keys(macroData.assets || {})[0];
-        if (first) currentAsset = first;
-      }
-
-      if (sel && currentAsset) sel.value = currentAsset;
-
-      maybeBeepForAsset(currentAsset, macroData.assets?.[currentAsset]);
+      // UI
       updateAssetView();
       buildRadar();
       buildPulseGrid("1H");
@@ -1328,5 +1302,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
     renderBloombergStructure(assetData, seriesArr);
   });
 </script>
+
 </body>
 </html>
