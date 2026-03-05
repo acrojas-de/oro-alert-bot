@@ -197,6 +197,47 @@
 max-width:1400px;
 margin:auto;
 }  
+
+ .phaseGrid{
+  display:grid;
+  grid-template-columns: repeat(5, minmax(0,1fr));
+  gap:10px;
+  margin-top:10px;
+}
+
+.phaseBox{
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+  background: rgba(15,23,42,.35);
+}
+
+.phaseTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+}
+
+.phaseName{ font-weight:800; }
+.phaseValue{ font-weight:900; font-size:18px; }
+
+.phaseBar{
+  height:10px;
+  border-radius:999px;
+  overflow:hidden;
+  border:1px solid var(--border);
+  background: rgba(15,23,42,.55);
+}
+
+.phaseFill{ height:100%; width:50%; }
+
+.phaseHint{ margin-top:8px; font-size:12px; opacity:.85; }
+
+.phaseGood{ color: #22c55e; }
+.phaseWarn{ color: #f59e0b; }
+.phaseBad{  color: #ef4444; }   
     
   </style>
 </head>
@@ -232,6 +273,17 @@ margin:auto;
 
   <div class="wrap">
     <div class="grid">
+
+
+      <!-- MARKET PHASE RADAR -->
+<div class="card" style="grid-column: span 12;">
+  <div class="cardTitle">
+    <div>🧠 Market Phase Radar</div>
+    <div class="muted" id="phaseNowLine">—</div>
+  </div>
+
+  <div class="phaseGrid" id="phaseGrid"></div>
+</div>
 
       
       <!-- PROBABILITY -->
