@@ -301,15 +301,17 @@
 
 <body>
   <header>
-    <h2 style="margin:0;">Premium Terminal V1 (1H)</h2>
-    <select id="assetSelect"></select>
-    <button id="refreshBtn" class="refreshBtn">↻ Refresh</button>
+   <header>
+  <h2 style="margin:0;">Premium Terminal V1 (1H)</h2>
+  <select id="assetSelect"></select>
 
-    <button id="refreshBtn" class="refreshBtn">↻ Refresh</button>
-    <div id="dataHealth" style="opacity:.85;font-size:12px;"></div>
-    
-    <div id="dataHealth" style="opacity:.85;font-size:12px;"></div>
-  </header>
+  <button id="refreshBtn" class="refreshBtn">↻ Refresh</button>
+
+  <button id="soundBtn" class="refreshBtn" style="margin-left:8px;">🔊 Sonido</button>
+  <span id="soundState" style="opacity:.8;margin-left:8px;font-size:12px;">(sonido OFF)</span>
+
+  <div id="dataHealth" style="opacity:.85;font-size:12px;"></div>
+</header>
 
   <div class="content">
     <div id="mainCard" class="card">
@@ -1236,7 +1238,15 @@ document.addEventListener("DOMContentLoaded", ()=>{
         buildSelector();
       }
 
-      macroData = await fetchJson(JSON_URL);
+     macroData = await fetchJson(JSON_URL);
+
+    // asegura currentAsset
+    const sel = document.getElementById("assetSelect");
+    if ((!currentAsset || !macroData.assets?.[currentAsset]) && sel && sel.value) currentAsset = sel.value;
+    if (!currentAsset || !macroData.assets?.[currentAsset]) currentAsset = Object.keys(macroData.assets||{})[0] || null;
+
+    // 🔊 beep si hay señal nueva
+    maybeBeepForAsset(currentAsset, macroData.assets?.[currentAsset]);
 
       const { iso, ts } = parseUpdatedTs(macroData);
       const now = Date.now();
@@ -1284,6 +1294,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
       if (sel && currentAsset) sel.value = currentAsset;
 
+      maybeBeepForAsset(currentAsset, macroData.assets?.[currentAsset]);
       updateAssetView();
       buildRadar();
       buildPulseGrid("1H");
