@@ -998,6 +998,7 @@ function startMarketHoursClock(){
 
     // ✅ módulos extra
     updateExtraModules(macro);
+    renderMarketPhaseRadar(macro);
 
     // alert check on fresh data
     await checkAlerts(macro);
@@ -1012,6 +1013,7 @@ function startMarketHoursClock(){
       renderAssets(lastDataCache);
       renderSelected(lastDataCache);
       updateExtraModules(lastDataCache);
+      renderMarketPhaseRadar(lastDataCache);
       return;
     }
 
