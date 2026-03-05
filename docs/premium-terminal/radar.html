@@ -238,6 +238,19 @@ margin:auto;
 .phaseGood{ color: #22c55e; }
 .phaseWarn{ color: #f59e0b; }
 .phaseBad{  color: #ef4444; }   
+
+ .phaseCard{
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+  background: rgba(15,23,42,.35);
+}
+.phaseTitle{ font-weight:800; }
+.phaseHint{ font-size:12px; opacity:.85; }
+.phaseValue{ font-weight:900; font-size:18px; margin-top:8px; }
+@media (max-width: 1100px){
+  .phaseGrid{ grid-template-columns: repeat(2, 1fr); }
+}   
     
   </style>
 </head>
@@ -274,6 +287,10 @@ margin:auto;
   <div class="wrap">
     <div class="grid">
 
+       <!-- EXTRA MODULES -->
+<div class="card">...</div>
+<div class="card">...</div>
+<div class="card">...</div>
 
       <!-- MARKET PHASE RADAR -->
 <div class="card" style="grid-column: span 12;">
@@ -628,6 +645,108 @@ function startMarketHoursClock(){
   setInterval(renderMarketHours, 1000);
 }
 
+  // ================= MARKET PHASE RADAR =================
+
+function marketPhaseFromMacro(macro){
+
+  const assets = macro?.assets || {};
+
+  const score = a => Number(a?.score ?? 50);
+  const trend = a => (a?.trend || "").toLowerCase();
+  const signal = a => (a?.signal || "").toLowerCase();
+
+  const nas = assets["^IXIC"] || {};
+  const dxy = assets["DX-Y.NYB"] || {};
+  const tnx = assets["^TNX"] || {};
+  const gold = assets["GC=F"] || {};
+  const btc = assets["BTC-USD"] || {};
+  const eth = assets["ETH-USD"] || {};
+
+  // ---- RISK ON / OFF ----
+  let riskScore = 0;
+
+  if(trend(nas).includes("bull")) riskScore += 1;
+  if(trend(dxy).includes("bull")) riskScore -= 1;
+  if(trend(tnx).includes("bull")) riskScore -= 0.7;
+
+  if(signal(nas).includes("explosion_up")) riskScore += 1;
+  if(signal(nas).includes("explosion_down")) riskScore -= 1;
+
+  const risk =
+    riskScore > 0.5 ? "RISK ON" :
+    riskScore < -0.5 ? "RISK OFF" : "MIXED";
+
+  // ---- LIQUIDITY ----
+  const liqScore = (score(dxy)-50) + (score(tnx)-50) - (score(nas)-50);
+
+  const liquidity =
+    liqScore > 15 ? "LIQUIDITY TIGHTENING" :
+    liqScore < -15 ? "LIQUIDITY EASING" :
+    "NEUTRAL";
+
+  // ---- GOLD ----
+  const goldDom =
+    score(gold) > 65 ? "GOLD DOMINANCE" :
+    score(gold) < 40 ? "GOLD WEAK" :
+    "GOLD NEUTRAL";
+
+  // ---- CRYPTO FLOW ----
+  const cryptoScore = (score(btc)-50)*0.7 + (score(eth)-50)*0.3;
+
+  const crypto =
+    cryptoScore > 10 ? "CRYPTO FLOW IN" :
+    cryptoScore < -10 ? "CRYPTO FLOW OUT" :
+    "CRYPTO FLAT";
+
+  // ---- MOMENTUM ----
+  let explosions = 0;
+
+  Object.values(assets).forEach(a=>{
+    if((a.signal || "").includes("explosion")) explosions++;
+  });
+
+  const momentum =
+    explosions >= 4 ? "HIGH MOMENTUM" :
+    explosions >= 2 ? "MEDIUM MOMENTUM" :
+    "LOW MOMENTUM";
+
+  const phaseLine =
+  `${risk} · ${liquidity} · ${goldDom} · ${crypto} · ${momentum}`;
+
+  const cards = [
+    {title:"🟢 Risk", value:risk, hint:"Nasdaq vs DXY"},
+    {title:"💧 Liquidity", value:liquidity, hint:"DXY + TNX"},
+    {title:"🥇 Gold", value:goldDom, hint:"Gold strength"},
+    {title:"🪙 Crypto", value:crypto, hint:"BTC / ETH"},
+    {title:"⚡ Momentum", value:momentum, hint:`explosions ${explosions}`}
+  ];
+
+  return {phaseLine,cards};
+}
+
+
+function renderMarketPhaseRadar(macro){
+
+  const grid = document.getElementById("phaseGrid");
+  const line = document.getElementById("phaseNowLine");
+
+  if(!grid) return;
+
+  const p = marketPhaseFromMacro(macro);
+
+  if(line) line.textContent = p.phaseLine;
+
+  grid.innerHTML = p.cards.map(c=>`
+    <div class="phaseBox">
+      <div class="phaseTop">
+        <div class="phaseName">${c.title}</div>
+      </div>
+      <div class="phaseValue">${c.value}</div>
+      <div class="phaseHint">${c.hint}</div>
+    </div>
+  `).join("");
+}
+  
   
   async function fetchJson(url){
     const r = await fetch(url + "?v=" + Date.now(), { cache:"no-store" });
