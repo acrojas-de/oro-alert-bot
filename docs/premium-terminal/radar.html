@@ -156,6 +156,8 @@
 
   <div class="wrap">
     <div class="grid">
+
+      
       <!-- PROBABILITY -->
       <div class="card" style="grid-column: span 12;">
         <div class="cardTitle">
@@ -168,6 +170,7 @@
         </div>
 
         <div class="row" style="align-items:flex-end; justify-content:space-between;">
+        
           <div>
             <div class="muted">Dirección más probable (heurística)</div>
             <div class="big" id="probHeadline">—</div>
@@ -237,6 +240,31 @@
       </div>
     </div>
   </div>
+
+  <!-- EXTRA MODULES -->
+<div class="card" style="grid-column: span 4;">
+  <div class="cardTitle">
+    <div>💰 Liquidity Flow</div>
+    <div class="muted">Flujo de capital</div>
+  </div>
+  <div id="liquidityFlow" class="muted">—</div>
+</div>
+
+<div class="card" style="grid-column: span 4;">
+  <div class="cardTitle">
+    <div>⚡ Momentum Alerts</div>
+    <div class="muted">Explosiones</div>
+  </div>
+  <div id="momentumAlerts" class="muted">—</div>
+</div>
+
+<div class="card" style="grid-column: span 4;">
+  <div class="cardTitle">
+    <div>🥇 Gold Radar</div>
+    <div class="muted">Estado rápido</div>
+  </div>
+  <div id="goldRadar" class="muted">—</div>
+</div>
 
   <div id="flashOverlay" class="flashOverlay"></div>
 
@@ -682,6 +710,8 @@
       renderProbability(macro);
       renderAssets(macro);
       renderSelected(macro);
+
+      
 
       // alert check on fresh data
       await checkAlerts(macro);
