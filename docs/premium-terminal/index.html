@@ -1002,6 +1002,12 @@
   return n.toFixed(d);
 }
 
+ function normalizePct(v){
+  const n = Number(v);
+  if (!Number.isFinite(n)) return null;
+  return n < 1 ? n * 100 : n;
+}  
+
 
 // ===== SOUND ENGINE (beep + voz opcional) =====
 let audioCtx = null;
