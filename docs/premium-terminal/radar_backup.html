@@ -4,6 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Macro Radar Global (Premium)</title>
+  <link rel="icon" type="image/png" href="favicon-01.png?v=2">
 
   <style>
     :root{
@@ -132,6 +133,42 @@
       .big{ font-size:24px; }
       .wrap{ padding:12px; }
     }
+
+  .hCenter{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-width:260px;
+}
+
+.clockBig{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-weight:900;
+  letter-spacing:1px;
+  font-size:34px;          /* tamaño grande */
+  line-height:1.05;
+  padding:6px 14px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:rgba(15,23,42,.55);
+  box-shadow: 0 0 0 2px rgba(96,165,250,.10) inset;
+}
+
+.clockSub{
+  margin-top:6px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:center;
+  opacity:.95;
+}
+
+@media (max-width: 900px){
+  .clockBig{ font-size:26px; }
+}
+    
   </style>
 </head>
 
@@ -144,6 +181,16 @@
       <div class="chip">📦 fuente: <span id="jsonPath">macro_data.json</span></div>
     </div>
 
+    <!-- CLOCK CENTER -->
+<div class="hCenter">
+  <div class="clockBig" id="clockBig">--:--:--</div>
+  <div class="clockSub">
+    <span class="pill" id="clockTz">Local</span>
+    <span class="pill" id="clockUtc">UTC --:--:--</span>
+  </div>
+</div>
+
+    
     <div class="hRight">
       <button id="btnOpenTerminal">🖥️ Terminal</button>
       <button id="btnRefresh">⟳ Refresh</button>
@@ -156,6 +203,8 @@
 
   <div class="wrap">
     <div class="grid">
+
+      
       <!-- PROBABILITY -->
       <div class="card" style="grid-column: span 12;">
         <div class="cardTitle">
@@ -168,6 +217,7 @@
         </div>
 
         <div class="row" style="align-items:flex-end; justify-content:space-between;">
+        
           <div>
             <div class="muted">Dirección más probable (heurística)</div>
             <div class="big" id="probHeadline">—</div>
@@ -237,6 +287,31 @@
       </div>
     </div>
   </div>
+
+  <!-- EXTRA MODULES -->
+<div class="card" style="grid-column: span 4;">
+  <div class="cardTitle">
+    <div>💰 Liquidity Flow</div>
+    <div class="muted">Flujo de capital</div>
+  </div>
+  <div id="liquidityFlow" class="muted">—</div>
+</div>
+
+<div class="card" style="grid-column: span 4;">
+  <div class="cardTitle">
+    <div>⚡ Momentum Alerts</div>
+    <div class="muted">Explosiones</div>
+  </div>
+  <div id="momentumAlerts" class="muted">—</div>
+</div>
+
+<div class="card" style="grid-column: span 4;">
+  <div class="cardTitle">
+    <div>🥇 Gold Radar</div>
+    <div class="muted">Estado rápido</div>
+  </div>
+  <div id="goldRadar" class="muted">—</div>
+</div>
 
   <div id="flashOverlay" class="flashOverlay"></div>
 
@@ -658,40 +733,56 @@
 
   // ========= main loader =========
   async function loadData(){
-    try{
-      const macro = await fetchJson(JSON_URL);
-      lastDataCache = macro;
+  try{
+    const macro = await fetchJson(JSON_URL);
+    lastDataCache = macro;
 
-      // updated / freeze
-      const updated = macro?.meta?.updated || macro?.updated || null;
-      lastUpdatedISO = updated || lastUpdatedISO;
+    // updated / freeze
+    const updated = macro?.meta?.updated || macro?.updated || null;
+    lastUpdatedISO = updated || lastUpdatedISO;
 
-      if (lastUpdatedISO){
-        updatedText.textContent = lastUpdatedISO;
-        const ageMs = Date.now() - new Date(lastUpdatedISO).getTime();
-        if (ageMs > FREEZE_WARN_MS){
-          setHealth(`Datos congelados (edad ${msToMin(ageMs)}m)`, "warn");
-        }else{
-          setHealth(`OK (edad ${msToMin(ageMs)}m)`, "good");
-        }
+    if (lastUpdatedISO){
+      updatedText.textContent = lastUpdatedISO;
+      const ageMs = Date.now() - new Date(lastUpdatedISO).getTime();
+      if (ageMs > FREEZE_WARN_MS){
+        setHealth(`Datos congelados (edad ${msToMin(ageMs)}m)`, "warn");
       }else{
-        updatedText.textContent = "—";
-        setHealth("OK", "good");
+        setHealth(`OK (edad ${msToMin(ageMs)}m)`, "good");
       }
-
-      renderProbability(macro);
-      renderAssets(macro);
-      renderSelected(macro);
-
-      // alert check on fresh data
-      await checkAlerts(macro);
-
-    }catch(e){
-      setHealth("Error cargando datos", "bad");
-      console.error(e);
+    }else{
+      updatedText.textContent = "—";
+      setHealth("OK", "good");
     }
-  }
 
+    renderProbability(macro);
+    renderAssets(macro);
+    renderSelected(macro);
+
+    // ✅ módulos extra
+    updateExtraModules(macro);
+
+    // alert check on fresh data
+    await checkAlerts(macro);
+
+  }catch(e){
+    console.error(e);
+
+    // ✅ si tenemos caché, seguimos funcionando
+    if (lastDataCache){
+      setHealth("Sin conexión: usando último dato en caché", "warn");
+      renderProbability(lastDataCache);
+      renderAssets(lastDataCache);
+      renderSelected(lastDataCache);
+      updateExtraModules(lastDataCache);
+      return;
+    }
+
+    // si no hay caché, error total
+    setHealth("Error cargando datos (sin conexión)", "bad");
+  }
+}
+
+  
   // test alert button
   btnTestAlert.onclick = async ()=>{
     const sym = settings.selected || "TEST";
