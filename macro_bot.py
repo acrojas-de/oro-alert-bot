@@ -1,7 +1,8 @@
 import os
 import json
 from datetime import datetime, timezone
-
+import time
+import random
 import pandas as pd
 import yfinance as yf
 
@@ -42,7 +43,10 @@ ATR_LEN = int(os.getenv("ATR_LEN", "14"))
 
 # Premium series
 SERIES_POINTS = int(os.getenv("SERIES_POINTS", "120"))
-
+# ==== RETRY / RESILIENCIA ====
+FETCH_RETRIES = int(os.getenv("FETCH_RETRIES", "3"))
+FETCH_SLEEP = float(os.getenv("FETCH_SLEEP", "2.5"))
+ALLOW_STALE_FALLBACK = os.getenv("ALLOW_STALE_FALLBACK", "1") == "1"
 
 # ==============
 # INDICATORS
@@ -80,30 +84,75 @@ def atr(df: pd.DataFrame, length: int = 14) -> pd.Series:
 # DATA FETCH
 # ==============
 def fetch_ohlc(ticker: str, period: str, interval: str) -> pd.DataFrame:
-    df = yf.download(ticker, period=period, interval=interval, progress=False)
-    if df is None or df.empty:
-        raise RuntimeError(f"Sin datos para {ticker} ({interval}/{period})")
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = df.columns.get_level_values(0)
-    df = df.rename(columns=str.lower).dropna()
+    last_err = None
 
-    required = {"open", "high", "low", "close"}
-    if not required.issubset(set(df.columns)):
-        raise RuntimeError(f"Faltan OHLC en {ticker}. Columnas: {list(df.columns)}")
+    for attempt in range(1, FETCH_RETRIES + 1):
+        try:
+            df = yf.download(
+                ticker,
+                period=period,
+                interval=interval,
+                progress=False,
+                auto_adjust=False,
+                threads=False,
+            )
 
-    return df[["open", "high", "low", "close"]].dropna()
+            if df is None or df.empty:
+                raise RuntimeError(f"Sin datos para {ticker} ({interval}/{period})")
 
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.get_level_values(0)
+
+            df = df.rename(columns=str.lower).dropna()
+
+            required = {"open", "high", "low", "close"}
+            if not required.issubset(set(df.columns)):
+                raise RuntimeError(f"Faltan OHLC en {ticker}. Columnas: {list(df.columns)}")
+
+            return df[["open", "high", "low", "close"]].dropna()
+
+        except Exception as e:
+            last_err = e
+            print(f"[fetch_ohlc] intento {attempt}/{FETCH_RETRIES} falló en {ticker}: {e}")
+            if attempt < FETCH_RETRIES:
+                time.sleep(FETCH_SLEEP + random.uniform(0.3, 1.2))
+
+    raise RuntimeError(f"Sin datos para {ticker} ({interval}/{period}) | último error: {last_err}")
 
 def fetch_close(ticker: str, period: str, interval: str) -> pd.Series:
-    df = yf.download(ticker, period=period, interval=interval, progress=False)
-    if df is None or df.empty:
-        raise RuntimeError(f"Sin datos para {ticker} ({interval}/{period})")
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = df.columns.get_level_values(0)
-    df = df.rename(columns=str.lower).dropna()
-    if "close" not in df.columns:
-        raise RuntimeError(f"Falta close en {ticker}. Columnas: {list(df.columns)}")
-    return df["close"].dropna()
+    last_err = None
+
+    for attempt in range(1, FETCH_RETRIES + 1):
+        try:
+            df = yf.download(
+                ticker,
+                period=period,
+                interval=interval,
+                progress=False,
+                auto_adjust=False,
+                threads=False,
+            )
+
+            if df is None or df.empty:
+                raise RuntimeError(f"Sin datos para {ticker} ({interval}/{period})")
+
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.get_level_values(0)
+
+            df = df.rename(columns=str.lower).dropna()
+
+            if "close" not in df.columns:
+                raise RuntimeError(f"Falta close en {ticker}. Columnas: {list(df.columns)}")
+
+            return df["close"].dropna()
+
+        except Exception as e:
+            last_err = e
+            print(f"[fetch_close] intento {attempt}/{FETCH_RETRIES} falló en {ticker}: {e}")
+            if attempt < FETCH_RETRIES:
+                time.sleep(FETCH_SLEEP + random.uniform(0.3, 1.2))
+
+    raise RuntimeError(f"Sin datos para {ticker} ({interval}/{period}) | último error: {last_err}")
 
 
 def last_closed_index(series: pd.Series) -> int:
@@ -137,6 +186,36 @@ def save_data(path: str, data: dict) -> None:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
+def build_stale_fallback(path: str) -> dict | None:
+    """
+    Si falla Yahoo, intenta devolver el último macro_data.json válido
+    para que el proceso no se caiga.
+    """
+    if not ALLOW_STALE_FALLBACK:
+        return None
+
+    data = load_data(path)
+    series = data.get("series", [])
+    signals = data.get("signals", [])
+    state = data.get("state", {})
+    meta = data.get("meta", {})
+
+    if not series:
+        return None
+
+    fallback = {
+        "meta": {
+            "timeframe": meta.get("timeframe", TIMEFRAME),
+            "period": meta.get("period", PERIOD),
+            "updated_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+            "stale_fallback": True,
+        },
+        "series": series[-MAX_POINTS:],
+        "signals": signals,
+        "state": state,
+    }
+    return fallback
+    
 # ==============
 # SIGNALS
 # ==============
@@ -305,12 +384,29 @@ def build_series_for_symbol(symbol: str, period: str, interval: str, points: int
 # ==============
 def main():
     # ========== 1) Datos 1H (estructura) ==========
-    gold_df = fetch_ohlc(GOLD_TICKER, PERIOD, TIMEFRAME)
-    gold = gold_df["close"]
+    try:
+        gold_df = fetch_ohlc(GOLD_TICKER, PERIOD, TIMEFRAME)
+        gold = gold_df["close"]
 
-    dxy = fetch_close(DXY_TICKER, PERIOD, TIMEFRAME)
-    tnx = fetch_close(TNX_TICKER, PERIOD, TIMEFRAME)
-    nas = fetch_close(NASDAQ_TICKER, PERIOD, TIMEFRAME)
+        dxy = fetch_close(DXY_TICKER, PERIOD, TIMEFRAME)
+        tnx = fetch_close(TNX_TICKER, PERIOD, TIMEFRAME)
+        nas = fetch_close(NASDAQ_TICKER, PERIOD, TIMEFRAME)
+
+    except Exception as e:
+        print(f"[main] Error descargando datos macro principales: {e}")
+
+        stale = build_stale_fallback(DATA_PATH)
+        if stale:
+            save_data(DATA_PATH, {
+                "meta": stale["meta"],
+                "series": stale["series"],
+                "signals": stale["signals"],
+                "state": stale["state"],
+            })
+            print(f"[main] Usando fallback desde {DATA_PATH}. No se cae el proceso.")
+            return
+
+        raise RuntimeError(f"No se pudieron descargar datos principales y no hay fallback: {e}")
 
     i_g = last_closed_index(gold)
     i_d = last_closed_index(dxy)
@@ -467,8 +563,8 @@ def main():
             state["market_state"] = "EXPANSION_UNCLEAR"
 
     state["market_state"] = "COMPRESSION" if compression_now else state.get("market_state", "NORMAL")
-
-    # ========== 6) Confirmación táctica (5m) ==========
+                    
+        # ========== 6) Confirmación táctica (5m) ==========
     if "BUY" in just_types:
         state["pending_confirm"] = {
             "direction": "UP",
@@ -495,56 +591,94 @@ def main():
 
     pc = state.get("pending_confirm")
     if pc:
-        exec_gold = fetch_close(GOLD_TICKER, EXEC_PERIOD, EXEC_TIMEFRAME)
-        i_e = last_closed_index(exec_gold)
+        try:
+            exec_gold = fetch_close(GOLD_TICKER, EXEC_PERIOD, EXEC_TIMEFRAME)
+        except Exception as e:
+            print(f"[confirmación 5m] No se pudo descargar ejecución táctica: {e}")
+            exec_gold = None
 
-        warm = int(pc.get("warmup_bars", WARMUP_BARS))
-        base_idx = (i_e - warm) if len(exec_gold) >= (warm + 2) else i_e
+        if exec_gold is not None and not exec_gold.empty:
+            i_e = last_closed_index(exec_gold)
 
-        p_now = float(exec_gold.iloc[i_e])
-        p_base = float(exec_gold.iloc[base_idx])
+            warm = int(pc.get("warmup_bars", WARMUP_BARS))
+            base_idx = (i_e - warm) if len(exec_gold) >= (warm + 2) else i_e
 
-        from_price = float(pc.get("from_price", p_base))
-        thr = float(pc.get("threshold_pct", CONFIRM_PCT))
-        stop_price = float(pc.get("stop_price", from_price))
+            p_now = float(exec_gold.iloc[i_e])
+            p_base = float(exec_gold.iloc[base_idx])
 
-        move = p_now - from_price
-        move_pct = pct_move(p_now, from_price)
+            from_price = float(pc.get("from_price", p_base))
+            thr = float(pc.get("threshold_pct", CONFIRM_PCT))
+            stop_price = float(pc.get("stop_price", from_price))
 
-        if pc.get("direction") == "DOWN" and p_now > stop_price:
-            add_signal(signals, now_ts, "GOLD", "STOP_HIT",
-                       f"Stop tocado (SELL): {p_now:.2f} > {stop_price:.2f}",
-                       4, p_now,
-                       extra={"from_price": round(from_price, 2), "stop_price": round(stop_price, 2), "source_ts": pc.get("from_ts")})
-            state.pop("pending_confirm", None)
+            move = p_now - from_price
+            move_pct = pct_move(p_now, from_price)
 
-        elif pc.get("direction") == "UP" and p_now < stop_price:
-            add_signal(signals, now_ts, "GOLD", "STOP_HIT",
-                       f"Stop tocado (BUY): {p_now:.2f} < {stop_price:.2f}",
-                       4, p_now,
-                       extra={"from_price": round(from_price, 2), "stop_price": round(stop_price, 2), "source_ts": pc.get("from_ts")})
-            state.pop("pending_confirm", None)
-
-        else:
-            if pc.get("direction") == "DOWN" and move_pct <= -thr:
-                add_signal(signals, now_ts, "GOLD", "CONFIRM_DOWN",
-                           f"Confirmación bajista: {move_pct*100:.2f}% ({move:.2f}$) desde cruce {from_price:.2f}",
-                           3, p_now,
-                           extra={"from_price": round(from_price, 2), "move": round(move, 2), "move_pct": round(move_pct, 6),
-                                  "threshold_pct": thr, "stop_price": round(stop_price, 2),
-                                  "source_ts": pc.get("from_ts"), "source_type": pc.get("source_type"),
-                                  "exec_timeframe": EXEC_TIMEFRAME, "warmup_bars": warm, "p_base": round(p_base, 2)})
+            if pc.get("direction") == "DOWN" and p_now > stop_price:
+                add_signal(
+                    signals, now_ts, "GOLD", "STOP_HIT",
+                    f"Stop tocado (SELL): {p_now:.2f} > {stop_price:.2f}",
+                    4, p_now,
+                    extra={
+                        "from_price": round(from_price, 2),
+                        "stop_price": round(stop_price, 2),
+                        "source_ts": pc.get("from_ts")
+                    }
+                )
                 state.pop("pending_confirm", None)
 
-            elif pc.get("direction") == "UP" and move_pct >= thr:
-                add_signal(signals, now_ts, "GOLD", "CONFIRM_UP",
-                           f"Confirmación alcista: {move_pct*100:.2f}% (+{move:.2f}$) desde cruce {from_price:.2f}",
-                           3, p_now,
-                           extra={"from_price": round(from_price, 2), "move": round(move, 2), "move_pct": round(move_pct, 6),
-                                  "threshold_pct": thr, "stop_price": round(stop_price, 2),
-                                  "source_ts": pc.get("from_ts"), "source_type": pc.get("source_type"),
-                                  "exec_timeframe": EXEC_TIMEFRAME, "warmup_bars": warm, "p_base": round(p_base, 2)})
+            elif pc.get("direction") == "UP" and p_now < stop_price:
+                add_signal(
+                    signals, now_ts, "GOLD", "STOP_HIT",
+                    f"Stop tocado (BUY): {p_now:.2f} < {stop_price:.2f}",
+                    4, p_now,
+                    extra={
+                        "from_price": round(from_price, 2),
+                        "stop_price": round(stop_price, 2),
+                        "source_ts": pc.get("from_ts")
+                    }
+                )
                 state.pop("pending_confirm", None)
+
+            else:
+                if pc.get("direction") == "DOWN" and move_pct <= -thr:
+                    add_signal(
+                        signals, now_ts, "GOLD", "CONFIRM_DOWN",
+                        f"Confirmación bajista: {move_pct*100:.2f}% ({move:.2f}$) desde cruce {from_price:.2f}",
+                        3, p_now,
+                        extra={
+                            "from_price": round(from_price, 2),
+                            "move": round(move, 2),
+                            "move_pct": round(move_pct, 6),
+                            "threshold_pct": thr,
+                            "stop_price": round(stop_price, 2),
+                            "source_ts": pc.get("from_ts"),
+                            "source_type": pc.get("source_type"),
+                            "exec_timeframe": EXEC_TIMEFRAME,
+                            "warmup_bars": warm,
+                            "p_base": round(p_base, 2),
+                        }
+                    )
+                    state.pop("pending_confirm", None)
+
+                elif pc.get("direction") == "UP" and move_pct >= thr:
+                    add_signal(
+                        signals, now_ts, "GOLD", "CONFIRM_UP",
+                        f"Confirmación alcista: {move_pct*100:.2f}% (+{move:.2f}$) desde cruce {from_price:.2f}",
+                        3, p_now,
+                        extra={
+                            "from_price": round(from_price, 2),
+                            "move": round(move, 2),
+                            "move_pct": round(move_pct, 6),
+                            "threshold_pct": thr,
+                            "stop_price": round(stop_price, 2),
+                            "source_ts": pc.get("from_ts"),
+                            "source_type": pc.get("source_type"),
+                            "exec_timeframe": EXEC_TIMEFRAME,
+                            "warmup_bars": warm,
+                            "p_base": round(p_base, 2),
+                        }
+                    )
+                    state.pop("pending_confirm", None)
 
     if DEBUG_TEST_SIGNAL:
         add_signal(signals, now_ts, "GOLD", "WARN", "TEST SIGNAL", 1, g)
