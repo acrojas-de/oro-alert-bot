@@ -2,7 +2,7 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-03-06T09:25:19+00:00"
+    "updated_utc": "2026-03-06T10:00:19+00:00"
   },
   "series": [
     {
@@ -8667,6 +8667,34 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-03-06T10:00:19+00:00",
+      "candle_ts": "2026-03-06T08:00:00+00:00",
+      "score": 25,
+      "bias": "SHORT_CUIDADO",
+      "gold": 5116.7,
+      "gold_ema9": 5122.56,
+      "gold_ema21": 5125.27,
+      "gold_ema50": 5148.28,
+      "gold_rsi14": 45.32,
+      "gold_rsi14_prev": 49.2,
+      "dxy": 99.043,
+      "dxy_ema21": 99.0314,
+      "tnx": 4.127,
+      "tnx_ema21": 4.0928,
+      "nasdaq": 22654.88,
+      "nasdaq_ema21": 22669.88,
+      "ema_spread_pct": 0.004498,
+      "atr": 27.63,
+      "atr_pct": 0.0054,
+      "ema21_slope_pct": -0.000168,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -9190,6 +9218,24 @@
       "ema21": 5125.27,
       "stop_price": 5124.38,
       "confirm_pct": 0.003
+    },
+    {
+      "ts": "2026-03-06T10:00:19+00:00",
+      "asset": "GOLD",
+      "type": "CONFIRM_DOWN",
+      "reason": "Confirmación bajista: -0.33% (-16.90$) desde cruce 5116.70",
+      "strength": 3,
+      "price": 5099.8,
+      "from_price": 5116.7,
+      "move": -16.9,
+      "move_pct": -0.003303,
+      "threshold_pct": 0.003,
+      "stop_price": 5124.38,
+      "source_ts": "2026-03-06T08:00:00+00:00",
+      "source_type": "SELL",
+      "exec_timeframe": "5m",
+      "warmup_bars": 1,
+      "p_base": 5104.7
     }
   ],
   "state": {
@@ -9206,16 +9252,6 @@
         "ATR_LEN": 14
       }
     },
-    "market_state": "NORMAL",
-    "pending_confirm": {
-      "direction": "DOWN",
-      "from_ts": "2026-03-06T08:00:00+00:00",
-      "from_price": 5116.7001953125,
-      "threshold_pct": 0.003,
-      "stop_price": 5124.375245605469,
-      "warmup_bars": 1,
-      "source_type": "SELL",
-      "created_at": "2026-03-06T09:25:19+00:00"
-    }
+    "market_state": "NORMAL"
   }
 }
