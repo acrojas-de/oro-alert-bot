@@ -2,7 +2,7 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-03-06T08:52:29+00:00"
+    "updated_utc": "2026-03-06T09:25:19+00:00"
   },
   "series": [
     {
@@ -8639,6 +8639,34 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-03-06T09:25:19+00:00",
+      "candle_ts": "2026-03-06T08:00:00+00:00",
+      "score": 25,
+      "bias": "SHORT_CUIDADO",
+      "gold": 5116.7,
+      "gold_ema9": 5122.56,
+      "gold_ema21": 5125.27,
+      "gold_ema50": 5148.28,
+      "gold_rsi14": 45.32,
+      "gold_rsi14_prev": 49.2,
+      "dxy": 99.043,
+      "dxy_ema21": 99.0314,
+      "tnx": 4.127,
+      "tnx_ema21": 4.0928,
+      "nasdaq": 22654.88,
+      "nasdaq_ema21": 22669.88,
+      "ema_spread_pct": 0.004498,
+      "atr": 27.63,
+      "atr_pct": 0.0054,
+      "ema21_slope_pct": -0.000168,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -9151,15 +9179,26 @@
       "from_price": 5128.2,
       "stop_price": 5120.51,
       "source_ts": "2026-03-06T07:00:00+00:00"
+    },
+    {
+      "ts": "2026-03-06T08:00:00+00:00",
+      "asset": "GOLD",
+      "type": "SELL",
+      "reason": "Cruce bajista: precio cae por debajo de EMA21",
+      "strength": 2,
+      "price": 5116.7,
+      "ema21": 5125.27,
+      "stop_price": 5124.38,
+      "confirm_pct": 0.003
     }
   ],
   "state": {
     "metrics": {
-      "ema_spread": 23.4445,
-      "ema_spread_pct": 0.004572,
-      "atr": 27.617,
-      "atr_pct": 0.005385,
-      "ema21_slope_pct": 4e-05,
+      "ema_spread": 23.0125,
+      "ema_spread_pct": 0.004498,
+      "atr": 27.63,
+      "atr_pct": 0.0054,
+      "ema21_slope_pct": -0.000168,
       "thresholds": {
         "COMP_EMA_PCT": 0.0015,
         "COMP_ATR_PCT": 0.0018,
@@ -9167,6 +9206,16 @@
         "ATR_LEN": 14
       }
     },
-    "market_state": "NORMAL"
+    "market_state": "NORMAL",
+    "pending_confirm": {
+      "direction": "DOWN",
+      "from_ts": "2026-03-06T08:00:00+00:00",
+      "from_price": 5116.7001953125,
+      "threshold_pct": 0.003,
+      "stop_price": 5124.375245605469,
+      "warmup_bars": 1,
+      "source_type": "SELL",
+      "created_at": "2026-03-06T09:25:19+00:00"
+    }
   }
 }
