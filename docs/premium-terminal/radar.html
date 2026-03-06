@@ -54,11 +54,9 @@
     button:hover{ filter:brightness(1.05); }
     button:active{ transform:scale(.99); }
 
-    .wrap{ padding:18px; max-width:1200px; margin:0 auto; }
-    .grid{
-      display:grid; gap:14px;
-      grid-template-columns: repeat(12, 1fr);
-    }
+    .wrap{ padding:18px; max-width:1400px; margin:0 auto; }
+    .grid{ display:grid; gap:14px; grid-template-columns: repeat(12, 1fr); }
+
     .card{
       background:var(--panel);
       border:1px solid var(--border);
@@ -66,7 +64,10 @@
       padding:14px;
       min-height:90px;
     }
-    .cardTitle{ font-weight:900; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .cardTitle{
+      font-weight:900; margin-bottom:8px;
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+    }
     .muted{ color:var(--muted); font-size:13px; }
     .big{ font-size:28px; font-weight:900; }
     .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
@@ -96,7 +97,6 @@
     .assetTop{ display:flex; justify-content:space-between; gap:10px; align-items:center; }
     .assetSym{ font-weight:900; }
     .assetMeta{ margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
-    .mini{ font-size:12px; color:var(--muted); }
 
     /* toggles */
     .toggleBtn.on{
@@ -134,124 +134,103 @@
       .wrap{ padding:12px; }
     }
 
-  .hCenter{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  min-width:260px;
-}
+    /* center clock */
+    .hCenter{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      min-width:260px;
+    }
+    .clockBig{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-weight:900;
+      letter-spacing:1px;
+      font-size:34px;
+      line-height:1.05;
+      padding:6px 14px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(15,23,42,.55);
+      box-shadow: 0 0 0 2px rgba(96,165,250,.10) inset;
+    }
+    .clockSub{
+      margin-top:6px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:center;
+      opacity:.95;
+    }
+    @media (max-width: 900px){
+      .clockBig{ font-size:26px; }
+    }
 
-.clockBig{
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-weight:900;
-  letter-spacing:1px;
-  font-size:34px;          /* tamaño grande */
-  line-height:1.05;
-  padding:6px 14px;
-  border-radius:14px;
-  border:1px solid var(--border);
-  background:rgba(15,23,42,.55);
-  box-shadow: 0 0 0 2px rgba(96,165,250,.10) inset;
-}
+    /* market table */
+    .marketTable{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border-radius:12px;
+      border:1px solid var(--border);
+    }
+    .marketTable th, .marketTable td{
+      padding:10px 12px;
+      border-bottom:1px solid rgba(51,65,85,.55);
+      font-size:13px;
+    }
+    .marketTable th{
+      text-align:left;
+      background:rgba(15,23,42,.55);
+      color:var(--muted);
+      font-weight:900;
+    }
+    .marketTable tr:last-child td{ border-bottom:none; }
+    .badgeOpen{ color:rgba(34,197,94,.95); font-weight:900; }
+    .badgeClosed{ color:rgba(239,68,68,.95); font-weight:900; }
+    .badgeSoon{ color:rgba(245,158,11,.95); font-weight:900; }
 
-.clockSub{
-  margin-top:6px;
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  justify-content:center;
-  opacity:.95;
-}
+    /* phase radar */
+    .phaseGrid{
+      display:grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap:10px;
+      margin-top:10px;
+    }
+    .phaseBox{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px;
+      background: rgba(15,23,42,.35);
+    }
+    .phaseTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    .phaseName{ font-weight:800; }
+    .phaseValue{ font-weight:900; font-size:18px; }
+    .phaseBar{
+      height:10px;
+      border-radius:999px;
+      overflow:hidden;
+      border:1px solid var(--border);
+      background: rgba(15,23,42,.55);
+    }
+    .phaseFill{ height:100%; background: rgba(96,165,250,.75); border-radius:999px; }
+    .phaseHint{ margin-top:8px; font-size:12px; opacity:.85; }
 
-@media (max-width: 900px){
-  .clockBig{ font-size:26px; }
-}
+    .phaseGood{ color:#22c55e; }
+    .phaseWarn{ color:#f59e0b; }
+    .phaseBad{  color:#ef4444; }
 
-.marketTable{
-  width:100%;
-  border-collapse:separate;
-  border-spacing:0;
-  overflow:hidden;
-  border-radius:12px;
-  border:1px solid var(--border);
-}
-.marketTable th, .marketTable td{
-  padding:10px 12px;
-  border-bottom:1px solid rgba(51,65,85,.55);
-  font-size:13px;
-}
-.marketTable th{
-  text-align:left;
-  background:rgba(15,23,42,.55);
-  color:var(--muted);
-  font-weight:900;
-}
-.marketTable tr:last-child td{ border-bottom:none; }
-.badgeOpen{ color:rgba(34,197,94,.95); font-weight:900; }
-.badgeClosed{ color:rgba(239,68,68,.95); font-weight:900; }
-.badgeSoon{ color:rgba(245,158,11,.95); font-weight:900; }
-
-  .wrap{
-max-width:1400px;
-margin:auto;
-}  
-
- .phaseGrid{
-  display:grid;
-  grid-template-columns: repeat(5, minmax(0,1fr));
-  gap:10px;
-  margin-top:10px;
-}
-
-.phaseBox{
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:12px;
-  background: rgba(15,23,42,.35);
-}
-
-.phaseTop{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  margin-bottom:8px;
-}
-
-.phaseName{ font-weight:800; }
-.phaseValue{ font-weight:900; font-size:18px; }
-
-.phaseBar{
-  height:10px;
-  border-radius:999px;
-  overflow:hidden;
-  border:1px solid var(--border);
-  background: rgba(15,23,42,.55);
-}
-
-.phaseFill{ height:100%; width:50%; }
-
-.phaseHint{ margin-top:8px; font-size:12px; opacity:.85; }
-
-.phaseGood{ color: #22c55e; }
-.phaseWarn{ color: #f59e0b; }
-.phaseBad{  color: #ef4444; }   
-
- .phaseCard{
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:12px;
-  background: rgba(15,23,42,.35);
-}
-.phaseTitle{ font-weight:800; }
-.phaseHint{ font-size:12px; opacity:.85; }
-.phaseValue{ font-weight:900; font-size:18px; margin-top:8px; }
-@media (max-width: 1100px){
-  .phaseGrid{ grid-template-columns: repeat(2, 1fr); }
-}   
-    
+    @media (max-width: 1100px){
+      .phaseGrid{ grid-template-columns: repeat(2, 1fr); }
+    }
   </style>
 </head>
 
@@ -264,20 +243,17 @@ margin:auto;
       <div class="chip">📦 fuente: <span id="jsonPath">macro_data.json</span></div>
     </div>
 
-    <!-- CLOCK CENTER -->
-<div class="hCenter">
-  <div class="clockBig" id="clockBig">--:--:--</div>
-  <div class="clockSub">
-    <span class="pill" id="clockTz">Local</span>
-    <span class="pill" id="clockUtc">UTC --:--:--</span>
-  </div>
-</div>
+    <div class="hCenter">
+      <div class="clockBig" id="clockBig">--:--:--</div>
+      <div class="clockSub">
+        <span class="pill" id="clockTz">Local</span>
+        <span class="pill" id="clockUtc">UTC --:--:--</span>
+      </div>
+    </div>
 
-    
     <div class="hRight">
       <button id="btnOpenTerminal">🖥️ Terminal</button>
       <button id="btnRefresh">⟳ Refresh</button>
-
       <button id="btnSound" class="toggleBtn">🔔 Sonido: OFF</button>
       <button id="btnFlash" class="toggleBtn">⚡ Flash: OFF</button>
       <button id="btnTelegram" class="toggleBtn">📩 Telegram: OFF</button>
@@ -287,22 +263,40 @@ margin:auto;
   <div class="wrap">
     <div class="grid">
 
-       <!-- EXTRA MODULES -->
-<div class="card">...</div>
-<div class="card">...</div>
-<div class="card">...</div>
+      <!-- EXTRA MODULES -->
+      <div class="card" style="grid-column: span 4;">
+        <div class="cardTitle">
+          <div>💰 Liquidity Flow</div>
+          <div class="muted">Flujo de capital</div>
+        </div>
+        <div id="liquidityFlow" class="muted">—</div>
+      </div>
+
+      <div class="card" style="grid-column: span 4;">
+        <div class="cardTitle">
+          <div>⚡ Momentum Alerts</div>
+          <div class="muted">Explosiones</div>
+        </div>
+        <div id="momentumAlerts" class="muted">—</div>
+      </div>
+
+      <div class="card" style="grid-column: span 4;">
+        <div class="cardTitle">
+          <div>🥇 Gold Radar</div>
+          <div class="muted">Estado rápido</div>
+        </div>
+        <div id="goldRadar" class="muted">—</div>
+      </div>
 
       <!-- MARKET PHASE RADAR -->
-<div class="card" style="grid-column: span 12;">
-  <div class="cardTitle">
-    <div>🧠 Market Phase Radar</div>
-    <div class="muted" id="phaseNowLine">—</div>
-  </div>
+      <div class="card" style="grid-column: span 12;">
+        <div class="cardTitle">
+          <div>🧠 Market Phase Radar</div>
+          <div class="muted" id="phaseNowLine">—</div>
+        </div>
+        <div class="phaseGrid" id="phaseGrid"></div>
+      </div>
 
-  <div class="phaseGrid" id="phaseGrid"></div>
-</div>
-
-      
       <!-- PROBABILITY -->
       <div class="card" style="grid-column: span 12;">
         <div class="cardTitle">
@@ -315,21 +309,23 @@ margin:auto;
         </div>
 
         <div class="row" style="align-items:flex-end; justify-content:space-between;">
-        
           <div>
             <div class="muted">Dirección más probable (heurística)</div>
             <div class="big" id="probHeadline">—</div>
             <div class="muted" id="probExplain">—</div>
           </div>
+
           <div style="min-width:280px; width:340px;">
             <div class="muted">UP</div>
             <div style="height:14px;border:1px solid var(--border);border-radius:999px;background:rgba(15,23,42,.55);overflow:hidden;">
               <div id="barUp" style="height:100%;width:50%;background:rgba(34,197,94,.8);"></div>
             </div>
+
             <div class="muted" style="margin-top:8px;">DOWN</div>
             <div style="height:14px;border:1px solid var(--border);border-radius:999px;background:rgba(15,23,42,.55);overflow:hidden;">
               <div id="barDown" style="height:100%;width:50%;background:rgba(239,68,68,.8);"></div>
             </div>
+
             <div class="row" style="margin-top:10px; justify-content:space-between;">
               <span class="pill good" id="pctUp">UP 50%</span>
               <span class="pill bad" id="pctDown">DOWN 50%</span>
@@ -339,15 +335,14 @@ margin:auto;
       </div>
 
       <!-- MARKET HOURS -->
-<div class="card" style="grid-column: span 12;">
-  <div class="cardTitle">
-    <div>🕒 Horarios de Mercados</div>
-    <div class="muted" id="marketNowLine">—</div>
-  </div>
-  <div id="marketHours"></div>
-</div>
+      <div class="card" style="grid-column: span 12;">
+        <div class="cardTitle">
+          <div>🕒 Horarios de Mercados</div>
+          <div class="muted" id="marketNowLine">—</div>
+        </div>
+        <div id="marketHours"></div>
+      </div>
 
-      
       <!-- RADAR -->
       <div class="card" style="grid-column: span 8;">
         <div class="cardTitle">
@@ -363,6 +358,7 @@ margin:auto;
           <div>🧩 Activo Seleccionado</div>
           <span class="pill" id="selSym">—</span>
         </div>
+
         <div class="row">
           <span class="pill" id="selSignal">Señal: —</span>
           <span class="pill" id="selTrend">Tendencia: —</span>
@@ -393,827 +389,765 @@ margin:auto;
         </div>
         <div class="log" id="eventLog"></div>
       </div>
+
     </div>
   </div>
-
-  <!-- EXTRA MODULES -->
-<div class="card" style="grid-column: span 4;">
-  <div class="cardTitle">
-    <div>💰 Liquidity Flow</div>
-    <div class="muted">Flujo de capital</div>
-  </div>
-  <div id="liquidityFlow" class="muted">—</div>
-</div>
-
-<div class="card" style="grid-column: span 4;">
-  <div class="cardTitle">
-    <div>⚡ Momentum Alerts</div>
-    <div class="muted">Explosiones</div>
-  </div>
-  <div id="momentumAlerts" class="muted">—</div>
-</div>
-
-<div class="card" style="grid-column: span 4;">
-  <div class="cardTitle">
-    <div>🥇 Gold Radar</div>
-    <div class="muted">Estado rápido</div>
-  </div>
-  <div id="goldRadar" class="muted">—</div>
-</div>
 
   <div id="flashOverlay" class="flashOverlay"></div>
 
-<script>
-  // ========= CONFIG =========
-  const BASE = new URL(".", location.href);
-  const JSON_URL = new URL("macro_data.json", BASE).toString();
-  const WATCH_URL = new URL("watchlist.json", BASE).toString(); // opcional, por si existe
-  const REFRESH_MS = 60000;
-  const FREEZE_WARN_MS = 10 * 60_000;
-
-  // Telegram relay (NO token aquí)
-  const TELEGRAM_RELAY_URL = null; // ej: "https://tu-relay.com/telegram"
-
-  // ========= SETTINGS (persistentes) =========
-  const ALERT_KEYS = {
-    sound: "alerts_sound",
-    flash: "alerts_flash",
-    telegram: "alerts_telegram",
-    selected: "radar_selected_asset",
-    log: "radar_event_log"
-  };
-
-  const settings = {
-    sound: localStorage.getItem(ALERT_KEYS.sound) === "1",
-    flash: localStorage.getItem(ALERT_KEYS.flash) === "1",
-    telegram: localStorage.getItem(ALERT_KEYS.telegram) === "1",
-    selected: localStorage.getItem(ALERT_KEYS.selected) || "",
-  };
-
-  function setSetting(k, v){
-    settings[k] = !!v;
-    localStorage.setItem(ALERT_KEYS[k], settings[k] ? "1" : "0");
-    renderAlertButtons();
-  }
-
-  // ========= UI refs =========
-  const healthText = document.getElementById("healthText");
-  const healthDot = document.getElementById("healthDot");
-  const updatedText = document.getElementById("updatedText");
-  document.getElementById("jsonPath").textContent = "macro_data.json";
-
-  const btnRefresh = document.getElementById("btnRefresh");
-  const btnOpenTerminal = document.getElementById("btnOpenTerminal");
-
-  const btnSound = document.getElementById("btnSound");
-  const btnFlash = document.getElementById("btnFlash");
-  const btnTelegram = document.getElementById("btnTelegram");
-
-  const assetGrid = document.getElementById("assetGrid");
-
-  const selSym = document.getElementById("selSym");
-  const selSignal = document.getElementById("selSignal");
-  const selTrend = document.getElementById("selTrend");
-  const selVol = document.getElementById("selVol");
-  const selScore = document.getElementById("selScore");
-  const selDetail = document.getElementById("selDetail");
-
-  const pillRegime = document.getElementById("pillRegime");
-  const pillBias = document.getElementById("pillBias");
-  const pillRisk = document.getElementById("pillRisk");
-
-  const probHeadline = document.getElementById("probHeadline");
-  const probExplain = document.getElementById("probExplain");
-  const barUp = document.getElementById("barUp");
-  const barDown = document.getElementById("barDown");
-  const pctUp = document.getElementById("pctUp");
-  const pctDown = document.getElementById("pctDown");
-
-  const eventLogEl = document.getElementById("eventLog");
-  const btnTestAlert = document.getElementById("btnTestAlert");
-  const btnClearLog = document.getElementById("btnClearLog");
-
-  // ========= helpers =========
-  function fmt(n, d=2){
-    if (n === undefined || n === null || Number.isNaN(n)) return "—";
-    return Number(n).toFixed(d);
-  }
-  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
-  function nowISO(){ return new Date().toISOString(); }
-  function msToMin(ms){ return Math.round(ms/60000); }
-
-   // ===== CLOCK (HEADER) =====
-function pad2(n){ return String(n).padStart(2,"0"); }
-
-function startHeaderClock(){
-  const el = document.getElementById("clockBig");
-  const elUtc = document.getElementById("clockUtc");
-  const elTz = document.getElementById("clockTz");
-  if (!el) return;
-
-  const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone || "Local";
-  if (elTz) elTz.textContent = tzName;
-
-  function tick(){
-    const d = new Date();
-    const hh = pad2(d.getHours());
-    const mm = pad2(d.getMinutes());
-    const ss = pad2(d.getSeconds());
-    el.textContent = `${hh}:${mm}:${ss}`;
-
-    const uh = pad2(d.getUTCHours());
-    const um = pad2(d.getUTCMinutes());
-    const us = pad2(d.getUTCSeconds());
-    if (elUtc) elUtc.textContent = `UTC ${uh}:${um}:${us}`;
-  }
-
-  tick();
-  setInterval(tick, 250);
-}
-
-// ===== MARKET HOURS =====
-const MARKETS = [
-  { name:"🇺🇸 NYSE / Nasdaq", tz:"America/New_York", sessions:[[9*60+30, 16*60]], days:[1,2,3,4,5] },
-  { name:"🇬🇧 London (LSE)",  tz:"Europe/London",    sessions:[[8*60, 16*60+30]], days:[1,2,3,4,5] },
-  { name:"🇩🇪 Xetra",        tz:"Europe/Berlin",    sessions:[[9*60, 17*60+30]], days:[1,2,3,4,5] },
-  { name:"🇯🇵 Tokyo (TSE)",  tz:"Asia/Tokyo",       sessions:[[9*60, 11*60+30],[12*60+30, 15*60]], days:[1,2,3,4,5] },
-  { name:"🪙 Crypto (24/7)", tz:"UTC",              sessions:[[0, 24*60]], days:[0,1,2,3,4,5,6] },
-];
-
-function tzNowParts(timeZone){
-  const fmt = new Intl.DateTimeFormat("en-GB", {
-    timeZone, weekday:"short", hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:false
-  });
-  const parts = fmt.formatToParts(new Date());
-  const get = (t)=> parts.find(p=>p.type===t)?.value;
-  const wd = get("weekday");
-  const hh = Number(get("hour"));
-  const mm = Number(get("minute"));
-  const ss = Number(get("second"));
-  const dowMap = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
-  return { dow: dowMap[wd] ?? 0, minutes: hh*60+mm, sec:ss, time:`${pad2(hh)}:${pad2(mm)}:${pad2(ss)}` };
-}
-
-function inAnySession(mins, sessions){
-  for (const [a,b] of sessions){
-    if (mins >= a && mins < b) return { open:true, until:b };
-  }
-  let next = null;
-  for (const [a] of sessions){
-    if (mins < a) { next = a; break; }
-  }
-  return { open:false, next };
-}
-
-function fmtHhMm(mins){
-  const h = Math.floor(mins/60), m = mins%60;
-  return `${pad2(h)}:${pad2(m)}`;
-}
-
-function minsToCountdown(mins){
-  const h = Math.floor(mins/60);
-  const m = mins%60;
-  return (h>0) ? `${h}h ${m}m` : `${m}m`;
-}
-
-function renderMarketHours(){
-  const host = document.getElementById("marketHours");
-  const nowLine = document.getElementById("marketNowLine");
-  if (!host) return;
-
-  const local = new Date();
-  const localTime = `${pad2(local.getHours())}:${pad2(local.getMinutes())}:${pad2(local.getSeconds())}`;
-  if (nowLine) nowLine.textContent = `Hora local: ${localTime}`;
-
-  const rows = MARKETS.map(m=>{
-    const t = tzNowParts(m.tz);
-    const isDay = m.days.includes(t.dow);
-
-    let status = "CERRADO";
-    let badge = "badgeClosed";
-    let detail = "";
-
-    if (!isDay){
-      detail = "Fuera de sesión (finde)";
-    }else{
-      const state = inAnySession(t.minutes, m.sessions);
-      if (state.open){
-        status = "ABIERTO";
-        badge = "badgeOpen";
-        const minsLeft = Math.max(0, state.until - t.minutes);
-        detail = `cierra en ${minsToCountdown(minsLeft)}`;
-      }else if (state.next !== null){
-        const minsTo = Math.max(0, state.next - t.minutes);
-        status = (minsTo <= 30) ? "ABRE PRONTO" : "CERRADO";
-        badge  = (minsTo <= 30) ? "badgeSoon" : "badgeClosed";
-        detail = `abre en ${minsToCountdown(minsTo)} (${fmtHhMm(state.next)})`;
-      }else{
-        detail = "sesión terminada hoy";
-      }
-    }
-
-    const sessionTxt = m.sessions.map(([a,b])=> `${fmtHhMm(a)}–${fmtHhMm(b)}`).join(" | ");
-    return `
-      <tr>
-        <td><b>${m.name}</b><div class="muted">TZ: ${m.tz}</div></td>
-        <td>${t.time}</td>
-        <td class="${badge}">${status}</td>
-        <td>${sessionTxt}</td>
-        <td class="muted">${detail}</td>
-      </tr>
-    `;
-  }).join("");
-
-  host.innerHTML = `
-    <table class="marketTable">
-      <thead>
-        <tr>
-          <th>Mercado</th>
-          <th>Hora ahora</th>
-          <th>Estado</th>
-          <th>Horario</th>
-          <th>Info</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
-  `;
-}
-
-function startMarketHoursClock(){
-  renderMarketHours();
-  setInterval(renderMarketHours, 1000);
-}
-
-  // ================= MARKET PHASE RADAR =================
-
-function marketPhaseFromMacro(macro){
-
-  const assets = macro?.assets || {};
-
-  const score = a => Number(a?.score ?? 50);
-  const trend = a => (a?.trend || "").toLowerCase();
-  const signal = a => (a?.signal || "").toLowerCase();
-
-  const nas = assets["^IXIC"] || {};
-  const dxy = assets["DX-Y.NYB"] || {};
-  const tnx = assets["^TNX"] || {};
-  const gold = assets["GC=F"] || {};
-  const btc = assets["BTC-USD"] || {};
-  const eth = assets["ETH-USD"] || {};
-
-  // ---- RISK ON / OFF ----
-  let riskScore = 0;
-
-  if(trend(nas).includes("bull")) riskScore += 1;
-  if(trend(dxy).includes("bull")) riskScore -= 1;
-  if(trend(tnx).includes("bull")) riskScore -= 0.7;
-
-  if(signal(nas).includes("explosion_up")) riskScore += 1;
-  if(signal(nas).includes("explosion_down")) riskScore -= 1;
-
-  const risk =
-    riskScore > 0.5 ? "RISK ON" :
-    riskScore < -0.5 ? "RISK OFF" : "MIXED";
-
-  // ---- LIQUIDITY ----
-  const liqScore = (score(dxy)-50) + (score(tnx)-50) - (score(nas)-50);
-
-  const liquidity =
-    liqScore > 15 ? "LIQUIDITY TIGHTENING" :
-    liqScore < -15 ? "LIQUIDITY EASING" :
-    "NEUTRAL";
-
-  // ---- GOLD ----
-  const goldDom =
-    score(gold) > 65 ? "GOLD DOMINANCE" :
-    score(gold) < 40 ? "GOLD WEAK" :
-    "GOLD NEUTRAL";
-
-  // ---- CRYPTO FLOW ----
-  const cryptoScore = (score(btc)-50)*0.7 + (score(eth)-50)*0.3;
-
-  const crypto =
-    cryptoScore > 10 ? "CRYPTO FLOW IN" :
-    cryptoScore < -10 ? "CRYPTO FLOW OUT" :
-    "CRYPTO FLAT";
-
-  // ---- MOMENTUM ----
-  let explosions = 0;
-
-  Object.values(assets).forEach(a=>{
-    if((a.signal || "").includes("explosion")) explosions++;
-  });
-
-  const momentum =
-    explosions >= 4 ? "HIGH MOMENTUM" :
-    explosions >= 2 ? "MEDIUM MOMENTUM" :
-    "LOW MOMENTUM";
-
-  const phaseLine =
-  `${risk} · ${liquidity} · ${goldDom} · ${crypto} · ${momentum}`;
-
-  const cards = [
-    {title:"🟢 Risk", value:risk, hint:"Nasdaq vs DXY"},
-    {title:"💧 Liquidity", value:liquidity, hint:"DXY + TNX"},
-    {title:"🥇 Gold", value:goldDom, hint:"Gold strength"},
-    {title:"🪙 Crypto", value:crypto, hint:"BTC / ETH"},
-    {title:"⚡ Momentum", value:momentum, hint:`explosions ${explosions}`}
-  ];
-
-  return {phaseLine,cards};
-}
-
-
-function renderMarketPhaseRadar(macro){
-
-  const grid = document.getElementById("phaseGrid");
-  const line = document.getElementById("phaseNowLine");
-
-  if(!grid) return;
-
-  const p = marketPhaseFromMacro(macro);
-
-  if(line) line.textContent = p.phaseLine;
-
-  grid.innerHTML = p.cards.map(c=>`
-    <div class="phaseBox">
-      <div class="phaseTop">
-        <div class="phaseName">${c.title}</div>
-      </div>
-      <div class="phaseValue">${c.value}</div>
-      <div class="phaseHint">${c.hint}</div>
-    </div>
-  `).join("");
-}
-  
-  
-  async function fetchJson(url){
-    const r = await fetch(url + "?v=" + Date.now(), { cache:"no-store" });
-    if (!r.ok) throw new Error(url + " HTTP " + r.status);
-    return await r.json();
-  }
-
-    
-
-  
-  function setHealth(text, level="good"){
-    healthText.textContent = text;
-    healthDot.classList.remove("good","warn","bad");
-    healthDot.classList.add(level);
-  }
-
-  // ========= alert actions =========
-  function doFlash(){
-    const el = document.getElementById("flashOverlay");
-    el.classList.add("on");
-    setTimeout(()=> el.classList.remove("on"), 180);
-  }
-
-  function doBeep(){
-    try{
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = "sine";
-      o.frequency.value = 880;
-      g.gain.value = 0.05;
-      o.connect(g); g.connect(ctx.destination);
-      o.start();
-      setTimeout(()=>{ o.stop(); ctx.close(); }, 120);
-    }catch(e){}
-  }
-
-  async function doTelegram(message){
-    if (!TELEGRAM_RELAY_URL) return;
-    try{
-      await fetch(TELEGRAM_RELAY_URL, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ message })
-      });
-    }catch(e){}
-  }
-
-  // ========= event log =========
-  function loadLog(){
-    try{
-      return JSON.parse(localStorage.getItem(ALERT_KEYS.log) || "[]");
-    }catch(e){ return []; }
-  }
-  function saveLog(items){
-    localStorage.setItem(ALERT_KEYS.log, JSON.stringify(items.slice(0, 60))); // max 60
-  }
-  function pushLog(item){
-    const items = loadLog();
-    items.unshift(item);
-    saveLog(items);
-    renderLog();
-  }
-  function renderLog(){
-    const items = loadLog();
-    if (!items.length){
-      eventLogEl.innerHTML = `<div class="muted">Sin eventos todavía.</div>`;
-      return;
-    }
-    eventLogEl.innerHTML = items.map(x => `
-      <div class="logItem">
-        <div><b>${x.symbol}</b> | ${x.signal} | score=${x.score} | price=${x.price ?? "—"}</div>
-        <div class="logTime">${x.time}</div>
-      </div>
-    `).join("");
-  }
-
-  // ========= toggle buttons =========
-  function renderAlertButtons(){
-    btnSound.classList.toggle("on", settings.sound);
-    btnFlash.classList.toggle("on", settings.flash);
-    btnTelegram.classList.toggle("on", settings.telegram);
-
-    btnSound.textContent = `🔔 Sonido: ${settings.sound ? "ON" : "OFF"}`;
-    btnFlash.textContent = `⚡ Flash: ${settings.flash ? "ON" : "OFF"}`;
-    btnTelegram.textContent = `📩 Telegram: ${settings.telegram ? "ON" : "OFF"}`;
-  }
-
-  btnSound.onclick = ()=> setSetting("sound", !settings.sound);
-  btnFlash.onclick = ()=> setSetting("flash", !settings.flash);
-  btnTelegram.onclick = ()=> setSetting("telegram", !settings.telegram);
-
-  btnOpenTerminal.onclick = ()=> window.location.href = "./index.html";
-  btnRefresh.onclick = ()=> loadData();
-
-  btnClearLog.onclick = ()=>{
-    localStorage.removeItem(ALERT_KEYS.log);
-    renderLog();
-  };
-
-  // ========= data + logic =========
-  let refreshTimer = null;
-  let lastUpdatedISO = null;
-  let lastDataCache = null;
-
-  // Heurística global:
-  // - Suma "momentum" de activos claves (DXY, TNX, NASDAQ, BTC, GOLD, etc.)
-  // - Usa score / trend / signal si existen.
-  // Output: upPct/downPct + texto explicación.
-  function computeGlobalProbability(macro){
-    const assets = macro?.assets || {};
-    const keys = Object.keys(assets);
-
-    // pesos (ajústalos cuando quieras)
-    const W = {
-      "GC=F": 1.2,  // GOLD
-      "SI=F": 0.6,  // Silver
-      "^TNX": 0.9,  // US 10Y
-      "DX-Y.NYB": 0.9, // DXY
-      "^IXIC": 0.7, // Nasdaq
-      "BTC-USD": 0.7,
-      "ETH-USD": 0.4,
-      "AAPL": 0.3,
-      "MSFT": 0.3,
-      "NVDA": 0.3,
-      "AMD": 0.25,
-      "GOOGL": 0.25,
-      "SOL-USD": 0.2,
-      "XRP-USD": 0.2,
-      "BNB-USD": 0.2
+  <script>
+    // ========= CONFIG =========
+    const BASE = new URL(".", location.href);
+    const JSON_URL = new URL("macro_data.json", BASE).toString();
+    const WATCH_URL = new URL("watchlist.json", BASE).toString(); // opcional, si existe
+    const REFRESH_MS = 60000;
+    const FREEZE_WARN_MS = 10 * 60_000;
+
+    // Telegram relay (NO token aquí)
+    const TELEGRAM_RELAY_URL = null; // ej: "https://tu-relay.com/telegram"
+
+    // ========= SETTINGS (persistentes) =========
+    const ALERT_KEYS = {
+      sound: "alerts_sound",
+      flash: "alerts_flash",
+      telegram: "alerts_telegram",
+      selected: "radar_selected_asset",
+      log: "radar_event_log"
     };
 
-    function dirScore(a){
-      // - Señal / trend / score -> devuelve de -1 a +1
-      const score = (a?.score ?? 50);
-      const signal = (a?.signal || a?.status || "").toString().toLowerCase();
-      const trend = (a?.trend || "").toString().toLowerCase();
+    const settings = {
+      sound: localStorage.getItem(ALERT_KEYS.sound) === "1",
+      flash: localStorage.getItem(ALERT_KEYS.flash) === "1",
+      telegram: localStorage.getItem(ALERT_KEYS.telegram) === "1",
+      selected: localStorage.getItem(ALERT_KEYS.selected) || "",
+    };
 
-      let s = 0;
-      // score empuja suave
-      s += clamp((score - 50) / 25, -1, 1) * 0.55;
-
-      // señal empuja fuerte
-      if (signal.includes("buy") || signal.includes("long") || signal.includes("explosion_up")) s += 0.55;
-      if (signal.includes("sell") || signal.includes("short") || signal.includes("explosion_down")) s -= 0.55;
-
-      // trend empuja medio
-      if (trend.includes("bull")) s += 0.25;
-      if (trend.includes("bear")) s -= 0.25;
-
-      return clamp(s, -1, 1);
+    function setSetting(k, v){
+      settings[k] = !!v;
+      localStorage.setItem(ALERT_KEYS[k], settings[k] ? "1" : "0");
+      renderAlertButtons();
     }
 
-    let totalW = 0;
-    let sum = 0;
+    // ========= UI refs =========
+    const healthText = document.getElementById("healthText");
+    const healthDot = document.getElementById("healthDot");
+    const updatedText = document.getElementById("updatedText");
+    document.getElementById("jsonPath").textContent = "macro_data.json";
 
-    for (const k of keys){
-      const w = (W[k] ?? 0.15);
-      const a = assets[k];
-      const d = dirScore(a);
-      sum += d * w;
-      totalW += w;
+    const btnRefresh = document.getElementById("btnRefresh");
+    const btnOpenTerminal = document.getElementById("btnOpenTerminal");
+
+    const btnSound = document.getElementById("btnSound");
+    const btnFlash = document.getElementById("btnFlash");
+    const btnTelegram = document.getElementById("btnTelegram");
+
+    const assetGrid = document.getElementById("assetGrid");
+
+    const selSym = document.getElementById("selSym");
+    const selSignal = document.getElementById("selSignal");
+    const selTrend = document.getElementById("selTrend");
+    const selVol = document.getElementById("selVol");
+    const selScore = document.getElementById("selScore");
+    const selDetail = document.getElementById("selDetail");
+
+    const pillRegime = document.getElementById("pillRegime");
+    const pillBias = document.getElementById("pillBias");
+    const pillRisk = document.getElementById("pillRisk");
+
+    const probHeadline = document.getElementById("probHeadline");
+    const probExplain = document.getElementById("probExplain");
+    const barUp = document.getElementById("barUp");
+    const barDown = document.getElementById("barDown");
+    const pctUp = document.getElementById("pctUp");
+    const pctDown = document.getElementById("pctDown");
+
+    const eventLogEl = document.getElementById("eventLog");
+    const btnTestAlert = document.getElementById("btnTestAlert");
+    const btnClearLog = document.getElementById("btnClearLog");
+
+    // ========= helpers =========
+    function fmt(n, d=2){
+      if (n === undefined || n === null || Number.isNaN(n)) return "—";
+      return Number(n).toFixed(d);
+    }
+    function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+    function msToMin(ms){ return Math.round(ms/60000); }
+    function pad2(n){ return String(n).padStart(2,"0"); }
+
+    async function fetchJson(url){
+      const r = await fetch(url + "?v=" + Date.now(), { cache:"no-store" });
+      if (!r.ok) throw new Error(url + " HTTP " + r.status);
+      return await r.json();
     }
 
-    if (totalW <= 0) totalW = 1;
-    const norm = sum / totalW; // -1..+1
-
-    // convertir a porcentaje con una curva suave
-    const up = clamp(50 + norm*22, 5, 95);
-    const down = 100 - up;
-
-    // Regime / bias / risk (best effort)
-    const gold = assets["GC=F"] || assets["GOLD"] || null;
-    const gTrend = (gold?.trend || "").toString().toLowerCase();
-    const risk = gold?.risk || gold?.atr_pct || gold?.atrPct || null;
-
-    const regime =
-      Math.abs(norm) < 0.12 ? "RANGO" :
-      norm > 0 ? "RISK-ON" : "RISK-OFF";
-
-    const bias =
-      norm > 0.18 ? "ALCISTA" :
-      norm < -0.18 ? "BAJISTA" : "NEUTRO";
-
-    const riskTxt =
-      risk === null ? "—" :
-      (Number(risk) <= 1.0 ? "bajo" : (Number(risk) <= 2.2 ? "medio" : "alto"));
-
-    const explain = `Lectura global: ${regime}. Sesgo ${bias}. (Basado en score/señal/tendencia del pack macro.)`;
-
-    return { up, down, regime, bias, riskTxt, explain };
-  }
-
-  function assetToUI(symbol, a){
-    const score = a?.score ?? 50;
-    const trend = (a?.trend || "—");
-    const signal = (a?.signal || a?.status || "neutral");
-    const tf = (a?.tf || a?.timeframe || "—");
-
-    // color
-    let level = "warn";
-    if (score >= 70) level = "good";
-    else if (score <= 30) level = "bad";
-
-    const vol = (a?.volatility || a?.vol || "—");
-
-    return { symbol, score, trend, signal, tf, vol, level };
-  }
-
-  function renderAssets(macro){
-    const assets = macro?.assets || {};
-    const symbols = Object.keys(assets);
-
-    // ordenar por score desc para ver "lo caliente arriba"
-    const items = symbols
-      .map(sym => assetToUI(sym, assets[sym]))
-      .sort((x,y)=> (y.score - x.score));
-
-    assetGrid.innerHTML = items.map(x => `
-      <div class="asset" data-sym="${x.symbol}">
-        <div class="assetTop">
-          <div class="assetSym">${x.symbol}</div>
-          <span class="pill ${x.level}">${Math.round(x.score)}</span>
-        </div>
-        <div class="assetMeta">
-          <span class="pill">sig: ${x.signal}</span>
-          <span class="pill">trend: ${x.trend}</span>
-          <span class="pill">vol: ${x.vol}</span>
-          <span class="pill">tf: ${x.tf}</span>
-        </div>
-      </div>
-    `).join("");
-
-    // click handler
-    assetGrid.querySelectorAll(".asset").forEach(el=>{
-      el.addEventListener("click", ()=>{
-        const sym = el.getAttribute("data-sym");
-        settings.selected = sym;
-        localStorage.setItem(ALERT_KEYS.selected, sym);
-        renderSelected(macro);
-      });
-    });
-  }
-
-  function renderSelected(macro){
-    const assets = macro?.assets || {};
-    const sym = settings.selected || Object.keys(assets)[0] || "";
-    const a = assets[sym] || null;
-
-    selSym.textContent = sym || "—";
-
-    if (!a){
-      selSignal.textContent = "Señal: —";
-      selTrend.textContent = "Tendencia: —";
-      selVol.textContent = "Vol: —";
-      selScore.textContent = "—";
-      selDetail.textContent = "—";
-      return;
+    function setHealth(text, level="good"){
+      healthText.textContent = text;
+      healthDot.classList.remove("good","warn","bad");
+      healthDot.classList.add(level);
     }
 
-    const ui = assetToUI(sym, a);
-
-    selSignal.textContent = `Señal: ${ui.signal}`;
-    selTrend.textContent = `Tendencia: ${ui.trend}`;
-    selVol.textContent = `Vol: ${ui.vol}`;
-    selScore.textContent = `${Math.round(ui.score)}`;
-    selDetail.textContent = `TF ${ui.tf} | score=${fmt(ui.score,0)} | (click en radar para cambiar activo)`;
-  }
-
-  // Disparo “francotirador”: score >=70 o <=30
-  async function fireAlert(payload){
-    const msg = `🚨 ${payload.symbol} | ${payload.signal} | score=${payload.score} | price=${payload.price ?? "—"}`;
-
-    if (settings.sound) doBeep();
-    if (settings.flash) doFlash();
-    if (settings.telegram) await doTelegram(msg);
-
-    pushLog({
-      time: new Date().toLocaleString(),
-      symbol: payload.symbol,
-      signal: payload.signal,
-      score: payload.score,
-      price: payload.price ?? "—"
-    });
-  }
-
-  function shouldTrigger(a){
-    const score = a?.score ?? 50;
-    const signal = (a?.signal || a?.status || "").toString().toLowerCase();
-    const strong = (score >= 70 || score <= 30);
-    const hasDirection = (signal.includes("buy") || signal.includes("sell") || signal.includes("explosion_"));
-    return strong && hasDirection;
-  }
-
-  // Evitar spameo: recordamos último disparo por símbolo+signal
-  const lastShot = {};
-
-  async function checkAlerts(macro){
-    const assets = macro?.assets || {};
-    for (const sym of Object.keys(assets)){
-      const a = assets[sym];
-      if (!shouldTrigger(a)) continue;
-
-      const signal = (a?.signal || a?.status || "signal").toString();
-      const key = sym + "::" + signal;
-      const score = Math.round(a?.score ?? 50);
-
-      // cooldown 5 min por misma señal
-      const now = Date.now();
-      const prev = lastShot[key] || 0;
-      if (now - prev < 5*60_000) continue;
-      lastShot[key] = now;
-
-      await fireAlert({
-        symbol: sym,
-        signal,
-        score,
-        price: a?.price || a?.close || a?.last || null
-      });
+    // ========= alert actions =========
+    function doFlash(){
+      const el = document.getElementById("flashOverlay");
+      if (!el) return;
+      el.classList.add("on");
+      setTimeout(()=> el.classList.remove("on"), 180);
     }
-  }
 
-  function renderProbability(macro){
-    const p = computeGlobalProbability(macro);
+    function doBeep(){
+      try{
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = "sine";
+        o.frequency.value = 880;
+        g.gain.value = 0.05;
+        o.connect(g); g.connect(ctx.destination);
+        o.start();
+        setTimeout(()=>{ o.stop(); ctx.close(); }, 120);
+      }catch(e){}
+    }
 
-    pillRegime.textContent = `Regime: ${p.regime}`;
-    pillBias.textContent = `Bias: ${p.bias}`;
-    pillRisk.textContent = `Riesgo: ${p.riskTxt}`;
+    async function doTelegram(message){
+      if (!TELEGRAM_RELAY_URL) return;
+      try{
+        await fetch(TELEGRAM_RELAY_URL, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({ message })
+        });
+      }catch(e){}
+    }
 
-    const up = Math.round(p.up);
-    const down = 100 - up;
-
-    barUp.style.width = up + "%";
-    barDown.style.width = down + "%";
-    pctUp.textContent = `UP ${up}%`;
-    pctDown.textContent = `DOWN ${down}%`;
-
-    probHeadline.textContent = up >= down ? `⬆️ UP ${up}%` : `⬇️ DOWN ${down}%`;
-    probExplain.textContent = p.explain;
-  }
-
-  // ========= main loader =========
-  async function loadData(){
-  try{
-    const macro = await fetchJson(JSON_URL);
-    lastDataCache = macro;
-
-    // updated / freeze
-    const updated = macro?.meta?.updated || macro?.updated || null;
-    lastUpdatedISO = updated || lastUpdatedISO;
-
-    if (lastUpdatedISO){
-      updatedText.textContent = lastUpdatedISO;
-      const ageMs = Date.now() - new Date(lastUpdatedISO).getTime();
-      if (ageMs > FREEZE_WARN_MS){
-        setHealth(`Datos congelados (edad ${msToMin(ageMs)}m)`, "warn");
-      }else{
-        setHealth(`OK (edad ${msToMin(ageMs)}m)`, "good");
+    // ========= event log =========
+    function loadLog(){
+      try{ return JSON.parse(localStorage.getItem(ALERT_KEYS.log) || "[]"); }
+      catch(e){ return []; }
+    }
+    function saveLog(items){
+      localStorage.setItem(ALERT_KEYS.log, JSON.stringify(items.slice(0, 60)));
+    }
+    function pushLog(item){
+      const items = loadLog();
+      items.unshift(item);
+      saveLog(items);
+      renderLog();
+    }
+    function renderLog(){
+      const items = loadLog();
+      if (!items.length){
+        eventLogEl.innerHTML = `<div class="muted">Sin eventos todavía.</div>`;
+        return;
       }
-    }else{
-      updatedText.textContent = "—";
-      setHealth("OK", "good");
+      eventLogEl.innerHTML = items.map(x => `
+        <div class="logItem">
+          <div><b>${x.symbol}</b> | ${x.signal} | score=${x.score} | price=${x.price ?? "—"}</div>
+          <div class="logTime">${x.time}</div>
+        </div>
+      `).join("");
     }
 
-    renderProbability(macro);
-    renderAssets(macro);
-    renderSelected(macro);
+    // ========= toggle buttons =========
+    function renderAlertButtons(){
+      btnSound.classList.toggle("on", settings.sound);
+      btnFlash.classList.toggle("on", settings.flash);
+      btnTelegram.classList.toggle("on", settings.telegram);
 
-    // ✅ módulos extra
-    updateExtraModules(macro);
-    renderMarketPhaseRadar(macro);
-
-    // alert check on fresh data
-    await checkAlerts(macro);
-
-  }catch(e){
-    console.error(e);
-
-    // ✅ si tenemos caché, seguimos funcionando
-    if (lastDataCache){
-      setHealth("Sin conexión: usando último dato en caché", "warn");
-      renderProbability(lastDataCache);
-      renderAssets(lastDataCache);
-      renderSelected(lastDataCache);
-      updateExtraModules(lastDataCache);
-      renderMarketPhaseRadar(lastDataCache);
-      return;
+      btnSound.textContent = `🔔 Sonido: ${settings.sound ? "ON" : "OFF"}`;
+      btnFlash.textContent = `⚡ Flash: ${settings.flash ? "ON" : "OFF"}`;
+      btnTelegram.textContent = `📩 Telegram: ${settings.telegram ? "ON" : "OFF"}`;
     }
 
-    // si no hay caché, error total
-    setHealth("Error cargando datos (sin conexión)", "bad");
-  }
-}
+    btnSound.onclick = ()=> setSetting("sound", !settings.sound);
+    btnFlash.onclick = ()=> setSetting("flash", !settings.flash);
+    btnTelegram.onclick = ()=> setSetting("telegram", !settings.telegram);
 
-  
-  // test alert button
-  btnTestAlert.onclick = async ()=>{
-    const sym = settings.selected || "TEST";
-    await fireAlert({ symbol:sym, signal:"TEST_BUY", score: 78, price:"—" });
-  };
+    btnOpenTerminal.onclick = ()=> window.location.href = "./index.html";
+    btnRefresh.onclick = ()=> loadData();
 
-  // ========= init =========
-  renderAlertButtons();
-  renderLog();
-  loadData();
-  startMarketHoursClock();
-  startHeaderClock();
+    btnClearLog.onclick = ()=>{
+      localStorage.removeItem(ALERT_KEYS.log);
+      renderLog();
+    };
 
-  if (refreshTimer) clearInterval(refreshTimer);
-  refreshTimer = setInterval(loadData, REFRESH_MS);
+    // ===== CLOCK (HEADER) =====
+    function startHeaderClock(){
+      const el = document.getElementById("clockBig");
+      const elUtc = document.getElementById("clockUtc");
+      const elTz = document.getElementById("clockTz");
+      if (!el) return;
 
-  function updateExtraModules(data){
+      const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone || "Local";
+      if (elTz) elTz.textContent = tzName;
 
-  const assets = data.assets || {};
+      function tick(){
+        const d = new Date();
+        el.textContent = `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+        if (elUtc) elUtc.textContent = `UTC ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())}`;
+      }
+      tick();
+      setInterval(tick, 250);
+    }
 
-  let crypto=0, tech=0, macro=0, gold=0;
+    // ===== MARKET HOURS =====
+    const MARKETS = [
+      { name:"🇺🇸 NYSE / Nasdaq", tz:"America/New_York", sessions:[[9*60+30, 16*60]], days:[1,2,3,4,5] },
+      { name:"🇬🇧 London (LSE)",  tz:"Europe/London",    sessions:[[8*60, 16*60+30]], days:[1,2,3,4,5] },
+      { name:"🇩🇪 Xetra",        tz:"Europe/Berlin",    sessions:[[9*60, 17*60+30]], days:[1,2,3,4,5] },
+      { name:"🇯🇵 Tokyo (TSE)",  tz:"Asia/Tokyo",       sessions:[[9*60, 11*60+30],[12*60+30, 15*60]], days:[1,2,3,4,5] },
+      { name:"🪙 Crypto (24/7)", tz:"UTC",              sessions:[[0, 24*60]], days:[0,1,2,3,4,5,6] },
+    ];
 
-  let explosions=[];
+    function tzNowParts(timeZone){
+      const fmt = new Intl.DateTimeFormat("en-GB", {
+        timeZone, weekday:"short", hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:false
+      });
+      const parts = fmt.formatToParts(new Date());
+      const get = (t)=> parts.find(p=>p.type===t)?.value;
+      const wd = get("weekday");
+      const hh = Number(get("hour"));
+      const mm = Number(get("minute"));
+      const ss = Number(get("second"));
+      const dowMap = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
+      return { dow: dowMap[wd] ?? 0, minutes: hh*60+mm, sec:ss, time:`${pad2(hh)}:${pad2(mm)}:${pad2(ss)}` };
+    }
 
-  Object.entries(assets).forEach(([sym,a])=>{
+    function inAnySession(mins, sessions){
+      for (const [a,b] of sessions){
+        if (mins >= a && mins < b) return { open:true, until:b };
+      }
+      let next = null;
+      for (const [a] of sessions){
+        if (mins < a) { next = a; break; }
+      }
+      return { open:false, next };
+    }
 
-    const score=a.score||50;
-    const signal=a.signal||"";
+    function fmtHhMm(mins){
+      const h = Math.floor(mins/60), m = mins%60;
+      return `${pad2(h)}:${pad2(m)}`;
+    }
 
-    if(sym.includes("BTC")||sym.includes("ETH")||sym.includes("SOL")||sym.includes("XRP"))
-      crypto+=score;
+    function minsToCountdown(mins){
+      const h = Math.floor(mins/60);
+      const m = mins%60;
+      return (h>0) ? `${h}h ${m}m` : `${m}m`;
+    }
 
-    if(["AAPL","MSFT","NVDA","AMD","GOOGL"].includes(sym))
-      tech+=score;
+    function renderMarketHours(){
+      const host = document.getElementById("marketHours");
+      const nowLine = document.getElementById("marketNowLine");
+      if (!host) return;
 
-    if(sym.includes("DX")||sym.includes("TNX")||sym.includes("IXIC"))
-      macro+=score;
+      const local = new Date();
+      const localTime = `${pad2(local.getHours())}:${pad2(local.getMinutes())}:${pad2(local.getSeconds())}`;
+      if (nowLine) nowLine.textContent = `Hora local: ${localTime}`;
 
-    if(sym.includes("GC"))
-      gold=score;
+      const rows = MARKETS.map(m=>{
+        const t = tzNowParts(m.tz);
+        const isDay = m.days.includes(t.dow);
 
-    if(signal.includes("explosion"))
-      explosions.push(`${sym} ${signal}`);
-  });
+        let status = "CERRADO";
+        let badge = "badgeClosed";
+        let detail = "";
 
-  document.getElementById("liquidityFlow").innerHTML=
-  `
-  Crypto ${arrow(crypto)}
-  <br>Tech ${arrow(tech)}
-  <br>Macro ${arrow(macro)}
-  <br>Gold ${arrow(gold)}
-  `;
+        if (!isDay){
+          detail = "Fuera de sesión (finde)";
+        }else{
+          const state = inAnySession(t.minutes, m.sessions);
+          if (state.open){
+            status = "ABIERTO";
+            badge = "badgeOpen";
+            const minsLeft = Math.max(0, state.until - t.minutes);
+            detail = `cierra en ${minsToCountdown(minsLeft)}`;
+          }else if (state.next !== null){
+            const minsTo = Math.max(0, state.next - t.minutes);
+            status = (minsTo <= 30) ? "ABRE PRONTO" : "CERRADO";
+            badge  = (minsTo <= 30) ? "badgeSoon" : "badgeClosed";
+            detail = `abre en ${minsToCountdown(minsTo)} (${fmtHhMm(state.next)})`;
+          }else{
+            detail = "sesión terminada hoy";
+          }
+        }
 
-  document.getElementById("momentumAlerts").innerHTML=
-  explosions.length ? explosions.join("<br>") : "No explosions detected";
+        const sessionTxt = m.sessions.map(([a,b])=> `${fmtHhMm(a)}–${fmtHhMm(b)}`).join(" | ");
+        return `
+          <tr>
+            <td><b>${m.name}</b><div class="muted">TZ: ${m.tz}</div></td>
+            <td>${t.time}</td>
+            <td class="${badge}">${status}</td>
+            <td>${sessionTxt}</td>
+            <td class="muted">${detail}</td>
+          </tr>
+        `;
+      }).join("");
 
-  const g=assets["GC=F"]||{};
-  document.getElementById("goldRadar").innerHTML=
-  `
-  Trend: ${g.trend || "-"}<br>
-  Signal: ${g.signal || "-"}<br>
-  Score: ${g.score || "-"}
-  `;
-}
+      host.innerHTML = `
+        <table class="marketTable">
+          <thead>
+            <tr>
+              <th>Mercado</th>
+              <th>Hora ahora</th>
+              <th>Estado</th>
+              <th>Horario</th>
+              <th>Info</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
 
-function arrow(v){
-  if(v>200) return "↑↑";
-  if(v>120) return "↑";
-  if(v>80) return "→";
-  if(v>40) return "↓";
-  return "↓↓";
-}
-</script>
+    function startMarketHoursClock(){
+      renderMarketHours();
+      setInterval(renderMarketHours, 1000);
+    }
+
+    // ================= MARKET PHASE RADAR (Bloomberg-ish) =================
+    const PHASE_W = { gold:1.2, dxy:0.9, tnx:0.9, nas:0.7, btc:0.7, eth:0.4, tech:0.3 };
+
+    function safeScore(a){ return Number(a?.score ?? 50); }
+    function safeSignal(a){ return String(a?.signal ?? a?.status ?? "").toLowerCase(); }
+    function safeTrend(a){ return String(a?.trend ?? "").toLowerCase(); }
+
+    function dir01(a){
+      const sc = safeScore(a);
+      const sig = safeSignal(a);
+      const tr = safeTrend(a);
+
+      let v = 0.5;
+      v += clamp((sc - 50)/40, -0.35, 0.35);
+
+      if (sig.includes("buy") || sig.includes("long") || sig.includes("explosion_up")) v += 0.25;
+      if (sig.includes("sell") || sig.includes("short") || sig.includes("explosion_down")) v -= 0.25;
+
+      if (tr.includes("bull")) v += 0.12;
+      if (tr.includes("bear")) v -= 0.12;
+
+      return clamp(v, 0, 1);
+    }
+
+    function getAsset(assets, keys){
+      for (const k of keys){ if (assets[k]) return assets[k]; }
+      return null;
+    }
+
+    function computeMarketPhase(macro){
+      const assets = macro?.assets || {};
+
+      const gold = getAsset(assets, ["GC=F","GOLD"]);
+      const dxy  = getAsset(assets, ["DX-Y.NYB","DXY"]);
+      const tnx  = getAsset(assets, ["^TNX","TNX"]);
+      const nas  = getAsset(assets, ["^IXIC","NASDAQ"]);
+      const btc  = getAsset(assets, ["BTC-USD","BTC"]);
+      const eth  = getAsset(assets, ["ETH-USD","ETH"]);
+
+      const nasDir = dir01(nas);
+      const btcDir = dir01(btc);
+      const ethDir = dir01(eth);
+      const dxyDir = dir01(dxy);
+      const tnxDir = dir01(tnx);
+
+      const riskOnRaw =
+        (nasDir*PHASE_W.nas + btcDir*PHASE_W.btc + ethDir*PHASE_W.eth)
+        / (PHASE_W.nas + PHASE_W.btc + PHASE_W.eth);
+
+      const pressureRaw =
+        (dxyDir*PHASE_W.dxy + tnxDir*PHASE_W.tnx)
+        / (PHASE_W.dxy + PHASE_W.tnx);
+
+      const riskOn = clamp(riskOnRaw - (pressureRaw-0.5)*0.6, 0, 1);
+      const riskOff = 1 - riskOn;
+
+      const goldDir = dir01(gold);
+      const defensive =
+        (goldDir*PHASE_W.gold + dxyDir*PHASE_W.dxy + tnxDir*PHASE_W.tnx)
+        / (PHASE_W.gold+PHASE_W.dxy+PHASE_W.tnx);
+
+      const growth =
+        (nasDir*PHASE_W.nas + btcDir*PHASE_W.btc + ethDir*PHASE_W.eth)
+        / (PHASE_W.nas+PHASE_W.btc+PHASE_W.eth);
+
+      const liquidityShift = clamp(0.5 + (defensive - growth)*0.9, 0, 1);
+      const goldDominance = clamp(0.5 + (goldDir - ((nasDir+btcDir+dxyDir)/3))*0.8, 0, 1);
+
+      const techKeys = ["AAPL","MSFT","NVDA","AMD","GOOGL"];
+      let techSum = 0, techN = 0;
+      for (const k of techKeys){
+        if (assets[k]){ techSum += dir01(assets[k]); techN++; }
+      }
+      const techDir = techN ? (techSum/techN) : nasDir;
+      const cryptoFlow = clamp(0.5 + (((btcDir+ethDir)/2) - techDir)*0.95, 0, 1);
+
+      const phase =
+        riskOn > 0.58 ? "RISK ON" :
+        riskOn < 0.42 ? "RISK OFF" :
+        "MIXED";
+
+      const hint = (v)=> v>0.66 ? "Fuerte" : (v<0.34 ? "Débil" : "Neutro");
+
+      return {
+        phase, riskOn, riskOff, liquidityShift, goldDominance, cryptoFlow,
+        hints: {
+          riskOn: hint(riskOn),
+          liquidityShift: hint(liquidityShift),
+          goldDominance: hint(goldDominance),
+          cryptoFlow: hint(cryptoFlow)
+        }
+      };
+    }
+
+    function phaseBoxHTML(title, value01, info){
+      const pct = Math.round(value01*100);
+      const cls = (pct>=66) ? "phaseGood" : (pct<=34 ? "phaseBad" : "phaseWarn");
+      return `
+        <div class="phaseBox">
+          <div class="phaseTop">
+            <div class="phaseName">${title}</div>
+            <div class="phaseValue ${cls}">${pct}%</div>
+          </div>
+          <div class="phaseBar">
+            <div class="phaseFill" style="width:${pct}%"></div>
+          </div>
+          <div class="phaseHint muted">${info}</div>
+        </div>
+      `;
+    }
+
+    function renderMarketPhaseRadar(macro){
+      const host = document.getElementById("phaseGrid");
+      const line = document.getElementById("phaseNowLine");
+      if (!host) return;
+
+      const p = computeMarketPhase(macro);
+
+      if (line){
+        const t = new Date();
+        line.textContent = `Fase: ${p.phase} • actualizado ${pad2(t.getHours())}:${pad2(t.getMinutes())}:${pad2(t.getSeconds())}`;
+      }
+
+      host.innerHTML =
+        phaseBoxHTML("RISK ON", p.riskOn, `Sesgo a growth / riesgo (${p.hints.riskOn})`) +
+        phaseBoxHTML("RISK OFF", p.riskOff, `Sesgo defensivo / aversión`) +
+        phaseBoxHTML("LIQUIDITY SHIFT", p.liquidityShift, `Flujo hacia defensivo vs growth (${p.hints.liquidityShift})`) +
+        phaseBoxHTML("GOLD DOMINANCE", p.goldDominance, `Oro manda vs pack (${p.hints.goldDominance})`) +
+        phaseBoxHTML("CRYPTO FLOW", p.cryptoFlow, `Crypto vs tech/índices (${p.hints.cryptoFlow})`);
+    }
+
+    // ========= core logic =========
+    function computeGlobalProbability(macro){
+      const assets = macro?.assets || {};
+      const keys = Object.keys(assets);
+
+      const W = {
+        "GC=F": 1.2,  "SI=F": 0.6,  "^TNX": 0.9, "DX-Y.NYB": 0.9, "^IXIC": 0.7,
+        "BTC-USD": 0.7, "ETH-USD": 0.4,
+        "AAPL": 0.3, "MSFT": 0.3, "NVDA": 0.3, "AMD": 0.25, "GOOGL": 0.25,
+        "SOL-USD": 0.2, "XRP-USD": 0.2, "BNB-USD": 0.2
+      };
+
+      function dirScore(a){
+        const score = (a?.score ?? 50);
+        const signal = (a?.signal || a?.status || "").toString().toLowerCase();
+        const trend = (a?.trend || "").toString().toLowerCase();
+
+        let s = 0;
+        s += clamp((score - 50) / 25, -1, 1) * 0.55;
+
+        if (signal.includes("buy") || signal.includes("long") || signal.includes("explosion_up")) s += 0.55;
+        if (signal.includes("sell") || signal.includes("short") || signal.includes("explosion_down")) s -= 0.55;
+
+        if (trend.includes("bull")) s += 0.25;
+        if (trend.includes("bear")) s -= 0.25;
+
+        return clamp(s, -1, 1);
+      }
+
+      let totalW = 0;
+      let sum = 0;
+
+      for (const k of keys){
+        const w = (W[k] ?? 0.15);
+        const a = assets[k];
+        const d = dirScore(a);
+        sum += d * w;
+        totalW += w;
+      }
+
+      if (totalW <= 0) totalW = 1;
+      const norm = sum / totalW; // -1..+1
+
+      const up = clamp(50 + norm*22, 5, 95);
+      const down = 100 - up;
+
+      const gold = assets["GC=F"] || assets["GOLD"] || null;
+      const risk = gold?.risk || gold?.atr_pct || gold?.atrPct || null;
+
+      const regime =
+        Math.abs(norm) < 0.12 ? "RANGO" :
+        norm > 0 ? "RISK-ON" : "RISK-OFF";
+
+      const bias =
+        norm > 0.18 ? "ALCISTA" :
+        norm < -0.18 ? "BAJISTA" : "NEUTRO";
+
+      const riskTxt =
+        risk === null ? "—" :
+        (Number(risk) <= 1.0 ? "bajo" : (Number(risk) <= 2.2 ? "medio" : "alto"));
+
+      const explain = `Lectura global: ${regime}. Sesgo ${bias}. (Basado en score/señal/tendencia del pack macro.)`;
+
+      return { up, down, regime, bias, riskTxt, explain };
+    }
+
+    function assetToUI(symbol, a){
+      const score = a?.score ?? 50;
+      const trend = (a?.trend || "—");
+      const signal = (a?.signal || a?.status || "neutral");
+      const tf = (a?.tf || a?.timeframe || "—");
+
+      let level = "warn";
+      if (score >= 70) level = "good";
+      else if (score <= 30) level = "bad";
+
+      const vol = (a?.volatility || a?.vol || "—");
+      return { symbol, score, trend, signal, tf, vol, level };
+    }
+
+    function renderAssets(macro){
+      const assets = macro?.assets || {};
+      const symbols = Object.keys(assets);
+
+      const items = symbols
+        .map(sym => assetToUI(sym, assets[sym]))
+        .sort((x,y)=> (y.score - x.score));
+
+      assetGrid.innerHTML = items.map(x => `
+        <div class="asset" data-sym="${x.symbol}">
+          <div class="assetTop">
+            <div class="assetSym">${x.symbol}</div>
+            <span class="pill ${x.level}">${Math.round(x.score)}</span>
+          </div>
+          <div class="assetMeta">
+            <span class="pill">sig: ${x.signal}</span>
+            <span class="pill">trend: ${x.trend}</span>
+            <span class="pill">vol: ${x.vol}</span>
+            <span class="pill">tf: ${x.tf}</span>
+          </div>
+        </div>
+      `).join("");
+
+      assetGrid.querySelectorAll(".asset").forEach(el=>{
+        el.addEventListener("click", ()=>{
+          const sym = el.getAttribute("data-sym");
+          settings.selected = sym;
+          localStorage.setItem(ALERT_KEYS.selected, sym);
+          renderSelected(macro);
+        });
+      });
+    }
+
+    function renderSelected(macro){
+      const assets = macro?.assets || {};
+      const sym = settings.selected || Object.keys(assets)[0] || "";
+      const a = assets[sym] || null;
+
+      selSym.textContent = sym || "—";
+
+      if (!a){
+        selSignal.textContent = "Señal: —";
+        selTrend.textContent = "Tendencia: —";
+        selVol.textContent = "Vol: —";
+        selScore.textContent = "—";
+        selDetail.textContent = "—";
+        return;
+      }
+
+      const ui = assetToUI(sym, a);
+      selSignal.textContent = `Señal: ${ui.signal}`;
+      selTrend.textContent = `Tendencia: ${ui.trend}`;
+      selVol.textContent = `Vol: ${ui.vol}`;
+      selScore.textContent = `${Math.round(ui.score)}`;
+      selDetail.textContent = `TF ${ui.tf} | score=${fmt(ui.score,0)} | (click en radar para cambiar activo)`;
+    }
+
+    async function fireAlert(payload){
+      const msg = `🚨 ${payload.symbol} | ${payload.signal} | score=${payload.score} | price=${payload.price ?? "—"}`;
+      if (settings.sound) doBeep();
+      if (settings.flash) doFlash();
+      if (settings.telegram) await doTelegram(msg);
+
+      pushLog({
+        time: new Date().toLocaleString(),
+        symbol: payload.symbol,
+        signal: payload.signal,
+        score: payload.score,
+        price: payload.price ?? "—"
+      });
+    }
+
+    function shouldTrigger(a){
+      const score = a?.score ?? 50;
+      const signal = (a?.signal || a?.status || "").toString().toLowerCase();
+      const strong = (score >= 70 || score <= 30);
+      const hasDirection = (signal.includes("buy") || signal.includes("sell") || signal.includes("explosion_"));
+      return strong && hasDirection;
+    }
+
+    const lastShot = {};
+    async function checkAlerts(macro){
+      const assets = macro?.assets || {};
+      for (const sym of Object.keys(assets)){
+        const a = assets[sym];
+        if (!shouldTrigger(a)) continue;
+
+        const signal = (a?.signal || a?.status || "signal").toString();
+        const key = sym + "::" + signal;
+        const score = Math.round(a?.score ?? 50);
+
+        const now = Date.now();
+        const prev = lastShot[key] || 0;
+        if (now - prev < 5*60_000) continue;
+        lastShot[key] = now;
+
+        await fireAlert({
+          symbol: sym,
+          signal,
+          score,
+          price: a?.price || a?.close || a?.last || null
+        });
+      }
+    }
+
+    function renderProbability(macro){
+      const p = computeGlobalProbability(macro);
+
+      pillRegime.textContent = `Regime: ${p.regime}`;
+      pillBias.textContent = `Bias: ${p.bias}`;
+      pillRisk.textContent = `Riesgo: ${p.riskTxt}`;
+
+      const up = Math.round(p.up);
+      const down = 100 - up;
+
+      barUp.style.width = up + "%";
+      barDown.style.width = down + "%";
+      pctUp.textContent = `UP ${up}%`;
+      pctDown.textContent = `DOWN ${down}%`;
+
+      probHeadline.textContent = up >= down ? `⬆️ UP ${up}%` : `⬇️ DOWN ${down}%`;
+      probExplain.textContent = p.explain;
+    }
+
+    function arrow(v){
+      if(v>200) return "↑↑";
+      if(v>120) return "↑";
+      if(v>80) return "→";
+      if(v>40) return "↓";
+      return "↓↓";
+    }
+
+    function updateExtraModules(data){
+      const assets = data?.assets || {};
+      let crypto=0, tech=0, macro=0, gold=0;
+      let explosions=[];
+
+      Object.entries(assets).forEach(([sym,a])=>{
+        const score = a?.score || 50;
+        const signal = a?.signal || "";
+
+        if(sym.includes("BTC")||sym.includes("ETH")||sym.includes("SOL")||sym.includes("XRP"))
+          crypto += score;
+
+        if(["AAPL","MSFT","NVDA","AMD","GOOGL"].includes(sym))
+          tech += score;
+
+        if(sym.includes("DX")||sym.includes("TNX")||sym.includes("IXIC"))
+          macro += score;
+
+        if(sym.includes("GC"))
+          gold = score;
+
+        if(String(signal).includes("explosion"))
+          explosions.push(`${sym} ${signal}`);
+      });
+
+      document.getElementById("liquidityFlow").innerHTML =
+        `Crypto ${arrow(crypto)}<br>Tech ${arrow(tech)}<br>Macro ${arrow(macro)}<br>Gold ${arrow(gold)}`;
+
+      document.getElementById("momentumAlerts").innerHTML =
+        explosions.length ? explosions.join("<br>") : "No explosions detected";
+
+      const g = assets["GC=F"] || {};
+      document.getElementById("goldRadar").innerHTML =
+        `Trend: ${g.trend || "-"}<br>Signal: ${g.signal || "-"}<br>Score: ${g.score || "-"}`;
+    }
+
+    // ========= main loader =========
+    let refreshTimer = null;
+    let lastUpdatedISO = null;
+    let lastDataCache = null;
+
+    async function loadData(){
+      try{
+        const macro = await fetchJson(JSON_URL);
+        lastDataCache = macro;
+
+        const updated = macro?.meta?.updated || macro?.updated || null;
+        lastUpdatedISO = updated || lastUpdatedISO;
+
+        if (lastUpdatedISO){
+          updatedText.textContent = lastUpdatedISO;
+          const ageMs = Date.now() - new Date(lastUpdatedISO).getTime();
+          if (ageMs > FREEZE_WARN_MS){
+            setHealth(`Datos congelados (edad ${msToMin(ageMs)}m)`, "warn");
+          }else{
+            setHealth(`OK (edad ${msToMin(ageMs)}m)`, "good");
+          }
+        }else{
+          updatedText.textContent = "—";
+          setHealth("OK", "good");
+        }
+
+        renderProbability(macro);
+        renderAssets(macro);
+        renderSelected(macro);
+
+        updateExtraModules(macro);
+        renderMarketPhaseRadar(macro);
+
+        await checkAlerts(macro);
+      }catch(e){
+        console.error(e);
+
+        if (lastDataCache){
+          setHealth("Sin conexión: usando último dato en caché", "warn");
+          renderProbability(lastDataCache);
+          renderAssets(lastDataCache);
+          renderSelected(lastDataCache);
+          updateExtraModules(lastDataCache);
+          renderMarketPhaseRadar(lastDataCache);
+          return;
+        }
+
+        setHealth("Error cargando datos (sin conexión)", "bad");
+      }
+    }
+
+    // test alert button
+    btnTestAlert.onclick = async ()=>{
+      const sym = settings.selected || "TEST";
+      await fireAlert({ symbol:sym, signal:"TEST_BUY", score: 78, price:"—" });
+    };
+
+    // ========= init =========
+    renderAlertButtons();
+    renderLog();
+    startMarketHoursClock();
+    startHeaderClock();
+    loadData();
+
+    if (refreshTimer) clearInterval(refreshTimer);
+    refreshTimer = setInterval(loadData, REFRESH_MS);
+  </script>
 </body>
 </html>
