@@ -304,9 +304,10 @@ async function loadBTC() {
     renderLiquidity(data.state);
     renderSweeps(data.state);
     renderCompression(data.state);
+    renderMagnet(data.state);
 }
 
-function renderCompression(state) {
+function renderMagnet(state) {
     const box = document.getElementById("signalsBox");
     if (!box) return;
 
@@ -321,17 +322,37 @@ function renderCompression(state) {
     let extra = "";
 
     for (const tf of ["4h", "1h", "5m", "1m"]) {
-        const comp = state?.[tf]?.compression;
-        if (!comp) continue;
+        const magnet = state?.[tf]?.magnet;
+        if (!magnet) continue;
 
         const meta = frameMeta[tf];
 
-        if (comp.compression) {
+        if (magnet.direction === "up") {
             extra += `
-            <div style="margin-bottom:8px; padding:8px 10px; border-radius:10px; background:rgba(250,204,21,0.10); border:1px solid rgba(250,204,21,0.20);">
-                <div style="color:#fde68a; font-weight:bold;">⚡ ${meta.label} · ${meta.role}</div>
-                <div style="color:#e2e8f0;">Smart Money Compression</div>
-                <div style="color:#94a3b8; font-size:12px;">Mercado comprimido. Posible expansión o movimiento fuerte cerca.</div>
+            <div style="margin-bottom:8px; padding:8px 10px; border-radius:10px; background:rgba(96,165,250,0.10); border:1px solid rgba(96,165,250,0.20);">
+                <div style="color:#93c5fd; font-weight:bold;">🧲 ${meta.label} · ${meta.role}</div>
+                <div style="color:#e2e8f0;">Liquidity Magnet UP → ${magnet.target}</div>
+                <div style="color:#94a3b8; font-size:12px;">La liquidez superior está más cerca que la inferior.</div>
+            </div>
+            `;
+        }
+
+        if (magnet.direction === "down") {
+            extra += `
+            <div style="margin-bottom:8px; padding:8px 10px; border-radius:10px; background:rgba(248,113,113,0.10); border:1px solid rgba(248,113,113,0.20);">
+                <div style="color:#fca5a5; font-weight:bold;">🧲 ${meta.label} · ${meta.role}</div>
+                <div style="color:#e2e8f0;">Liquidity Magnet DOWN → ${magnet.target}</div>
+                <div style="color:#94a3b8; font-size:12px;">La liquidez inferior está más cerca que la superior.</div>
+            </div>
+            `;
+        }
+
+        if (magnet.direction === "neutral") {
+            extra += `
+            <div style="margin-bottom:8px; padding:8px 10px; border-radius:10px; background:rgba(148,163,184,0.10); border:1px solid rgba(148,163,184,0.20);">
+                <div style="color:#cbd5e1; font-weight:bold;">🧲 ${meta.label} · ${meta.role}</div>
+                <div style="color:#e2e8f0;">Liquidity Magnet NEUTRAL → ${magnet.target}</div>
+                <div style="color:#94a3b8; font-size:12px;">La distancia a la liquidez superior e inferior es prácticamente igual.</div>
             </div>
             `;
         }
