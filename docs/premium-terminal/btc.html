@@ -299,6 +299,38 @@ async function loadBTC() {
     drawChart("btc1m", data.series?.["1m"] || [], data.state?.["1m"]?.liquidity || null);
 
     renderLiquidity(data.state);
+    renderSweeps(data.state);
+}
+
+function renderSweeps(state) {
+    const box = document.getElementById("signalsBox");
+    if (!box) return;
+
+    const frames = ["4h","1h","5m","1m"];
+    let html = "";
+
+    for (const tf of frames) {
+        const sweep = state?.[tf]?.sweep;
+        if (!sweep) continue;
+
+        if (sweep.sweep_high) {
+            html += `
+            <div style="color:#f87171;margin-bottom:6px;">
+            ⚠️ BTC ${tf.toUpperCase()} → Liquidity sweep HIGH
+            </div>
+            `;
+        }
+
+        if (sweep.sweep_low) {
+            html += `
+            <div style="color:#4ade80;margin-bottom:6px;">
+            ⚠️ BTC ${tf.toUpperCase()} → Liquidity sweep LOW
+            </div>
+            `;
+        }
+    }
+
+    box.innerHTML = html || "Sin barridas detectadas.";
 }
 
 function renderLiquidity(state) {
