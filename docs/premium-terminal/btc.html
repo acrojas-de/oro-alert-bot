@@ -69,5 +69,66 @@ BTC MASTER TERMINAL
 
 </div>
 
+<script>
+
+async function loadBTC(){
+
+    const r = await fetch("btc_data.json?v=" + Date.now());
+    const data = await r.json();
+
+    drawChart("btc4h", data.series["4h"]);
+    drawChart("btc1h", data.series["1h"]);
+    drawChart("btc5m", data.series["5m"]);
+    drawChart("btc1m", data.series["1m"]);
+
+}
+
+function drawChart(canvasId, series){
+
+    const prices = series.map(x => x.price);
+    const ema21 = series.map(x => x.ema21);
+    const ema50 = series.map(x => x.ema50);
+
+    new Chart(
+        document.getElementById(canvasId),
+        {
+            type: "line",
+            data:{
+                labels: prices.map((_,i)=>i),
+                datasets:[
+                    {
+                        label:"Price",
+                        data:prices,
+                        borderColor:"#38bdf8",
+                        borderWidth:2
+                    },
+                    {
+                        label:"EMA21",
+                        data:ema21,
+                        borderColor:"#22c55e",
+                        borderWidth:1
+                    },
+                    {
+                        label:"EMA50",
+                        data:ema50,
+                        borderColor:"#f97316",
+                        borderWidth:1
+                    }
+                ]
+            },
+            options:{
+                responsive:true,
+                plugins:{
+                    legend:{display:false}
+                }
+            }
+        }
+    );
+}
+
+loadBTC();
+
+</script>
+    
 </body>
 </html>
