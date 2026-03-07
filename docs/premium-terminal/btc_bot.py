@@ -128,6 +128,47 @@ def detect_compression(close: pd.Series, hist: pd.Series) -> dict:
 
 
 # =========================================================
+# ZONA 2D · LIQUIDITY MAGNET
+# Detecta hacia qué nivel de liquidez está más cerca el precio
+# =========================================================
+def detect_liquidity_magnet(close: pd.Series, liq: dict) -> dict:
+    s = close.dropna()
+
+    if len(s) == 0:
+        return {
+            "direction": "none",
+            "target": 0.0,
+            "distance_up": 0.0,
+            "distance_down": 0.0
+        }
+
+    last_price = float(s.iloc[-1])
+
+    up_target = float(liq.get("range_high_20", last_price))
+    down_target = float(liq.get("range_low_20", last_price))
+
+    distance_up = abs(up_target - last_price)
+    distance_down = abs(last_price - down_target)
+
+    if distance_up < distance_down:
+        direction = "up"
+        target = up_target
+    elif distance_down < distance_up:
+        direction = "down"
+        target = down_target
+    else:
+        direction = "neutral"
+        target = last_price
+
+    return {
+        "direction": direction,
+        "target": round(float(target), 6),
+        "distance_up": round(float(distance_up), 6),
+        "distance_down": round(float(distance_down), 6)
+    }
+
+
+# =========================================================
 # ZONA 3 · FETCH POR TIMEFRAME
 # Aquí se descarga el activo, se limpian datos,
 # se calculan EMA, MACD, liquidez, barridas y compresión
@@ -167,6 +208,7 @@ def fetch(tf: str) -> dict:
     liq = liquidity_levels(close)
     sweep = detect_liquidity_sweep(close, liq)
     compression = detect_compression(close, hist)
+    magnet = detect_liquidity_magnet(close, liq)
 
     # -----------------------------
     # SUBZONA 3B · SERIE DEL TF
@@ -188,7 +230,8 @@ def fetch(tf: str) -> dict:
         "series": out[-120:],
         "liquidity": liq,
         "sweep": sweep,
-        "compression": compression
+        "compression": compression,
+        "magnet": magnet
     }
 
 
@@ -222,7 +265,8 @@ def main():
         data["state"][tf] = {
             "liquidity": tf_data["liquidity"],
             "sweep": tf_data["sweep"],
-            "compression": tf_data["compression"]
+            "compression": tf_data["compression"],
+            "magnet": tf_data["magnet"]
         }
 
     # -----------------------------------------------------
