@@ -264,12 +264,12 @@ body{
             </div>
         </div>
 
-        <div class="panel">
-            <h3>Relaciones prioritarias</h3>
-            <div class="placeholder">
-                Espacio reservado para DXY, Nasdaq, liquidez y seguimiento macro del activo.
-            </div>
-        </div>
+       <div class="panel">
+    <h3>Liquidez por marco</h3>
+    <div class="placeholder" id="liquidityBox">
+        Cargando niveles de liquidez...
+    </div>
+</div>
 
         <div class="panel">
             <h3>Log / estado técnico</h3>
@@ -299,6 +299,35 @@ async function loadBTC() {
     drawChart("btc1m", data.series?.["1m"] || []);
 }
 
+renderLiquidity(data.state);
+    
+function renderLiquidity(state) {
+    const box = document.getElementById("liquidityBox");
+    if (!box) return;
+
+    const frames = ["4h", "1h", "5m", "1m"];
+
+    let html = "";
+
+    for (const tf of frames) {
+        const liq = state?.[tf]?.liquidity;
+        if (!liq) continue;
+
+        html += `
+            <div style="margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.08);">
+                <div style="font-weight:bold; margin-bottom:6px;">BTC ${tf.toUpperCase()}</div>
+                <div>🔼 Liquidez superior: ${liq.range_high_20}</div>
+                <div>🔽 Liquidez inferior: ${liq.range_low_20}</div>
+                <div>⬆️ Swing high: ${liq.swing_high}</div>
+                <div>⬇️ Swing low: ${liq.swing_low}</div>
+            </div>
+        `;
+    }
+
+    box.innerHTML = html || "Sin datos de liquidez.";
+}
+
+    
 function drawChart(canvasId, series) {
 
     if (!Array.isArray(series) || series.length === 0) {
@@ -420,6 +449,7 @@ function drawChart(canvasId, series) {
 
 loadBTC();
 setInterval(loadBTC, 60000);
+
 </script>
 
 </body>
