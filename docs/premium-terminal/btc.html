@@ -318,122 +318,104 @@ function drawChart(canvasId, series) {
     const hist = series.map(x => x.hist);
 
     charts[canvasId] = new Chart(document.getElementById(canvasId), {
-
-        data: {
-            labels: prices.map((_, i) => i),
-
-            datasets: [
-
-                {
-                    type: "line",
-                    label: "Price",
-                    data: prices,
-                    borderColor: "#38bdf8",
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    yAxisID: "price"
-                },
-
-                {
-                    type: "line",
-                    label: "EMA21",
-                    data: ema21,
-                    borderColor: "#22c55e",
-                    borderWidth: 1.5,
-                    pointRadius: 0,
-                    yAxisID: "price"
-                },
-
-                {
-                    type: "line",
-                    label: "EMA50",
-                    data: ema50,
-                    borderColor: "#f97316",
-                    borderWidth: 1.5,
-                    pointRadius: 0,
-                    yAxisID: "price"
-                },
-
-                {
-                    type: "bar",
-                    label: "MACD Hist",
-                    data: hist,
-                    backgroundColor: hist.map(v => v >= 0 ? "#22c55e88" : "#ef444488"),
-                    yAxisID: "macd"
-                },
-
-                {
-                    type: "line",
-                    label: "MACD",
-                    data: macd,
-                    borderColor: "#eab308",
-                    borderWidth: 1.5,
-                    pointRadius: 0,
-                    yAxisID: "macd"
-                }
-
-            ]
-        },
-
-        {
-type: "line",
-label: "Upper band",
-data: new Array(prices.length).fill(800),
-borderColor: "#334155",
-borderWidth: 1,
-pointRadius: 0,
-yAxisID: "macd"
-},
-
-{
-type: "line",
-label: "Lower band",
-data: new Array(prices.length).fill(-800),
-borderColor: "#334155",
-borderWidth: 1,
-pointRadius: 0,
-yAxisID: "macd"
-}
-        
-        options: {
-
-            responsive: true,
-            maintainAspectRatio: false,
-
-            plugins: {
-                legend: { display: false }
+    data: {
+        labels: prices.map((_, i) => i),
+        datasets: [
+            {
+                type: "line",
+                label: "Price",
+                data: prices,
+                borderColor: "#38bdf8",
+                borderWidth: 2,
+                pointRadius: 0,
+                yAxisID: "price"
             },
-
-            scales: {
-
-                price: {
-                    type: "linear",
-                    position: "left",
-                    grid: {
-                        color: "rgba(255,255,255,0.05)"
-                    },
-                    ticks: {
-                        color: "#9ca3af"
-                    }
-                },
-
-                macd: {
-                    type: "linear",
-                    position: "right",
-                    grid: {
-                        drawOnChartArea: false
-                    },
-                    ticks: {
-                        color: "#9ca3af"
-                    }
-                }
-
+            {
+                type: "line",
+                label: "EMA21",
+                data: ema21,
+                borderColor: "#22c55e",
+                borderWidth: 1.5,
+                pointRadius: 0,
+                yAxisID: "price"
+            },
+            {
+                type: "line",
+                label: "EMA50",
+                data: ema50,
+                borderColor: "#f97316",
+                borderWidth: 1.5,
+                pointRadius: 0,
+                yAxisID: "price"
+            },
+            {
+                type: "bar",
+                label: "MACD Hist",
+                data: hist,
+                backgroundColor: hist.map(v => v >= 0 ? "#22c55e88" : "#ef444488"),
+                yAxisID: "macd"
+            },
+            {
+                type: "line",
+                label: "MACD",
+                data: macd,
+                borderColor: "#eab308",
+                borderWidth: 1.5,
+                pointRadius: 0,
+                yAxisID: "macd"
+            },
+            {
+                type: "line",
+                label: "Upper band",
+                data: new Array(prices.length).fill(800),
+                borderColor: "#334155",
+                borderWidth: 1,
+                pointRadius: 0,
+                yAxisID: "macd"
+            },
+            {
+                type: "line",
+                label: "Lower band",
+                data: new Array(prices.length).fill(-800),
+                borderColor: "#334155",
+                borderWidth: 1,
+                pointRadius: 0,
+                yAxisID: "macd"
             }
+        ]
+    },
 
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            price: {
+                type: "linear",
+                position: "left",
+                grid: {
+                    color: "rgba(255,255,255,0.05)"
+                },
+                ticks: {
+                    color: "#9ca3af"
+                }
+            },
+            macd: {
+                type: "linear",
+                position: "right",
+                grid: {
+                    drawOnChartArea: false
+                },
+                ticks: {
+                    color: "#9ca3af"
+                }
+            }
         }
+    }
+});
 
-    });
-}
 
 loadBTC();
 setInterval(loadBTC, 60000);
