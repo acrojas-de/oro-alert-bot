@@ -1,1 +1,9 @@
-
+{
+  "meta": {
+    "asset": "BTC-USD",
+    "updated_utc": null
+  },
+  "signals": [],
+  "series": {},
+  "state": {}
+}
