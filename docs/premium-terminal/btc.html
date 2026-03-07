@@ -297,9 +297,8 @@ async function loadBTC() {
     drawChart("btc1h", data.series?.["1h"] || []);
     drawChart("btc5m", data.series?.["5m"] || []);
     drawChart("btc1m", data.series?.["1m"] || []);
+    renderLiquidity(data.state);
 }
-
-renderLiquidity(data.state);
     
 function renderLiquidity(state) {
     const box = document.getElementById("liquidityBox");
