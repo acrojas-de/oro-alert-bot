@@ -45,8 +45,30 @@ def macd(series: pd.Series):
 # Aquí sacamos zonas probables de liquidez arriba y abajo
 # - swing_high / swing_low
 # - range_high_20 / range_low_20
-# Estas son las primeras referencias del "hotel"
 # =========================================================
+def liquidity_levels(close: pd.Series) -> dict:
+    s = close.dropna()
+
+    if len(s) < 20:
+        last_price = float(s.iloc[-1]) if len(s) else 0.0
+        return {
+            "swing_high": round(last_price, 6),
+            "swing_low": round(last_price, 6),
+            "range_high_20": round(last_price, 6),
+            "range_low_20": round(last_price, 6),
+        }
+
+    recent_20 = s.tail(20)
+    recent_10 = s.tail(10)
+
+    return {
+        "swing_high": round(float(recent_10.max()), 6),
+        "swing_low": round(float(recent_10.min()), 6),
+        "range_high_20": round(float(recent_20.max()), 6),
+        "range_low_20": round(float(recent_20.min()), 6),
+    }
+
+
 # =========================================================
 # ZONA 2B · BARRIDAS DE LIQUIDEZ
 # Detecta si el precio rompe una zona y vuelve dentro
@@ -114,7 +136,7 @@ def fetch(tf: str) -> dict:
     # SUBZONA 3A · LIQUIDEZ DEL TF
     # -----------------------------
     liq = liquidity_levels(close)
-   sweep = detect_liquidity_sweep(close, liq)
+    sweep = detect_liquidity_sweep(close, liq)
 
     # -----------------------------
     # SUBZONA 3B · SERIE DEL TF
@@ -132,11 +154,11 @@ def fetch(tf: str) -> dict:
             "hist": round(float(hist.iloc[i]), 6) if pd.notna(hist.iloc[i]) else None
         })
 
-   return {
-    "series": out[-120:],
-    "liquidity": liq,
-    "sweep": sweep
-}
+    return {
+        "series": out[-120:],
+        "liquidity": liq,
+        "sweep": sweep
+    }
 
 
 # =========================================================
@@ -163,16 +185,17 @@ def main():
     # Aquí guardamos:
     # - data["series"][tf]
     # - data["state"][tf]["liquidity"]
+    # - data["state"][tf]["sweep"]
     # -----------------------------------------------------
     for tf in TIMEFRAMES:
         tf_data = fetch(tf)
 
         data["series"][tf] = tf_data["series"]
 
-       data["state"][tf] = {
-    "liquidity": tf_data["liquidity"],
-    "sweep": tf_data["sweep"]
-}
+        data["state"][tf] = {
+            "liquidity": tf_data["liquidity"],
+            "sweep": tf_data["sweep"]
+        }
 
     # -----------------------------------------------------
     # SUBZONA 4B · GUARDAR JSON EN DISCO
