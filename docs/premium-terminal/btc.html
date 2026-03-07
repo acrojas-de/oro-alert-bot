@@ -303,13 +303,39 @@ async function loadBTC() {
 
     renderLiquidity(data.state);
     renderSweeps(data.state);
+    renderCompression(data.state);
+}
+
+function renderCompression(state) {
+    const box = document.getElementById("signalsBox");
+    if (!box) return;
+
+    const frames = ["4h", "1h", "5m", "1m"];
+    let html = "";
+
+    for (const tf of frames) {
+        const comp = state?.[tf]?.compression;
+        if (!comp) continue;
+
+        if (comp.compression) {
+            html += `
+            <div style="color:#facc15;margin-bottom:6px;">
+            ⚡ BTC ${tf.toUpperCase()} → Smart Money Compression
+            </div>
+            `;
+        }
+    }
+
+    if (html !== "") {
+        box.innerHTML += html;
+    }
 }
 
 function renderSweeps(state) {
     const box = document.getElementById("signalsBox");
     if (!box) return;
 
-    const frames = ["4h","1h","5m","1m"];
+    const frames = ["4h", "1h", "5m", "1m"];
     let html = "";
 
     for (const tf of frames) {
