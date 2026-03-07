@@ -63,9 +63,33 @@ def fetch(tf: str) -> list[dict]:
             continue
 
         out.append({
-    "price": round(float(close.iloc[i]), 6),
-    "ema21": round(float(ema21.iloc[i]), 6),
-    "ema50": round(float(ema50.iloc[i]), 6),
-    "macd": round(float(macd_line.iloc[i]), 6) if pd.notna(macd_line.iloc[i]) else None,
-    "hist": round(float(hist.iloc[i]), 6) if pd.notna(hist.iloc[i]) else None
-})
+            "price": round(float(close.iloc[i]), 6),
+            "ema21": round(float(ema21.iloc[i]), 6),
+            "ema50": round(float(ema50.iloc[i]), 6),
+            "macd": round(float(macd_line.iloc[i]), 6) if pd.notna(macd_line.iloc[i]) else None,
+            "hist": round(float(hist.iloc[i]), 6) if pd.notna(hist.iloc[i]) else None
+        })
+
+    return out[-120:]
+
+def main():
+    data = {
+        "meta": {
+            "asset": "BTC-USD",
+            "updated_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+        },
+        "signals": [],
+        "series": {},
+        "state": {}
+    }
+
+    for tf in TIMEFRAMES:
+        data["series"][tf] = fetch(tf)
+
+    with open(DATA_PATH, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+    print(f"BTC data updated: {DATA_PATH}")
+
+if __name__ == "__main__":
+    main()
