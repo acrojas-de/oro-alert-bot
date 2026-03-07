@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BTC Master Terminal</title>
+
+ <link rel="icon" type="image/png" href="compass.png">   
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+    --bg:#07142b;
+    --panel:#1e2c44;
+    --panel2:#162338;
+    --text:#e2e8f0;
+    --muted:#94a3b8;
+    --border:#23324d;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:Arial, sans-serif;
+}
+
+.wrapper{
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 18px;
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+    padding:16px 18px;
+    background:linear-gradient(180deg, #0b1833 0%, #0a1730 100%);
+    border:1px solid var(--border);
+    border-radius:14px;
+}
+
+.titleBox h1{
+    margin:0;
+    font-size:30px;
+    letter-spacing:.5px;
+}
+
+.subtitle{
+    margin-top:6px;
+    color:var(--muted);
+    font-size:14px;
+}
+
+.infoBar{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.infoChip{
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px 14px;
+    min-width:120px;
+}
+
+.infoLabel{
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:4px;
+}
+
+.infoValue{
+    font-size:15px;
+    font-weight:bold;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    margin-bottom:18px;
+}
+
+.card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px;
+    min-height:360px;
+    display:flex;
+    flex-direction:column;
+}
+
+.cardHead{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+    gap:10px;
+}
+
+.cardHead h3{
+    margin:0;
+    font-size:26px;
+}
+
+.badge{
+    font-size:12px;
+    color:var(--muted);
+    background:var(--panel2);
+    border:1px solid var(--border);
+    padding:6px 10px;
+    border-radius:999px;
+}
+
+.chartWrap{
+    position:relative;
+    flex:1;
+    min-height:280px;
+}
+
+.chartWrap canvas{
+    width:100% !important;
+    height:100% !important;
+}
+
+.bottomZone{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:18px;
+}
+
+.panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px;
+    min-height:180px;
+}
+
+.panel h3{
+    margin:0 0 12px 0;
+    font-size:18px;
+}
+
+.placeholder{
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.6;
+}
+
+@media (max-width: 1100px){
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .bottomZone{
+        grid-template-columns:1fr;
+    }
+
+    .card{
+        min-height:320px;
+    }
+}
+
+@media (max-width: 700px){
+    .titleBox h1{
+        font-size:24px;
+    }
+
+    .cardHead h3{
+        font-size:20px;
+    }
+
+    .wrapper{
+        padding:12px;
+    }
+}
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+
+    <div class="topbar">
+        <div class="titleBox">
+            <h1>BTC MASTER TERMINAL</h1>
+            <div class="subtitle">Suite piloto del activo maestro · multi-timeframe · base para futuras alertas</div>
+        </div>
+
+        <div class="infoBar">
+            <div class="infoChip">
+                <div class="infoLabel">Activo</div>
+                <div class="infoValue">BTC-USD</div>
+            </div>
+            <div class="infoChip">
+                <div class="infoLabel">Última actualización</div>
+                <div class="infoValue" id="updatedUtc">—</div>
+            </div>
+            <div class="infoChip">
+                <div class="infoLabel">Estado</div>
+                <div class="infoValue" id="marketState">Cargando</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <div class="cardHead">
+                <h3>BTC 4H</h3>
+                <div class="badge">Estructura</div>
+            </div>
+            <div class="chartWrap">
+                <canvas id="btc4h"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="cardHead">
+                <h3>BTC 1H</h3>
+                <div class="badge">Contexto</div>
+            </div>
+            <div class="chartWrap">
+                <canvas id="btc1h"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="cardHead">
+                <h3>BTC 5m</h3>
+                <div class="badge">Confirmación</div>
+            </div>
+            <div class="chartWrap">
+                <canvas id="btc5m"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="cardHead">
+                <h3>BTC 1m</h3>
+                <div class="badge">Entrada fina</div>
+            </div>
+            <div class="chartWrap">
+                <canvas id="btc1m"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottomZone">
+        <div class="panel">
+            <h3>Señales activas</h3>
+            <div class="placeholder" id="signalsBox">
+                Aquí irán MACD extremos, compresión, divergencias y futuras alertas.
+            </div>
+        </div>
+
+       <div class="panel">
+    <h3>Liquidez por marco</h3>
+    <div class="placeholder" id="liquidityBox">
+        Cargando niveles de liquidez...
+    </div>
+</div>
+
+        <div class="panel">
+            <h3>Log / estado técnico</h3>
+            <div class="placeholder" id="debugBox">
+                Zona reservada para estado del bot, lecturas rápidas y eventos del sistema.
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const charts = {};
+
+async function loadBTC() {
+    const r = await fetch("btc_data.json?v=" + Date.now());
+    const data = await r.json();
+
+    document.getElementById("updatedUtc").textContent = data.meta?.updated_utc || "—";
+
+    const has4h = (data.series?.["4h"] || []).length > 0;
+    document.getElementById("marketState").textContent = has4h ? "Activo" : "Sin datos";
+
+    drawChart("btc4h", data.series?.["4h"] || [], data.state?.["4h"]?.liquidity || null);
+    drawChart("btc1h", data.series?.["1h"] || [], data.state?.["1h"]?.liquidity || null);
+    drawChart("btc5m", data.series?.["5m"] || [], data.state?.["5m"]?.liquidity || null);
+    drawChart("btc1m", data.series?.["1m"] || [], data.state?.["1m"]?.liquidity || null);
+
+    renderLiquidity(data.state);
+    renderSweeps(data.state);
+    renderCompression(data.state);
+}
+
+function renderCompression(state) {
+    const box = document.getElementById("signalsBox");
+    if (!box) return;
+
+    const frameMeta = {
+        "4h": { label: "BTC 4H", role: "Estructura" },
+        "1h": { label: "BTC 1H", role: "Contexto" },
+        "5m": { label: "BTC 5m", role: "Confirmación" },
+        "1m": { label: "BTC 1m", role: "Entrada fina" }
+    };
+
+    let html = box.innerHTML;
+    let extra = "";
+
+    for (const tf of ["4h", "1h", "5m", "1m"]) {
+        const comp = state?.[tf]?.compression;
+        if (!comp) continue;
+
+        const meta = frameMeta[tf];
+
+        if (comp.compression) {
+            extra += `
+            <div style="margin-bottom:8px; padding:8px 10px; border-radius:10px; background:rgba(250,204,21,0.10); border:1px solid rgba(250,204,21,0.20);">
+                <div style="color:#fde68a; font-weight:bold;">⚡ ${meta.label} · ${meta.role}</div>
+                <div style="color:#e2e8f0;">Smart Money Compression</div>
+                <div style="color:#94a3b8; font-size:12px;">Mercado comprimido. Posible expansión o movimiento fuerte cerca.</div>
+            </div>
+            `;
+        }
+    }
+
+    if (extra) {
+        if (html === "Radar activo. Sin eventos institucionales detectados.") {
+            html = "";
+        }
+        box.innerHTML = html + extra;
+    }
+}
+
+function renderSweeps(state) {
+    const box = document.getElementById("signalsBox");
+    if (!box) return;
+
+    const frameMeta = {
+        "4h": { label: "BTC 4H", role: "Estructura" },
+        "1h": { label: "BTC 1H", role: "Contexto" },
+        "5m": { label: "BTC 5m", role: "Confirmación" },
+        "1m": { label: "BTC 1m", role: "Entrada fina" }
+    };
+
+    let html = "";
+
+    for (const tf of ["4h", "1h", "5m", "1m"]) {
+        const sweep = state?.[tf]?.sweep;
+        if (!sweep) continue;
+
+        const meta = frameMeta[tf];
+
+        if (sweep.sweep_high) {
+            html += `
+            <div style="margin-bottom:8px; padding:8px 10px; border-radius:10px; background:rgba(248,113,113,0.10); border:1px solid rgba(248,113,113,0.20);">
+                <div style="color:#fca5a5; font-weight:bold;">⚠️ ${meta.label} · ${meta.role}</div>
+                <div style="color:#e2e8f0;">Sweep HIGH detectado</div>
+                <div style="color:#94a3b8; font-size:12px;">Barrida de liquidez superior. Posible giro o trampa alcista.</div>
+            </div>
+            `;
+        }
+
+        if (sweep.sweep_low) {
+            html += `
+            <div style="margin-bottom:8px; padding:8px 10px; border-radius:10px; background:rgba(74,222,128,0.10); border:1px solid rgba(74,222,128,0.20);">
+                <div style="color:#86efac; font-weight:bold;">⚠️ ${meta.label} · ${meta.role}</div>
+                <div style="color:#e2e8f0;">Sweep LOW detectado</div>
+                <div style="color:#94a3b8; font-size:12px;">Barrida de liquidez inferior. Posible rebote o trampa bajista.</div>
+            </div>
+            `;
+        }
+    }
+
+    box.innerHTML = html || "Radar activo. Sin eventos institucionales detectados.";
+}
+
+function renderLiquidity(state) {
+    const box = document.getElementById("liquidityBox");
+    if (!box) return;
+
+    const frames = ["4h", "1h", "5m", "1m"];
+    let html = "";
+
+    for (const tf of frames) {
+        const liq = state?.[tf]?.liquidity;
+        if (!liq) continue;
+
+        html += `
+            <div style="margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.08);">
+                <div style="font-weight:bold; margin-bottom:6px;">BTC ${tf.toUpperCase()}</div>
+                <div>🔼 Liquidez superior: ${liq.range_high_20}</div>
+                <div>🔽 Liquidez inferior: ${liq.range_low_20}</div>
+                <div>⬆️ Swing high: ${liq.swing_high}</div>
+                <div>⬇️ Swing low: ${liq.swing_low}</div>
+            </div>
+        `;
+    }
+
+    box.innerHTML = html || "Sin datos de liquidez.";
+}
+
+function drawChart(canvasId, series, liquidity) {
+    if (!Array.isArray(series) || series.length === 0) {
+        console.warn("Sin datos para", canvasId);
+        return;
+    }
+
+    if (charts[canvasId]) {
+        charts[canvasId].destroy();
+    }
+
+    const prices = series.map(x => x.price);
+    const ema21 = series.map(x => x.ema21);
+    const ema50 = series.map(x => x.ema50);
+    const macd = series.map(x => x.macd);
+    const hist = series.map(x => x.hist);
+
+    const highLine = liquidity ? new Array(prices.length).fill(liquidity.range_high_20) : [];
+    const lowLine = liquidity ? new Array(prices.length).fill(liquidity.range_low_20) : [];
+
+    charts[canvasId] = new Chart(document.getElementById(canvasId), {
+        data: {
+            labels: prices.map((_, i) => i),
+            datasets: [
+                {
+                    type: "line",
+                    label: "Price",
+                    data: prices,
+                    borderColor: "#38bdf8",
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    yAxisID: "price"
+                },
+                {
+                    type: "line",
+                    label: "EMA21",
+                    data: ema21,
+                    borderColor: "#22c55e",
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                    yAxisID: "price"
+                },
+                {
+                    type: "line",
+                    label: "EMA50",
+                    data: ema50,
+                    borderColor: "#f97316",
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                    yAxisID: "price"
+                },
+                {
+                    type: "line",
+                    label: "Liquidity High",
+                    data: highLine,
+                    borderColor: "rgba(96, 165, 250, 0.70)",
+                    borderWidth: 1.5,
+                    borderDash: [6, 6],
+                    pointRadius: 0,
+                    yAxisID: "price"
+                },
+                {
+                    type: "line",
+                    label: "Liquidity Low",
+                    data: lowLine,
+                    borderColor: "rgba(248, 113, 113, 0.70)",
+                    borderWidth: 1.5,
+                    borderDash: [6, 6],
+                    pointRadius: 0,
+                    yAxisID: "price"
+                },
+                {
+                    type: "bar",
+                    label: "MACD Hist",
+                    data: hist,
+                    backgroundColor: hist.map(v => v >= 0 ? "#22c55e88" : "#ef444488"),
+                    yAxisID: "macd"
+                },
+                {
+                    type: "line",
+                    label: "MACD",
+                    data: macd,
+                    borderColor: "#eab308",
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                    yAxisID: "macd"
+                },
+                {
+                    type: "line",
+                    label: "Upper band",
+                    data: new Array(prices.length).fill(800),
+                    borderColor: "#334155",
+                    borderWidth: 1,
+                    pointRadius: 0,
+                    yAxisID: "macd"
+                },
+                {
+                    type: "line",
+                    label: "Lower band",
+                    data: new Array(prices.length).fill(-800),
+                    borderColor: "#334155",
+                    borderWidth: 1,
+                    pointRadius: 0,
+                    yAxisID: "macd"
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                price: {
+                    type: "linear",
+                    position: "left",
+                    grid: {
+                        color: "rgba(255,255,255,0.05)"
+                    },
+                    ticks: {
+                        color: "#9ca3af"
+                    }
+                },
+                macd: {
+                    type: "linear",
+                    position: "right",
+                    grid: {
+                        drawOnChartArea: false
+                    },
+                    ticks: {
+                        color: "#9ca3af"
+                    }
+                }
+            }
+        }
+    });
+}
+
+loadBTC();
+setInterval(loadBTC, 60000);
+</script>
+
+</body>
+</html>
