@@ -293,10 +293,10 @@ async function loadBTC() {
     const has4h = (data.series?.["4h"] || []).length > 0;
     document.getElementById("marketState").textContent = has4h ? "Activo" : "Sin datos";
 
-    drawChart("btc4h", data.series?.["4h"] || []);
-    drawChart("btc1h", data.series?.["1h"] || []);
-    drawChart("btc5m", data.series?.["5m"] || []);
-    drawChart("btc1m", data.series?.["1m"] || []);
+    drawChart("btc4h", data.series?.["4h"] || [], data.state?.["4h"]?.liquidity || null);
+    drawChart("btc1h", data.series?.["1h"] || [], data.state?.["1h"]?.liquidity || null);
+    drawChart("btc5m", data.series?.["5m"] || [], data.state?.["5m"]?.liquidity || null);
+    drawChart("btc1m", data.series?.["1m"] || [], data.state?.["1m"]?.liquidity || null);
     renderLiquidity(data.state);
 }
     
@@ -327,7 +327,7 @@ function renderLiquidity(state) {
 }
 
     
-function drawChart(canvasId, series) {
+function drawChart(canvasId, series, liquidity) { {
 
     if (!Array.isArray(series) || series.length === 0) {
         console.warn("Sin datos para", canvasId);
@@ -344,6 +344,9 @@ function drawChart(canvasId, series) {
 
     const macd = series.map(x => x.macd);
     const hist = series.map(x => x.hist);
+
+    const highLine = liquidity ? new Array(prices.length).fill(liquidity.range_high_20) : [];
+    const lowLine = liquidity ? new Array(prices.length).fill(liquidity.range_low_20) : [];
 
     charts[canvasId] = new Chart(document.getElementById(canvasId), {
     data: {
@@ -376,6 +379,28 @@ function drawChart(canvasId, series) {
                 pointRadius: 0,
                 yAxisID: "price"
             },
+
+            {
+    type: "line",
+    label: "Liquidity High",
+    data: highLine,
+    borderColor: "rgba(96, 165, 250, 0.70)",
+    borderWidth: 1.5,
+    borderDash: [6, 6],
+    pointRadius: 0,
+    yAxisID: "price"
+},
+{
+    type: "line",
+    label: "Liquidity Low",
+    data: lowLine,
+    borderColor: "rgba(248, 113, 113, 0.70)",
+    borderWidth: 1.5,
+    borderDash: [6, 6],
+    pointRadius: 0,
+    yAxisID: "price"
+},
+            
             {
                 type: "bar",
                 label: "MACD Hist",
