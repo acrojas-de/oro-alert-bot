@@ -17,10 +17,10 @@ TIMEFRAMES = {
     "1m": ("1d", "1m"),
 }
 
-def ema(series, length):
+def ema(series: pd.Series, length: int) -> pd.Series:
     return series.ewm(span=length, adjust=False).mean()
 
-def macd(series):
+def macd(series: pd.Series):
     ema12 = ema(series, 12)
     ema26 = ema(series, 26)
     macd_line = ema12 - ema26
@@ -28,7 +28,7 @@ def macd(series):
     hist = macd_line - signal
     return macd_line, signal, hist
 
-def fetch(tf):
+def fetch(tf: str) -> list[dict]:
     period, interval = TIMEFRAMES[tf]
 
     df = yf.download(
@@ -41,7 +41,7 @@ def fetch(tf):
     )
 
     if df is None or df.empty:
-        raise RuntimeError(f"Sin datos para {BTC} {tf}")
+        raise RuntimeError(f"Sin datos para {BTC} en {tf}")
 
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
@@ -49,7 +49,7 @@ def fetch(tf):
     df = df.rename(columns=str.lower).dropna()
 
     if "close" not in df.columns:
-        raise RuntimeError(f"No existe columna close para {BTC} {tf}")
+        raise RuntimeError(f"No existe columna close para {BTC} en {tf}")
 
     close = df["close"].dropna()
 
@@ -66,30 +66,4 @@ def fetch(tf):
             "price": round(float(close.iloc[i]), 6),
             "ema21": round(float(ema21.iloc[i]), 6),
             "ema50": round(float(ema50.iloc[i]), 6),
-            "macd": round(float(macd_line.iloc[i]), 6) if pd.notna(macd_line.iloc[i]) else None,
-            "hist": round(float(hist.iloc[i]), 6) if pd.notna(hist.iloc[i]) else None,
-        })
-
-    return out[-120:]
-
-def main():
-    data = {
-        "meta": {
-            "asset": "BTC-USD",
-            "updated_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-        },
-        "signals": [],
-        "series": {},
-        "state": {}
-    }
-
-    for tf in TIMEFRAMES:
-        data["series"][tf] = fetch(tf)
-
-    with open(DATA_PATH, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-    print(f"BTC data updated: {DATA_PATH}")
-
-if __name__ == "__main__":
-    main()
+            "macd": round(float(macd_line.iloc[i]), 6
