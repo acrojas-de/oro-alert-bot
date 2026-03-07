@@ -98,10 +98,39 @@ def detect_liquidity_sweep(close: pd.Series, liq: dict) -> dict:
 
 
 # =========================================================
+# ZONA 2C · DETECTOR DE COMPRESIÓN (ACUMULACIÓN)
+# Busca mercado dormido + MACD comprimido
+# =========================================================
+def detect_compression(close: pd.Series, hist: pd.Series) -> dict:
+    s_close = close.dropna()
+    s_hist = hist.dropna()
+
+    if len(s_close) < 20 or len(s_hist) < 10:
+        return {
+            "compression": False,
+            "volatility": 0.0,
+            "macd_compression": 0.0
+        }
+
+    volatility = s_close.pct_change().rolling(10).std().iloc[-1]
+    hist_abs = s_hist.abs().rolling(10).mean().iloc[-1]
+
+    volatility = 0.0 if pd.isna(volatility) else float(volatility)
+    hist_abs = 0.0 if pd.isna(hist_abs) else float(hist_abs)
+
+    compression = bool(volatility < 0.002 and hist_abs < 50)
+
+    return {
+        "compression": compression,
+        "volatility": volatility,
+        "macd_compression": hist_abs
+    }
+
+
+# =========================================================
 # ZONA 3 · FETCH POR TIMEFRAME
 # Aquí se descarga el activo, se limpian datos,
-# se calculan EMA, MACD y liquidez, y se devuelve
-# todo listo para el JSON
+# se calculan EMA, MACD, liquidez, barridas y compresión
 # =========================================================
 def fetch(tf: str) -> dict:
     period, interval = TIMEFRAMES[tf]
@@ -133,10 +162,11 @@ def fetch(tf: str) -> dict:
     macd_line, signal, hist = macd(close)
 
     # -----------------------------
-    # SUBZONA 3A · LIQUIDEZ DEL TF
+    # SUBZONA 3A · ESTADO DEL TF
     # -----------------------------
     liq = liquidity_levels(close)
     sweep = detect_liquidity_sweep(close, liq)
+    compression = detect_compression(close, hist)
 
     # -----------------------------
     # SUBZONA 3B · SERIE DEL TF
@@ -157,7 +187,8 @@ def fetch(tf: str) -> dict:
     return {
         "series": out[-120:],
         "liquidity": liq,
-        "sweep": sweep
+        "sweep": sweep,
+        "compression": compression
     }
 
 
@@ -182,10 +213,6 @@ def main():
 
     # -----------------------------------------------------
     # SUBZONA 4A · RECORRER TODOS LOS TIMEFRAMES
-    # Aquí guardamos:
-    # - data["series"][tf]
-    # - data["state"][tf]["liquidity"]
-    # - data["state"][tf]["sweep"]
     # -----------------------------------------------------
     for tf in TIMEFRAMES:
         tf_data = fetch(tf)
@@ -194,7 +221,8 @@ def main():
 
         data["state"][tf] = {
             "liquidity": tf_data["liquidity"],
-            "sweep": tf_data["sweep"]
+            "sweep": tf_data["sweep"],
+            "compression": tf_data["compression"]
         }
 
     # -----------------------------------------------------
