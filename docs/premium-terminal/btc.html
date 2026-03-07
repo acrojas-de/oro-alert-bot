@@ -1,1 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>BTC Master Terminal</title>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+    background:#0f172a;
+    color:#e2e8f0;
+    font-family:Arial;
+}
+
+.header{
+    padding:20px;
+    font-size:22px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-gap:20px;
+    padding:20px;
+}
+
+.card{
+    background:#1e293b;
+    padding:20px;
+    border-radius:12px;
+}
+
+canvas{
+    width:100%;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+BTC MASTER TERMINAL
+</div>
+
+<div class="grid">
+
+<div class="card">
+<h3>BTC 4H</h3>
+<canvas id="btc4h"></canvas>
+</div>
+
+<div class="card">
+<h3>BTC 1H</h3>
+<canvas id="btc1h"></canvas>
+</div>
+
+<div class="card">
+<h3>BTC 5m</h3>
+<canvas id="btc5m"></canvas>
+</div>
+
+<div class="card">
+<h3>BTC 1m</h3>
+<canvas id="btc1m"></canvas>
+</div>
+
+</div>
+
+</body>
+</html>
