@@ -47,26 +47,31 @@ def macd(series: pd.Series):
 # - range_high_20 / range_low_20
 # Estas son las primeras referencias del "hotel"
 # =========================================================
-def liquidity_levels(close: pd.Series) -> dict:
+# =========================================================
+# ZONA 2B · BARRIDAS DE LIQUIDEZ
+# Detecta si el precio rompe una zona y vuelve dentro
+# =========================================================
+def detect_liquidity_sweep(close: pd.Series, liq: dict) -> dict:
     s = close.dropna()
 
-    if len(s) < 20:
-        last_price = float(s.iloc[-1]) if len(s) else 0.0
+    if len(s) < 2:
         return {
-            "swing_high": round(last_price, 6),
-            "swing_low": round(last_price, 6),
-            "range_high_20": round(last_price, 6),
-            "range_low_20": round(last_price, 6),
+            "sweep_high": False,
+            "sweep_low": False
         }
 
-    recent_20 = s.tail(20)
-    recent_10 = s.tail(10)
+    prev_close = float(s.iloc[-2])
+    last_close = float(s.iloc[-1])
+
+    range_high = float(liq["range_high_20"])
+    range_low = float(liq["range_low_20"])
+
+    sweep_high = prev_close <= range_high and last_close > range_high
+    sweep_low = prev_close >= range_low and last_close < range_low
 
     return {
-        "swing_high": round(float(recent_10.max()), 6),
-        "swing_low": round(float(recent_10.min()), 6),
-        "range_high_20": round(float(recent_20.max()), 6),
-        "range_low_20": round(float(recent_20.min()), 6),
+        "sweep_high": sweep_high,
+        "sweep_low": sweep_low
     }
 
 
@@ -109,6 +114,7 @@ def fetch(tf: str) -> dict:
     # SUBZONA 3A · LIQUIDEZ DEL TF
     # -----------------------------
     liq = liquidity_levels(close)
+   sweep = detect_liquidity_sweep(close, liq)
 
     # -----------------------------
     # SUBZONA 3B · SERIE DEL TF
@@ -126,10 +132,11 @@ def fetch(tf: str) -> dict:
             "hist": round(float(hist.iloc[i]), 6) if pd.notna(hist.iloc[i]) else None
         })
 
-    return {
-        "series": out[-120:],
-        "liquidity": liq
-    }
+   return {
+    "series": out[-120:],
+    "liquidity": liq,
+    "sweep": sweep
+}
 
 
 # =========================================================
@@ -162,9 +169,10 @@ def main():
 
         data["series"][tf] = tf_data["series"]
 
-        data["state"][tf] = {
-            "liquidity": tf_data["liquidity"]
-        }
+       data["state"][tf] = {
+    "liquidity": tf_data["liquidity"],
+    "sweep": tf_data["sweep"]
+}
 
     # -----------------------------------------------------
     # SUBZONA 4B · GUARDAR JSON EN DISCO
