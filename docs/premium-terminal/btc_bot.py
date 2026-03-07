@@ -63,7 +63,9 @@ def fetch(tf: str) -> list[dict]:
             continue
 
         out.append({
-            "price": round(float(close.iloc[i]), 6),
-            "ema21": round(float(ema21.iloc[i]), 6),
-            "ema50": round(float(ema50.iloc[i]), 6),
-            "macd": round(float(macd_line.iloc[i]), 6
+    "price": round(float(close.iloc[i]), 6),
+    "ema21": round(float(ema21.iloc[i]), 6),
+    "ema50": round(float(ema50.iloc[i]), 6),
+    "macd": round(float(macd_line.iloc[i]), 6) if pd.notna(macd_line.iloc[i]) else None,
+    "hist": round(float(hist.iloc[i]), 6) if pd.notna(hist.iloc[i]) else None
+})
