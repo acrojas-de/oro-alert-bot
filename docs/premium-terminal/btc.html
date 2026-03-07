@@ -375,6 +375,26 @@ function drawChart(canvasId, series) {
             ]
         },
 
+        {
+type: "line",
+label: "Upper band",
+data: new Array(prices.length).fill(800),
+borderColor: "#334155",
+borderWidth: 1,
+pointRadius: 0,
+yAxisID: "macd"
+},
+
+{
+type: "line",
+label: "Lower band",
+data: new Array(prices.length).fill(-800),
+borderColor: "#334155",
+borderWidth: 1,
+pointRadius: 0,
+yAxisID: "macd"
+}
+        
         options: {
 
             responsive: true,
