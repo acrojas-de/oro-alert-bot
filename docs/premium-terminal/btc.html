@@ -198,28 +198,28 @@ body{
         <div class="titleBox">
             <h1>BTC MASTER TERMINAL</h1>
             <div class="subtitle">Suite piloto del activo maestro · multi-timeframe · base para futuras alertas</div>
+        </div>
+
+        <div class="infoBar">
+            <div class="infoChip">
+                <div class="infoLabel">Activo</div>
+                <div class="infoValue">BTC-USD</div>
+            </div>
+            <div class="infoChip">
+                <div class="infoLabel">Última actualización</div>
+                <div class="infoValue" id="updatedUtc">—</div>
+            </div>
+            <div class="infoChip">
+                <div class="infoLabel">Estado</div>
+                <div class="infoValue" id="marketState">Cargando</div>
+            </div>
+            <div class="infoChip">
+                <div class="infoLabel">Market Bias</div>
+                <div class="infoValue" id="biasValue">—</div>
+            </div>
+        </div>
     </div>
 
-    <div class="infoBar">
-        <div class="infoChip">
-            <div class="infoLabel">Activo</div>
-            <div class="infoValue">BTC-USD</div>
-        </div>
-        <div class="infoChip">
-            <div class="infoLabel">Última actualización</div>
-            <div class="infoValue" id="updatedUtc">—</div>
-        </div>
-        <div class="infoChip">
-            <div class="infoLabel">Estado</div>
-            <div class="infoValue" id="marketState">Cargando</div>
-        </div>
-        <div class="infoChip">
-            <div class="infoLabel">Market Bias</div>
-            <div class="infoValue" id="biasValue">—</div>
-        </div>
-    </div>
-</div>
-    
     <div class="grid">
         <div class="card">
             <div class="cardHead">
@@ -318,7 +318,7 @@ async function loadBTC() {
         renderSignals(data.state || {});
         renderBias(data.bias || null);
         renderDebug(data);
-        
+
     } catch (err) {
         console.error("Error loading BTC data:", err);
         document.getElementById("marketState").textContent = "Error";
@@ -338,6 +338,7 @@ function renderSignals(state) {
     html += buildCompressionSignals(state);
     html += buildMagnetSignals(state);
     html += buildVacuumSignals(state);
+    html += buildTrapSignals(state);
 
     box.innerHTML = html || "Radar activo. Sin eventos institucionales detectados.";
 }
@@ -439,43 +440,71 @@ function buildMagnetSignals(state) {
     return html;
 }
 
-function buildVacuumSignals(state){
+function buildVacuumSignals(state) {
+    let html = "";
 
-let html="";
+    for (const tf of ["4h", "1h", "5m", "1m"]) {
+        const vacuum = state?.[tf]?.vacuum;
+        if (!vacuum || !vacuum.vacuum) continue;
 
-for(const tf of ["4h","1h","5m","1m"]){
+        const meta = FRAME_META[tf];
 
-const vacuum=state?.[tf]?.vacuum;
+        if (vacuum.direction === "down") {
+            html += `
+            <div style="margin-bottom:8px;padding:8px 10px;border-radius:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.25);">
+                <div style="color:#fca5a5;font-weight:bold;">🚀 ${meta.label} · ${meta.role}</div>
+                <div style="color:#e2e8f0;">Liquidity Vacuum DOWN → ${vacuum.target}</div>
+                <div style="color:#94a3b8;font-size:12px;">Zona sin liquidez. Movimiento rápido probable.</div>
+            </div>
+            `;
+        }
 
-if(!vacuum || !vacuum.vacuum) continue;
+        if (vacuum.direction === "up") {
+            html += `
+            <div style="margin-bottom:8px;padding:8px 10px;border-radius:10px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.25);">
+                <div style="color:#93c5fd;font-weight:bold;">🚀 ${meta.label} · ${meta.role}</div>
+                <div style="color:#e2e8f0;">Liquidity Vacuum UP → ${vacuum.target}</div>
+                <div style="color:#94a3b8;font-size:12px;">Zona sin liquidez. Movimiento rápido probable.</div>
+            </div>
+            `;
+        }
+    }
 
-const meta=FRAME_META[tf];
-
-if(vacuum.direction==="down"){
-
-html+=`
-<div style="margin-bottom:8px;padding:8px 10px;border-radius:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.25);">
-<div style="color:#fca5a5;font-weight:bold;">🚀 ${meta.label} · ${meta.role}</div>
-<div style="color:#e2e8f0;">Liquidity Vacuum DOWN → ${vacuum.target}</div>
-<div style="color:#94a3b8;font-size:12px;">Zona sin liquidez. Movimiento rápido probable.</div>
-</div>
-`;
+    return html;
 }
 
-if(vacuum.direction==="up"){
+function buildTrapSignals(state) {
+    let html = "";
 
-html+=`
-<div style="margin-bottom:8px;padding:8px 10px;border-radius:10px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.25);">
-<div style="color:#93c5fd;font-weight:bold;">🚀 ${meta.label} · ${meta.role}</div>
-<div style="color:#e2e8f0;">Liquidity Vacuum UP → ${vacuum.target}</div>
-<div style="color:#94a3b8;font-size:12px;">Zona sin liquidez. Movimiento rápido probable.</div>
-</div>
-`;
-}
+    for (const tf of ["4h", "1h", "5m", "1m"]) {
+        const trap = state?.[tf]?.trap;
+        if (!trap || !trap.trap) continue;
 
-}
+        const meta = FRAME_META[tf];
+        const conf = trap.confidence === "high" ? "Alta" : "Media";
 
-return html;
+        if (trap.type === "bull_trap") {
+            html += `
+            <div style="margin-bottom:8px;padding:8px 10px;border-radius:10px;background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.28);">
+                <div style="color:#fca5a5;font-weight:bold;">🪤 ${meta.label} · ${meta.role}</div>
+                <div style="color:#e2e8f0;">Bull Trap detectada → probable giro bajista</div>
+                <div style="color:#94a3b8;font-size:12px;">Barrida arriba + magnet DOWN${trap.compression_confirmed ? " + compresión" : ""}. Confianza ${conf}.</div>
+            </div>
+            `;
+        }
+
+        if (trap.type === "bear_trap") {
+            html += `
+            <div style="margin-bottom:8px;padding:8px 10px;border-radius:10px;background:rgba(59,130,246,0.18);border:1px solid rgba(59,130,246,0.28);">
+                <div style="color:#93c5fd;font-weight:bold;">🪤 ${meta.label} · ${meta.role}</div>
+                <div style="color:#e2e8f0;">Bear Trap detectada → probable giro alcista</div>
+                <div style="color:#94a3b8;font-size:12px;">Barrida abajo + magnet UP${trap.compression_confirmed ? " + compresión" : ""}. Confianza ${conf}.</div>
+            </div>
+            `;
+        }
+    }
+
+    return html;
 }
 
 function renderBias(bias) {
@@ -503,7 +532,6 @@ function renderBias(bias) {
 
     el.textContent = text;
 }
-    
 
 function renderLiquidity(state) {
     const box = document.getElementById("liquidityBox");
@@ -563,6 +591,10 @@ function drawChart(canvasId, series, liquidity) {
 
     const highLine = liquidity ? new Array(prices.length).fill(liquidity.range_high_20) : [];
     const lowLine = liquidity ? new Array(prices.length).fill(liquidity.range_low_20) : [];
+
+    const minPrice = Math.min(...prices, ...(highLine.length ? highLine : prices), ...(lowLine.length ? lowLine : prices));
+    const maxPrice = Math.max(...prices, ...(highLine.length ? highLine : prices), ...(lowLine.length ? lowLine : prices));
+    const pad = (maxPrice - minPrice) * 0.08 || 100;
 
     charts[canvasId] = new Chart(document.getElementById(canvasId), {
         data: {
@@ -661,6 +693,8 @@ function drawChart(canvasId, series, liquidity) {
                 price: {
                     type: "linear",
                     position: "left",
+                    min: minPrice - pad,
+                    max: maxPrice + pad,
                     grid: {
                         color: "rgba(255,255,255,0.05)"
                     },
