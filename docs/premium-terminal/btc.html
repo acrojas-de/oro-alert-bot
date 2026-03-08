@@ -189,36 +189,6 @@ body{
     }
 }
 
-#targetBox{
-position:fixed;
-top:90px;
-right:30px;
-background:#111;
-padding:12px 18px;
-border-radius:10px;
-border:1px solid #333;
-text-align:center;
-z-index:1000;
-}
-
-#targetTitle{
-font-size:12px;
-opacity:0.7;
-}
-
-#targetValue{
-font-size:28px;
-font-weight:bold;
-}
-
-#targetLed{
-width:10px;
-height:10px;
-border-radius:50%;
-background:#444;
-margin:6px auto 0 auto;
-}
-
 .topbar{
     position:relative;
 }
@@ -233,6 +203,102 @@ margin:6px auto 0 auto;
     letter-spacing:1px;
     color:var(--text);
     pointer-events:none;
+}
+
+#tradeHud{
+    display:flex;
+    gap:18px;
+    align-items:stretch;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+}
+
+.hudBox{
+    background:linear-gradient(180deg, #0b1833 0%, #0a1730 100%);
+    border:1px solid var(--border);
+    border-radius:14px;
+    min-height:74px;
+    padding:12px 18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+#priceHud{
+    min-width:220px;
+    justify-content:flex-start;
+    gap:14px;
+}
+
+#diffHud{
+    min-width:150px;
+    flex-direction:column;
+}
+
+#targetHud{
+    min-width:190px;
+    flex-direction:column;
+    transition:background .25s ease, border-color .25s ease;
+}
+
+.hudMiniLabel{
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:4px;
+}
+
+#priceText,
+#diffText,
+#targetHudText{
+    font-size:30px;
+    font-weight:bold;
+    line-height:1;
+}
+
+#trafficBox{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.trafficRow{
+    height:12px;
+    display:flex;
+    align-items:center;
+}
+
+.dot{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    opacity:.22;
+    box-shadow:none;
+    transition:opacity .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.dot.green{ background:#22c55e; }
+.dot.amber{ background:#f59e0b; }
+.dot.red{ background:#ef4444; }
+
+.dot.active{
+    opacity:1;
+    box-shadow:0 0 10px currentColor;
+    transform:scale(1.08);
+}
+
+.target-bull{
+    background:linear-gradient(180deg, rgba(34,197,94,0.22) 0%, rgba(21,128,61,0.20) 100%);
+    border-color:rgba(34,197,94,0.45);
+}
+
+.target-bear{
+    background:linear-gradient(180deg, rgba(239,68,68,0.22) 0%, rgba(153,27,27,0.20) 100%);
+    border-color:rgba(239,68,68,0.45);
+}
+
+.target-neutral{
+    background:linear-gradient(180deg, rgba(245,158,11,0.18) 0%, rgba(180,83,9,0.18) 100%);
+    border-color:rgba(245,158,11,0.42);
 }
     
 </style>
@@ -269,6 +335,27 @@ margin:6px auto 0 auto;
     
     </div>
 
+    <div id="tradeHud">
+        <div class="hudBox" id="priceHud">
+            <div id="trafficBox">
+                <div class="trafficRow"><span class="dot green" id="dotGreen"></span></div>
+                <div class="trafficRow"><span class="dot amber" id="dotAmber"></span></div>
+                <div class="trafficRow"><span class="dot red" id="dotRed"></span></div>
+            </div>
+            <div id="priceText">$---</div>
+        </div>
+
+        <div class="hudBox" id="diffHud">
+            <div class="hudMiniLabel">DIST</div>
+            <div id="diffText">0.00$</div>
+        </div>
+
+        <div class="hudBox target-neutral" id="targetHud">
+            <div class="hudMiniLabel">TARGET</div>
+            <div id="targetHudText">---</div>
+        </div>
+    </div>
+    
     <div class="grid">
         <div class="card">
             <div class="cardHead">
@@ -344,12 +431,12 @@ function updateClock() {
     if (!el) return;
 
     const now = new Date();
-    const hh = String(now.getHours()).padStart(2,"0");
-    const mm = String(now.getMinutes()).padStart(2,"0");
-    const ss = String(now.getSeconds()).padStart(2,"0");
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    const ss = String(now.getSeconds()).padStart(2, "0");
 
     el.textContent = `${hh}:${mm}:${ss}`;
-}    
+}
 
 const FRAME_META = {
     "4h": { label: "BTC 4H", role: "Estructura" },
@@ -378,7 +465,7 @@ async function loadBTC() {
         renderLiquidity(data.state || {});
         renderSignals(data.state || {});
         renderBias(data.bias || null);
-        updateTargetBox(data.bias || null);
+        updateTradeHud(data);
         renderDebug(data);
 
     } catch (err) {
@@ -387,6 +474,79 @@ async function loadBTC() {
         document.getElementById("signalsBox").innerHTML = "No se pudieron cargar las señales.";
         document.getElementById("liquidityBox").innerHTML = "No se pudieron cargar los niveles de liquidez.";
         document.getElementById("debugBox").innerHTML = "Error de carga: " + err.message;
+    }
+}
+
+function updateTradeHud(data) {
+    const priceEl = document.getElementById("priceText");
+    const diffEl = document.getElementById("diffText");
+    const targetEl = document.getElementById("targetHudText");
+    const targetBox = document.getElementById("targetHud");
+
+    const dotGreen = document.getElementById("dotGreen");
+    const dotAmber = document.getElementById("dotAmber");
+    const dotRed = document.getElementById("dotRed");
+
+    if (!priceEl || !diffEl || !targetEl || !targetBox) return;
+
+    const series1m = data?.series?.["1m"] || [];
+    const lastPoint = series1m.length ? series1m[series1m.length - 1] : null;
+
+    const price = lastPoint?.price ?? null;
+    const ema21 = lastPoint?.ema21 ?? null;
+    const ema50 = lastPoint?.ema50 ?? null;
+
+    const bias = data?.bias || null;
+    const target = bias?.target ?? null;
+
+    priceEl.textContent = price !== null
+        ? `$${Number(price).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+        : "$---";
+
+    targetEl.textContent = target !== null
+        ? Number(target).toLocaleString(undefined, { maximumFractionDigits: 2 })
+        : "---";
+
+    if (price !== null && target !== null) {
+        const diff = Math.abs(price - target);
+        diffEl.textContent = `${diff.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })}$`;
+    } else {
+        diffEl.textContent = "0.00$";
+    }
+
+    dotGreen.classList.remove("active");
+    dotAmber.classList.remove("active");
+    dotRed.classList.remove("active");
+
+    let state = "neutral";
+
+    if (price !== null && ema21 !== null && ema50 !== null) {
+        if (price > ema21 && ema21 >= ema50) {
+            state = "bull";
+        } else if (price < ema21 && ema21 <= ema50) {
+            state = "bear";
+        }
+    }
+
+    if (state === "bull") {
+        dotGreen.classList.add("active");
+    } else if (state === "bear") {
+        dotRed.classList.add("active");
+    } else {
+        dotAmber.classList.add("active");
+    }
+
+    targetBox.classList.remove("target-bull", "target-bear", "target-neutral");
+
+    if (bias?.bias === "bullish") {
+        targetBox.classList.add("target-bull");
+    } else if (bias?.bias === "bearish") {
+        targetBox.classList.add("target-bear");
+    } else {
+        targetBox.classList.add("target-neutral");
     }
 }
 
@@ -641,7 +801,7 @@ function makeZoneSeries(length, fromValue, toValue) {
         to: new Array(length).fill(toValue)
     };
 }
-    
+
 function drawChart(canvasId, series, liquidity) {
     if (!Array.isArray(series) || series.length === 0) {
         console.warn("Sin datos para", canvasId);
@@ -880,42 +1040,13 @@ function drawChart(canvasId, series, liquidity) {
     });
 }
 
-function updateTargetBox(bias) {
-    const valueEl = document.getElementById("targetValue");
-    const ledEl = document.getElementById("targetLed");
-
-    if (!valueEl || !ledEl) return;
-
-    if (!bias || bias.target === null || bias.target === undefined) {
-        valueEl.textContent = "---";
-        ledEl.style.background = "#444";
-        return;
-    }
-
-    valueEl.textContent = Number(bias.target).toLocaleString();
-
-    if (bias.bias === "bullish") {
-        ledEl.style.background = "#22c55e";
-    } else if (bias.bias === "bearish") {
-        ledEl.style.background = "#ef4444";
-    } else {
-        ledEl.style.background = "#94a3b8";
-    }
-}
-    
 loadBTC();
 setInterval(loadBTC, 60000);
 
- updateClock();
-setInterval(updateClock,1000);   
+updateClock();
+setInterval(updateClock, 1000);
     
 </script>
-
-<div id="targetBox">
-    <div id="targetTitle">🎯 TARGET</div>
-    <div id="targetValue">---</div>
-    <div id="targetLed"></div>
-</div>
 
 </body>
 </html>
