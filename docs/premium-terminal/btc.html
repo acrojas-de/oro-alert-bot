@@ -198,24 +198,28 @@ body{
         <div class="titleBox">
             <h1>BTC MASTER TERMINAL</h1>
             <div class="subtitle">Suite piloto del activo maestro · multi-timeframe · base para futuras alertas</div>
-        </div>
-
-        <div class="infoBar">
-            <div class="infoChip">
-                <div class="infoLabel">Activo</div>
-                <div class="infoValue">BTC-USD</div>
-            </div>
-            <div class="infoChip">
-                <div class="infoLabel">Última actualización</div>
-                <div class="infoValue" id="updatedUtc">—</div>
-            </div>
-            <div class="infoChip">
-                <div class="infoLabel">Estado</div>
-                <div class="infoValue" id="marketState">Cargando</div>
-            </div>
-        </div>
     </div>
 
+    <div class="infoBar">
+        <div class="infoChip">
+            <div class="infoLabel">Activo</div>
+            <div class="infoValue">BTC-USD</div>
+        </div>
+        <div class="infoChip">
+            <div class="infoLabel">Última actualización</div>
+            <div class="infoValue" id="updatedUtc">—</div>
+        </div>
+        <div class="infoChip">
+            <div class="infoLabel">Estado</div>
+            <div class="infoValue" id="marketState">Cargando</div>
+        </div>
+        <div class="infoChip">
+            <div class="infoLabel">Market Bias</div>
+            <div class="infoValue" id="biasValue">—</div>
+        </div>
+    </div>
+</div>
+    
     <div class="grid">
         <div class="card">
             <div class="cardHead">
@@ -312,7 +316,9 @@ async function loadBTC() {
 
         renderLiquidity(data.state || {});
         renderSignals(data.state || {});
+        renderBias(data.bias || null);
         renderDebug(data);
+        
     } catch (err) {
         console.error("Error loading BTC data:", err);
         document.getElementById("marketState").textContent = "Error";
@@ -471,6 +477,33 @@ html+=`
 
 return html;
 }
+
+function renderBias(bias) {
+    const el = document.getElementById("biasValue");
+    if (!el) return;
+
+    if (!bias) {
+        el.textContent = "—";
+        return;
+    }
+
+    let text = "";
+
+    if (bias.bias === "bullish") {
+        text = `Bullish ${bias.bullish_pct}%`;
+    } else if (bias.bias === "bearish") {
+        text = `Bearish ${bias.bearish_pct}%`;
+    } else {
+        text = "Neutral";
+    }
+
+    if (bias.target !== null && bias.target !== undefined) {
+        text += ` → ${bias.target}`;
+    }
+
+    el.textContent = text;
+}
+    
 
 function renderLiquidity(state) {
     const box = document.getElementById("liquidityBox");
