@@ -239,7 +239,10 @@ def compute_bias(state: dict) -> dict:
 
     score_bull = 0
     score_bear = 0
-    targets = []
+
+    # targets separados por dirección
+    targets_up = []
+    targets_down = []
 
     for tf, data in state.items():
 
@@ -249,68 +252,84 @@ def compute_bias(state: dict) -> dict:
         sweep = data.get("sweep", {})
         compression = data.get("compression", {})
         vacuum = data.get("vacuum", {})
+        trap = data.get("trap", {})
 
-        print("-----")
-        print("TF:", tf)
-        print("weight:", weight)
-        print("magnet:", magnet)
-        print("sweep:", sweep)
-        print("compression:", compression)
-        print("vacuum:", vacuum)
-
+        # =========================
         # MAGNET
+        # =========================
         if magnet.get("direction") == "up":
             score_bull += 30 * weight
-            targets.append(magnet.get("target"))
+            targets_up.append((magnet.get("target"), weight))
 
         elif magnet.get("direction") == "down":
             score_bear += 30 * weight
-            targets.append(magnet.get("target"))
+            targets_down.append((magnet.get("target"), weight))
 
+        # =========================
         # SWEEP
+        # =========================
         if sweep.get("sweep_high"):
             score_bear += 15 * weight
 
         if sweep.get("sweep_low"):
             score_bull += 15 * weight
 
+        # =========================
         # COMPRESSION
+        # =========================
         if compression.get("compression"):
             score_bull += 5 * weight
             score_bear += 5 * weight
 
+        # =========================
         # VACUUM
+        # =========================
         if vacuum.get("vacuum"):
 
             if vacuum.get("direction") == "up":
                 score_bull += 20 * weight
-                targets.append(vacuum.get("target"))
+                targets_up.append((vacuum.get("target"), weight))
 
             elif vacuum.get("direction") == "down":
                 score_bear += 20 * weight
-                targets.append(vacuum.get("target"))
+                targets_down.append((vacuum.get("target"), weight))
+
+        # =========================
+        # TRAP
+        # =========================
+        if trap.get("trap"):
+            if trap.get("direction") == "up":
+                score_bull += 25 * weight
+            elif trap.get("direction") == "down":
+                score_bear += 25 * weight
 
     total = score_bull + score_bear
 
     if total == 0:
-        bull_pct = 50
-        bear_pct = 50
+        bull_pct = bear_pct = 50
     else:
         bull_pct = round(score_bull / total * 100, 2)
         bear_pct = round(score_bear / total * 100, 2)
 
     bias = "bullish" if bull_pct > bear_pct else "bearish"
 
+    # =========================
+    # TARGET DIRECCIONAL
+    # =========================
     target = None
-    if targets:
-        target = round(sum(targets) / len(targets), 6)
 
-    print("==== BIAS DEBUG ====")
-    print("score_bull:", score_bull)
-    print("score_bear:", score_bear)
-    print("bull_pct:", bull_pct)
-    print("bear_pct:", bear_pct)
-    print("target:", target)
+    def weighted_avg(targets):
+        if not targets:
+            return None
+        total_w = sum(w for _, w in targets if _ is not None)
+        if total_w == 0:
+            return None
+        return round(sum(t * w for t, w in targets if t is not None) / total_w, 6)
+
+    if bias == "bullish":
+        target = weighted_avg(targets_up)
+    else:
+        target = weighted_avg(targets_down)
 
     return {
         "bias": bias,
