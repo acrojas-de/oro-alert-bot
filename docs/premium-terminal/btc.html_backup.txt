@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>BTC Master Terminal</title>
-
- <link rel="icon" type="image/png" href="compass.png">   
+<link rel="icon" type="image/png" href="compass.png">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -32,9 +31,9 @@ body{
 }
 
 .wrapper{
-    max-width: 1600px;
-    margin: 0 auto;
-    padding: 18px;
+    max-width:1600px;
+    margin:0 auto;
+    padding:18px;
 }
 
 .topbar{
@@ -162,7 +161,7 @@ body{
     line-height:1.6;
 }
 
-@media (max-width: 1100px){
+@media (max-width:1100px){
     .grid{
         grid-template-columns:1fr;
     }
@@ -176,7 +175,7 @@ body{
     }
 }
 
-@media (max-width: 700px){
+@media (max-width:700px){
     .titleBox h1{
         font-size:24px;
     }
@@ -263,16 +262,16 @@ body{
         <div class="panel">
             <h3>Señales activas</h3>
             <div class="placeholder" id="signalsBox">
-                Aquí irán MACD extremos, compresión, divergencias y futuras alertas.
+                Radar activo. Esperando lecturas...
             </div>
         </div>
 
-       <div class="panel">
-    <h3>Liquidez por marco</h3>
-    <div class="placeholder" id="liquidityBox">
-        Cargando niveles de liquidez...
-    </div>
-</div>
+        <div class="panel">
+            <h3>Liquidez por marco</h3>
+            <div class="placeholder" id="liquidityBox">
+                Cargando niveles de liquidez...
+            </div>
+        </div>
 
         <div class="panel">
             <h3>Log / estado técnico</h3>
@@ -287,82 +286,64 @@ body{
 <script>
 const charts = {};
 
+const FRAME_META = {
+    "4h": { label: "BTC 4H", role: "Estructura" },
+    "1h": { label: "BTC 1H", role: "Contexto" },
+    "5m": { label: "BTC 5m", role: "Confirmación" },
+    "1m": { label: "BTC 1m", role: "Entrada fina" }
+};
+
 async function loadBTC() {
-    const r = await fetch("btc_data.json?v=" + Date.now());
-    const data = await r.json();
+    try {
+        const r = await fetch("btc_data.json?v=" + Date.now(), { cache: "no-store" });
+        if (!r.ok) throw new Error("HTTP " + r.status);
 
-    document.getElementById("updatedUtc").textContent = data.meta?.updated_utc || "—";
+        const data = await r.json();
 
-    const has4h = (data.series?.["4h"] || []).length > 0;
-    document.getElementById("marketState").textContent = has4h ? "Activo" : "Sin datos";
+        document.getElementById("updatedUtc").textContent = data.meta?.updated_utc || "—";
 
-    drawChart("btc4h", data.series?.["4h"] || [], data.state?.["4h"]?.liquidity || null);
-    drawChart("btc1h", data.series?.["1h"] || [], data.state?.["1h"]?.liquidity || null);
-    drawChart("btc5m", data.series?.["5m"] || [], data.state?.["5m"]?.liquidity || null);
-    drawChart("btc1m", data.series?.["1m"] || [], data.state?.["1m"]?.liquidity || null);
+        const has4h = (data.series?.["4h"] || []).length > 0;
+        document.getElementById("marketState").textContent = has4h ? "Activo" : "Sin datos";
 
-    renderLiquidity(data.state);
-    renderSweeps(data.state);
-    renderCompression(data.state);
-}
+        drawChart("btc4h", data.series?.["4h"] || [], data.state?.["4h"]?.liquidity || null);
+        drawChart("btc1h", data.series?.["1h"] || [], data.state?.["1h"]?.liquidity || null);
+        drawChart("btc5m", data.series?.["5m"] || [], data.state?.["5m"]?.liquidity || null);
+        drawChart("btc1m", data.series?.["1m"] || [], data.state?.["1m"]?.liquidity || null);
 
-function renderCompression(state) {
-    const box = document.getElementById("signalsBox");
-    if (!box) return;
-
-    const frameMeta = {
-        "4h": { label: "BTC 4H", role: "Estructura" },
-        "1h": { label: "BTC 1H", role: "Contexto" },
-        "5m": { label: "BTC 5m", role: "Confirmación" },
-        "1m": { label: "BTC 1m", role: "Entrada fina" }
-    };
-
-    let html = box.innerHTML;
-    let extra = "";
-
-    for (const tf of ["4h", "1h", "5m", "1m"]) {
-        const comp = state?.[tf]?.compression;
-        if (!comp) continue;
-
-        const meta = frameMeta[tf];
-
-        if (comp.compression) {
-            extra += `
-            <div style="margin-bottom:8px; padding:8px 10px; border-radius:10px; background:rgba(250,204,21,0.10); border:1px solid rgba(250,204,21,0.20);">
-                <div style="color:#fde68a; font-weight:bold;">⚡ ${meta.label} · ${meta.role}</div>
-                <div style="color:#e2e8f0;">Smart Money Compression</div>
-                <div style="color:#94a3b8; font-size:12px;">Mercado comprimido. Posible expansión o movimiento fuerte cerca.</div>
-            </div>
-            `;
-        }
-    }
-
-    if (extra) {
-        if (html === "Radar activo. Sin eventos institucionales detectados.") {
-            html = "";
-        }
-        box.innerHTML = html + extra;
+        renderLiquidity(data.state || {});
+        renderSignals(data.state || {});
+        renderDebug(data);
+    } catch (err) {
+        console.error("Error loading BTC data:", err);
+        document.getElementById("marketState").textContent = "Error";
+        document.getElementById("signalsBox").innerHTML = "No se pudieron cargar las señales.";
+        document.getElementById("liquidityBox").innerHTML = "No se pudieron cargar los niveles de liquidez.";
+        document.getElementById("debugBox").innerHTML = "Error de carga: " + err.message;
     }
 }
 
-function renderSweeps(state) {
+function renderSignals(state) {
     const box = document.getElementById("signalsBox");
     if (!box) return;
 
-    const frameMeta = {
-        "4h": { label: "BTC 4H", role: "Estructura" },
-        "1h": { label: "BTC 1H", role: "Contexto" },
-        "5m": { label: "BTC 5m", role: "Confirmación" },
-        "1m": { label: "BTC 1m", role: "Entrada fina" }
-    };
+    let html = "";
 
+    html += buildSweepSignals(state);
+    html += buildCompressionSignals(state);
+    html += buildMagnetSignals(state);
+    html += buildVacuumSignals(state);
+
+    box.innerHTML = html || "Radar activo. Sin eventos institucionales detectados.";
+}
+
+function buildSweepSignals(state) {
     let html = "";
 
     for (const tf of ["4h", "1h", "5m", "1m"]) {
         const sweep = state?.[tf]?.sweep;
         if (!sweep) continue;
 
-        const meta = frameMeta[tf];
+        const meta = FRAME_META[tf];
 
         if (sweep.sweep_high) {
             html += `
@@ -385,7 +366,110 @@ function renderSweeps(state) {
         }
     }
 
-    box.innerHTML = html || "Radar activo. Sin eventos institucionales detectados.";
+    return html;
+}
+
+function buildCompressionSignals(state) {
+    let html = "";
+
+    for (const tf of ["4h", "1h", "5m", "1m"]) {
+        const compression = state?.[tf]?.compression;
+        if (!compression?.compression) continue;
+
+        const meta = FRAME_META[tf];
+
+        html += `
+        <div style="margin-bottom:8px; padding:8px 10px; border-radius:10px; background:rgba(250,204,21,0.10); border:1px solid rgba(250,204,21,0.20);">
+            <div style="color:#fde68a; font-weight:bold;">⚡ ${meta.label} · ${meta.role}</div>
+            <div style="color:#e2e8f0;">Smart Money Compression</div>
+            <div style="color:#94a3b8; font-size:12px;">Mercado comprimido. Posible expansión o movimiento fuerte cerca.</div>
+        </div>
+        `;
+    }
+
+    return html;
+}
+
+function buildMagnetSignals(state) {
+    let html = "";
+
+    for (const tf of ["4h", "1h", "5m", "1m"]) {
+        const magnet = state?.[tf]?.magnet;
+        if (!magnet) continue;
+
+        const meta = FRAME_META[tf];
+
+        if (magnet.direction === "up") {
+            html += `
+            <div style="margin-bottom:8px; padding:8px 10px; border-radius:10px; background:rgba(96,165,250,0.10); border:1px solid rgba(96,165,250,0.20);">
+                <div style="color:#93c5fd; font-weight:bold;">🧲 ${meta.label} · ${meta.role}</div>
+                <div style="color:#e2e8f0;">Liquidity Magnet UP → ${magnet.target}</div>
+                <div style="color:#94a3b8; font-size:12px;">La liquidez superior está más cerca que la inferior.</div>
+            </div>
+            `;
+        }
+
+        if (magnet.direction === "down") {
+            html += `
+            <div style="margin-bottom:8px; padding:8px 10px; border-radius:10px; background:rgba(248,113,113,0.10); border:1px solid rgba(248,113,113,0.20);">
+                <div style="color:#fca5a5; font-weight:bold;">🧲 ${meta.label} · ${meta.role}</div>
+                <div style="color:#e2e8f0;">Liquidity Magnet DOWN → ${magnet.target}</div>
+                <div style="color:#94a3b8; font-size:12px;">La liquidez inferior está más cerca que la superior.</div>
+            </div>
+            `;
+        }
+
+        if (magnet.direction === "neutral") {
+            html += `
+            <div style="margin-bottom:8px; padding:8px 10px; border-radius:10px; background:rgba(148,163,184,0.10); border:1px solid rgba(148,163,184,0.20);">
+                <div style="color:#cbd5e1; font-weight:bold;">🧲 ${meta.label} · ${meta.role}</div>
+                <div style="color:#e2e8f0;">Liquidity Magnet NEUTRAL → ${magnet.target}</div>
+                <div style="color:#94a3b8; font-size:12px;">La distancia a la liquidez superior e inferior es prácticamente igual.</div>
+            </div>
+            `;
+        }
+    }
+
+    return html;
+}
+
+function buildVacuumSignals(state){
+
+let html="";
+
+for(const tf of ["4h","1h","5m","1m"]){
+
+const vacuum=state?.[tf]?.vacuum;
+
+if(!vacuum || !vacuum.vacuum) continue;
+
+const meta=FRAME_META[tf];
+
+if(vacuum.direction==="down"){
+
+html+=`
+<div style="margin-bottom:8px;padding:8px 10px;border-radius:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.25);">
+<div style="color:#fca5a5;font-weight:bold;">🚀 ${meta.label} · ${meta.role}</div>
+<div style="color:#e2e8f0;">Liquidity Vacuum DOWN → ${vacuum.target}</div>
+<div style="color:#94a3b8;font-size:12px;">Zona sin liquidez. Movimiento rápido probable.</div>
+</div>
+`;
+}
+
+if(vacuum.direction==="up"){
+
+html+=`
+<div style="margin-bottom:8px;padding:8px 10px;border-radius:10px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.25);">
+<div style="color:#93c5fd;font-weight:bold;">🚀 ${meta.label} · ${meta.role}</div>
+<div style="color:#e2e8f0;">Liquidity Vacuum UP → ${vacuum.target}</div>
+<div style="color:#94a3b8;font-size:12px;">Zona sin liquidez. Movimiento rápido probable.</div>
+</div>
+`;
+}
+
+}
+
+return html;
 }
 
 function renderLiquidity(state) {
@@ -400,17 +484,32 @@ function renderLiquidity(state) {
         if (!liq) continue;
 
         html += `
-            <div style="margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.08);">
-                <div style="font-weight:bold; margin-bottom:6px;">BTC ${tf.toUpperCase()}</div>
-                <div>🔼 Liquidez superior: ${liq.range_high_20}</div>
-                <div>🔽 Liquidez inferior: ${liq.range_low_20}</div>
-                <div>⬆️ Swing high: ${liq.swing_high}</div>
-                <div>⬇️ Swing low: ${liq.swing_low}</div>
-            </div>
+        <div style="margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.08);">
+            <div style="font-weight:bold; margin-bottom:6px;">BTC ${tf.toUpperCase()}</div>
+            <div>🔼 Liquidez superior: ${liq.range_high_20}</div>
+            <div>🔽 Liquidez inferior: ${liq.range_low_20}</div>
+            <div>⬆️ Swing high: ${liq.swing_high}</div>
+            <div>⬇️ Swing low: ${liq.swing_low}</div>
+        </div>
         `;
     }
 
     box.innerHTML = html || "Sin datos de liquidez.";
+}
+
+function renderDebug(data) {
+    const box = document.getElementById("debugBox");
+    if (!box) return;
+
+    const updated = data?.meta?.updated_utc || "—";
+    const frames = Object.keys(data?.state || {});
+    const stateText = frames.length ? frames.join(", ") : "sin marcos";
+
+    box.innerHTML = `
+        <div>Bot cargado correctamente.</div>
+        <div>Última actualización: ${updated}</div>
+        <div>Marcos detectados: ${stateText}</div>
+    `;
 }
 
 function drawChart(canvasId, series, liquidity) {
@@ -487,7 +586,7 @@ function drawChart(canvasId, series, liquidity) {
                     type: "bar",
                     label: "MACD Hist",
                     data: hist,
-                    backgroundColor: hist.map(v => v >= 0 ? "#22c55e88" : "#ef444488"),
+                    backgroundColor: hist.map(v => (v >= 0 ? "#22c55e88" : "#ef444488")),
                     yAxisID: "macd"
                 },
                 {
