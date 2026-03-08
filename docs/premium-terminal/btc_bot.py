@@ -221,7 +221,42 @@ def detect_liquidity_vacuum(close: pd.Series, liq: dict) -> dict:
         "distance_down": round(dist_low, 6)
     }
 
+# =========================================================
+# ZONA 2G · TRAP DETECTOR
+# Detecta trampas institucionales:
+# - bull trap: sweep arriba + magnet abajo
+# - bear trap: sweep abajo + magnet arriba
+# =========================================================
+def detect_trap(sweep: dict, magnet: dict, compression: dict) -> dict:
+    sweep_high = bool(sweep.get("sweep_high", False))
+    sweep_low = bool(sweep.get("sweep_low", False))
+    magnet_dir = magnet.get("direction", "none")
+    is_compression = bool(compression.get("compression", False))
 
+    bull_trap = sweep_high and magnet_dir == "down"
+    bear_trap = sweep_low and magnet_dir == "up"
+
+    trap_type = "none"
+    direction = "none"
+    confidence = "low"
+
+    if bull_trap:
+        trap_type = "bull_trap"
+        direction = "down"
+        confidence = "high" if is_compression else "medium"
+
+    elif bear_trap:
+        trap_type = "bear_trap"
+        direction = "up"
+        confidence = "high" if is_compression else "medium"
+
+    return {
+        "trap": trap_type != "none",
+        "type": trap_type,
+        "direction": direction,
+        "confidence": confidence,
+        "compression_confirmed": is_compression
+    }
     
 # =========================================================
 # ZONA 2F · BIAS ENGINE
@@ -381,6 +416,7 @@ def fetch(tf: str) -> dict:
     compression = detect_compression(close, hist)
     magnet = detect_liquidity_magnet(close, liq)
     vacuum = detect_liquidity_vacuum(close, liq)
+    trap = detect_trap(sweep, magnet, compression)
 
     # -----------------------------
     # SUBZONA 3B · SERIE DEL TF
@@ -398,13 +434,14 @@ def fetch(tf: str) -> dict:
             "hist": round(float(hist.iloc[i]), 6) if pd.notna(hist.iloc[i]) else None
         })
 
-    return {
+        return {
         "series": out[-120:],
         "liquidity": liq,
         "sweep": sweep,
         "compression": compression,
         "magnet": magnet,
-        "vacuum": vacuum
+        "vacuum": vacuum,
+        "trap": trap
     }
 
 # =========================================================
@@ -439,7 +476,8 @@ def main():
             "sweep": tf_data["sweep"],
             "compression": tf_data["compression"],
             "magnet": tf_data["magnet"],
-            "vacuum": tf_data["vacuum"]
+            "vacuum": tf_data["vacuum"],
+            "trap": tf_data["trap"]
         }
 
     data["bias"] = compute_bias(data["state"])
