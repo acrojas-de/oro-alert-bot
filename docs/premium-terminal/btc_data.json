@@ -1,7 +1,7 @@
 {
   "meta": {
     "asset": "BTC-USD",
-    "updated_utc": "2026-03-08T11:01:25+00:00"
+    "updated_utc": "2026-03-08T11:17:21+00:00"
   },
   "signals": [],
   "series": {
@@ -56,21 +56,21 @@
       },
       "compression": {
         "compression": false,
-        "volatility": 0.00557126308348695,
-        "macd_compression": 484.7615762898564
+        "volatility": 0.004876199252509034,
+        "macd_compression": 486.65815748643763
       },
       "magnet": {
         "direction": "down",
         "target": 67050.351562,
-        "distance_up": 4988.242187,
-        "distance_down": 837.851563
+        "distance_up": 5285.429687,
+        "distance_down": 540.664063
       },
       "vacuum": {
         "vacuum": true,
         "direction": "up",
         "target": 72876.445312,
-        "distance_up": 4988.242187,
-        "distance_down": 837.851563
+        "distance_up": 5285.429687,
+        "distance_down": 540.664063
       },
       "trap": {
         "trap": false,
@@ -82,9 +82,9 @@
     },
     "1h": {
       "liquidity": {
-        "swing_high": 67888.203125,
+        "swing_high": 67893.507812,
         "swing_low": 66647.515625,
-        "range_high_20": 67910.898438,
+        "range_high_20": 67893.507812,
         "range_low_20": 66647.515625
       },
       "sweep": {
@@ -93,21 +93,21 @@
       },
       "compression": {
         "compression": false,
-        "volatility": 0.00404067354698725,
-        "macd_compression": 46.83412572531562
+        "volatility": 0.004394877520802929,
+        "macd_compression": 57.544262085711054
       },
       "magnet": {
         "direction": "up",
-        "target": 67910.898438,
-        "distance_up": 22.695313,
-        "distance_down": 1240.6875
+        "target": 67893.507812,
+        "distance_up": 302.492187,
+        "distance_down": 943.5
       },
       "vacuum": {
-        "vacuum": true,
-        "direction": "down",
-        "target": 66647.515625,
-        "distance_up": 22.695313,
-        "distance_down": 1240.6875
+        "vacuum": false,
+        "direction": "none",
+        "target": 67591.015625,
+        "distance_up": 302.492187,
+        "distance_down": 943.5
       },
       "trap": {
         "trap": false,
@@ -120,9 +120,9 @@
     "5m": {
       "liquidity": {
         "swing_high": 68068.757812,
-        "swing_low": 67864.671875,
+        "swing_low": 67573.554688,
         "range_high_20": 68068.757812,
-        "range_low_20": 67708.78125
+        "range_low_20": 67573.554688
       },
       "sweep": {
         "sweep_high": false,
@@ -130,21 +130,21 @@
       },
       "compression": {
         "compression": true,
-        "volatility": 0.000911059700342838,
-        "macd_compression": 11.089360523645361
+        "volatility": 0.0010503829264977226,
+        "macd_compression": 21.42951165420611
       },
       "magnet": {
         "direction": "down",
-        "target": 67708.78125,
-        "distance_up": 180.554687,
-        "distance_down": 179.421875
+        "target": 67573.554688,
+        "distance_up": 477.742187,
+        "distance_down": 17.460937
       },
       "vacuum": {
         "vacuum": false,
         "direction": "none",
-        "target": 67888.203125,
-        "distance_up": 180.554687,
-        "distance_down": 179.421875
+        "target": 67591.015625,
+        "distance_up": 477.742187,
+        "distance_down": 17.460937
       },
       "trap": {
         "trap": false,
@@ -156,10 +156,10 @@
     },
     "1m": {
       "liquidity": {
-        "swing_high": 67944.429688,
-        "swing_low": 67888.617188,
-        "range_high_20": 68054.742188,
-        "range_low_20": 67888.617188
+        "swing_high": 67795.28125,
+        "swing_low": 67520.46875,
+        "range_high_20": 67944.429688,
+        "range_low_20": 67520.46875
       },
       "sweep": {
         "sweep_high": false,
@@ -167,21 +167,21 @@
       },
       "compression": {
         "compression": true,
-        "volatility": 0.00024259023157026686,
-        "macd_compression": 18.882093195042533
+        "volatility": 0.0008706028613860335,
+        "macd_compression": 27.382722338835514
       },
       "magnet": {
         "direction": "down",
-        "target": 67888.617188,
-        "distance_up": 110.312501,
-        "distance_down": 55.812499
+        "target": 67520.46875,
+        "distance_up": 377.765626,
+        "distance_down": 46.195312
       },
       "vacuum": {
         "vacuum": false,
         "direction": "none",
-        "target": 67944.429688,
-        "distance_up": 110.312501,
-        "distance_down": 55.812499
+        "target": 67566.664062,
+        "distance_up": 377.765626,
+        "distance_down": 46.195312
       },
       "trap": {
         "trap": false,
@@ -194,8 +194,8 @@
   },
   "bias": {
     "bias": "bearish",
-    "bullish_pct": 41.13,
-    "bearish_pct": 58.87,
-    "target": 67092.180889
+    "bullish_pct": 47.22,
+    "bearish_pct": 52.78,
+    "target": 67218.854166
   }
 }
