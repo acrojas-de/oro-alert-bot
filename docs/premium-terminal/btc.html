@@ -602,7 +602,6 @@ function drawChart(canvasId, series, liquidity) {
     const highLine = hasLiquidity ? new Array(prices.length).fill(liquidity.range_high_20) : [];
     const lowLine = hasLiquidity ? new Array(prices.length).fill(liquidity.range_low_20) : [];
 
-    // Tamaño de la franja de liquidez: 0.20% del precio
     const lastPrice = prices[prices.length - 1];
     const zoneSize = lastPrice * 0.002;
 
@@ -618,69 +617,76 @@ function drawChart(canvasId, series, liquidity) {
     if (upperZone) zoneValues.push(...upperZone.from, ...upperZone.to);
     if (lowerZone) zoneValues.push(...lowerZone.from, ...lowerZone.to);
 
-    const minPrice = Math.min(...prices, ...ema21, ...ema50, ...(highLine.length ? highLine : []), ...(lowLine.length ? lowLine : []), ...(zoneValues.length ? zoneValues : []));
-    const maxPrice = Math.max(...prices, ...ema21, ...ema50, ...(highLine.length ? highLine : []), ...(lowLine.length ? lowLine : []), ...(zoneValues.length ? zoneValues : []));
+    const minPrice = Math.min(
+        ...prices,
+        ...ema21,
+        ...ema50,
+        ...(highLine.length ? highLine : []),
+        ...(lowLine.length ? lowLine : []),
+        ...(zoneValues.length ? zoneValues : [])
+    );
+
+    const maxPrice = Math.max(
+        ...prices,
+        ...ema21,
+        ...ema50,
+        ...(highLine.length ? highLine : []),
+        ...(lowLine.length ? lowLine : []),
+        ...(zoneValues.length ? zoneValues : [])
+    );
+
     const pad = (maxPrice - minPrice) * 0.08 || 100;
 
     const datasets = [];
 
-    // ZONA SUPERIOR DE LIQUIDEZ
     if (upperZone) {
-        datasets.push({
-            type: "line",
-            label: "Upper Liquidity Zone Base",
-            data: upperZone.from,
-            borderWidth: 0,
-            pointRadius: 0,
-            fill: false,
-            yAxisID: "price"
-        });
-
-        datasets.push({
-            type: "line",
-            label: "Upper Liquidity Zone",
-            data: upperZone.to,
-            borderWidth: 0,
-            pointRadius: 0,
-            fill: "-1",
-           backgroundColor: [
-             "rgba(96,165,250,0.05)",
-             "rgba(96,165,250,0.10)",
-             "rgba(96,165,250,0.18)"
-    ]
-            yAxisID: "price"
-        });
+        datasets.push(
+            {
+                type: "line",
+                label: "Upper Liquidity Zone Base",
+                data: upperZone.from,
+                borderWidth: 0,
+                pointRadius: 0,
+                fill: false,
+                yAxisID: "price"
+            },
+            {
+                type: "line",
+                label: "Upper Liquidity Zone",
+                data: upperZone.to,
+                borderWidth: 0,
+                pointRadius: 0,
+                fill: "-1",
+                backgroundColor: "rgba(96, 165, 250, 0.12)",
+                yAxisID: "price"
+            }
+        );
     }
 
-    // ZONA INFERIOR DE LIQUIDEZ
     if (lowerZone) {
-        datasets.push({
-            type: "line",
-            label: "Lower Liquidity Zone Base",
-            data: lowerZone.from,
-            borderWidth: 0,
-            pointRadius: 0,
-            fill: false,
-            yAxisID: "price"
-        });
-
-        datasets.push({
-            type: "line",
-            label: "Lower Liquidity Zone",
-            data: lowerZone.to,
-            borderWidth: 0,
-            pointRadius: 0,
-            fill: "-1",
-            backgroundColor: [
-             "rgba(248,113,113,0.05)",
-             "rgba(248,113,113,0.10)",
-             "rgba(248,113,113,0.18)"
-    ]
-            yAxisID: "price"
-        });
+        datasets.push(
+            {
+                type: "line",
+                label: "Lower Liquidity Zone Base",
+                data: lowerZone.from,
+                borderWidth: 0,
+                pointRadius: 0,
+                fill: false,
+                yAxisID: "price"
+            },
+            {
+                type: "line",
+                label: "Lower Liquidity Zone",
+                data: lowerZone.to,
+                borderWidth: 0,
+                pointRadius: 0,
+                fill: "-1",
+                backgroundColor: "rgba(248, 113, 113, 0.12)",
+                yAxisID: "price"
+            }
+        );
     }
 
-    // PRECIO Y MEDIAS
     datasets.push(
         {
             type: "line",
@@ -711,7 +717,6 @@ function drawChart(canvasId, series, liquidity) {
         }
     );
 
-    // LÍNEAS DE REFERENCIA DE LIQUIDEZ
     if (hasLiquidity) {
         datasets.push(
             {
@@ -737,7 +742,6 @@ function drawChart(canvasId, series, liquidity) {
         );
     }
 
-    // MACD
     datasets.push(
         {
             type: "bar",
