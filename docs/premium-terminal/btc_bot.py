@@ -221,10 +221,20 @@ def detect_liquidity_vacuum(close: pd.Series, liq: dict) -> dict:
         "distance_down": round(dist_low, 6)
     }
 
+
+    
 # =========================================================
 # ZONA 2F · BIAS ENGINE
 # Resume todas las señales en un sesgo de mercado
 # =========================================================
+
+TF_WEIGHTS = {
+    "4h": 3.0,
+    "1h": 2.0,
+    "5m": 1.0,
+    "1m": 0.5
+}
+
 def compute_bias(state: dict) -> dict:
 
     score_bull = 0
@@ -233,41 +243,43 @@ def compute_bias(state: dict) -> dict:
 
     for tf, data in state.items():
 
+        weight = TF_WEIGHTS.get(tf, 1)
+
         magnet = data.get("magnet", {})
         sweep = data.get("sweep", {})
         compression = data.get("compression", {})
         vacuum = data.get("vacuum", {})
 
-        # Magnet
+        # MAGNET
         if magnet.get("direction") == "up":
-            score_bull += 30
+            score_bull += 30 * weight
             targets.append(magnet.get("target"))
 
         elif magnet.get("direction") == "down":
-            score_bear += 30
+            score_bear += 30 * weight
             targets.append(magnet.get("target"))
 
-        # Sweep
+        # SWEEP
         if sweep.get("sweep_high"):
-            score_bear += 15
+            score_bear += 15 * weight
 
         if sweep.get("sweep_low"):
-            score_bull += 15
+            score_bull += 15 * weight
 
-        # Compression
+        # COMPRESSION
         if compression.get("compression"):
-            score_bull += 5
-            score_bear += 5
+            score_bull += 5 * weight
+            score_bear += 5 * weight
 
-        # Vacuum
+        # VACUUM
         if vacuum.get("vacuum"):
 
             if vacuum.get("direction") == "up":
-                score_bull += 20
+                score_bull += 20 * weight
                 targets.append(vacuum.get("target"))
 
             elif vacuum.get("direction") == "down":
-                score_bear += 20
+                score_bear += 20 * weight
                 targets.append(vacuum.get("target"))
 
     total = score_bull + score_bear
