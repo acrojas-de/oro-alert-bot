@@ -250,6 +250,14 @@ def compute_bias(state: dict) -> dict:
         compression = data.get("compression", {})
         vacuum = data.get("vacuum", {})
 
+        print("-----")
+        print("TF:", tf)
+        print("weight:", weight)
+        print("magnet:", magnet)
+        print("sweep:", sweep)
+        print("compression:", compression)
+        print("vacuum:", vacuum)
+
         # MAGNET
         if magnet.get("direction") == "up":
             score_bull += 30 * weight
@@ -285,7 +293,8 @@ def compute_bias(state: dict) -> dict:
     total = score_bull + score_bear
 
     if total == 0:
-        bull_pct = bear_pct = 50
+        bull_pct = 50
+        bear_pct = 50
     else:
         bull_pct = round(score_bull / total * 100, 2)
         bear_pct = round(score_bear / total * 100, 2)
@@ -295,6 +304,13 @@ def compute_bias(state: dict) -> dict:
     target = None
     if targets:
         target = round(sum(targets) / len(targets), 6)
+
+    print("==== BIAS DEBUG ====")
+    print("score_bull:", score_bull)
+    print("score_bear:", score_bear)
+    print("bull_pct:", bull_pct)
+    print("bear_pct:", bear_pct)
+    print("target:", target)
 
     return {
         "bias": bias,
