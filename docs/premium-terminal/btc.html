@@ -218,7 +218,23 @@ border-radius:50%;
 background:#444;
 margin:6px auto 0 auto;
 }
-  
+
+.topbar{
+    position:relative;
+}
+
+#clockCenter{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    font-size:26px;
+    font-weight:bold;
+    letter-spacing:1px;
+    color:var(--text);
+    pointer-events:none;
+}
+    
 </style>
 </head>
 
@@ -249,6 +265,8 @@ margin:6px auto 0 auto;
                 <div class="infoValue" id="biasValue">—</div>
             </div>
         </div>
+        <div id="clockCenter">--:--:--</div>
+    
     </div>
 
     <div class="grid">
@@ -320,6 +338,18 @@ margin:6px auto 0 auto;
 
 <script>
 const charts = {};
+
+function updateClock() {
+    const el = document.getElementById("clockCenter");
+    if (!el) return;
+
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,"0");
+    const mm = String(now.getMinutes()).padStart(2,"0");
+    const ss = String(now.getSeconds()).padStart(2,"0");
+
+    el.textContent = `${hh}:${mm}:${ss}`;
+}    
 
 const FRAME_META = {
     "4h": { label: "BTC 4H", role: "Estructura" },
@@ -875,6 +905,10 @@ function updateTargetBox(bias) {
     
 loadBTC();
 setInterval(loadBTC, 60000);
+
+ updateClock();
+setInterval(updateClock,1000);   
+    
 </script>
 
 <div id="targetBox">
