@@ -169,6 +169,60 @@ def detect_liquidity_magnet(close: pd.Series, liq: dict) -> dict:
 
 
 # =========================================================
+# ZONA 2E · LIQUIDITY VACUUM
+# Detecta zonas donde el precio puede moverse rápido
+# =========================================================
+def detect_liquidity_vacuum(close: pd.Series, liq: dict) -> dict:
+    s = close.dropna()
+
+    if len(s) < 10:
+        return {
+            "vacuum": False,
+            "direction": "none",
+            "target": 0.0,
+            "distance_up": 0.0,
+            "distance_down": 0.0
+        }
+
+    price = float(s.iloc[-1])
+
+    high = float(liq.get("range_high_20", price))
+    low = float(liq.get("range_low_20", price))
+
+    dist_high = abs(high - price)
+    dist_low = abs(price - low)
+
+    vacuum_up = dist_high > (price * 0.015)
+    vacuum_down = dist_low > (price * 0.015)
+
+    if vacuum_down and dist_low > dist_high:
+        return {
+            "vacuum": True,
+            "direction": "down",
+            "target": round(low, 6),
+            "distance_up": round(dist_high, 6),
+            "distance_down": round(dist_low, 6)
+        }
+
+    if vacuum_up and dist_high > dist_low:
+        return {
+            "vacuum": True,
+            "direction": "up",
+            "target": round(high, 6),
+            "distance_up": round(dist_high, 6),
+            "distance_down": round(dist_low, 6)
+        }
+
+    return {
+        "vacuum": False,
+        "direction": "none",
+        "target": round(price, 6),
+        "distance_up": round(dist_high, 6),
+        "distance_down": round(dist_low, 6)
+    }
+
+
+# =========================================================
 # ZONA 3 · FETCH POR TIMEFRAME
 # Aquí se descarga el activo, se limpian datos,
 # se calculan EMA, MACD, liquidez, barridas y compresión
@@ -209,6 +263,7 @@ def fetch(tf: str) -> dict:
     sweep = detect_liquidity_sweep(close, liq)
     compression = detect_compression(close, hist)
     magnet = detect_liquidity_magnet(close, liq)
+    vacuum = detect_liquidity_vacuum(close, liq)
 
     # -----------------------------
     # SUBZONA 3B · SERIE DEL TF
@@ -231,9 +286,9 @@ def fetch(tf: str) -> dict:
         "liquidity": liq,
         "sweep": sweep,
         "compression": compression,
-        "magnet": magnet
+        "magnet": magnet,
+        "vacuum": vacuum
     }
-
 
 # =========================================================
 # ZONA 4 · CONSTRUCCIÓN DEL JSON FINAL
@@ -266,7 +321,8 @@ def main():
             "liquidity": tf_data["liquidity"],
             "sweep": tf_data["sweep"],
             "compression": tf_data["compression"],
-            "magnet": tf_data["magnet"]
+            "magnet": tf_data["magnet"],
+            "vacuum": tf_data["vacuum"]
         }
 
     # -----------------------------------------------------
