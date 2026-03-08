@@ -332,6 +332,7 @@ function renderSignals(state) {
     html += buildCompressionSignals(state);
     html += buildMagnetSignals(state);
     html += buildReboundSignals(state);
+    html += buildVacuumSignals(state);
 
     box.innerHTML = html || "Radar activo. Sin eventos institucionales detectados.";
 }
@@ -433,25 +434,43 @@ function buildMagnetSignals(state) {
     return html;
 }
 
-function buildReboundSignals(state) {
-    let html = "";
+function buildVacuumSignals(state){
 
-    for (const tf of ["4h", "1h", "5m", "1m"]) {
-        const rebound = state?.[tf]?.rebound;
-        if (!rebound || !rebound.rebound) continue;
+let html="";
 
-        const meta = FRAME_META[tf];
+for(const tf of ["4h","1h","5m","1m"]){
 
-        html += `
-        <div style="margin-bottom:8px; padding:8px 10px; border-radius:10px; background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.25);">
-            <div style="color:#86efac; font-weight:bold;">⚡ ${meta.label} · ${meta.role}</div>
-            <div style="color:#e2e8f0;">Rebound Zone Detectada → ${rebound.level}</div>
-            <div style="color:#94a3b8; font-size:12px;">Liquidez inferior cercana + presión bajista extrema.</div>
-        </div>
-        `;
-    }
+const vacuum=state?.[tf]?.vacuum;
 
-    return html;
+if(!vacuum || !vacuum.vacuum) continue;
+
+const meta=FRAME_META[tf];
+
+if(vacuum.direction==="down"){
+
+html+=`
+<div style="margin-bottom:8px;padding:8px 10px;border-radius:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.25);">
+<div style="color:#fca5a5;font-weight:bold;">🚀 ${meta.label} · ${meta.role}</div>
+<div style="color:#e2e8f0;">Liquidity Vacuum DOWN → ${vacuum.target}</div>
+<div style="color:#94a3b8;font-size:12px;">Zona sin liquidez. Movimiento rápido probable.</div>
+</div>
+`;
+}
+
+if(vacuum.direction==="up"){
+
+html+=`
+<div style="margin-bottom:8px;padding:8px 10px;border-radius:10px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.25);">
+<div style="color:#93c5fd;font-weight:bold;">🚀 ${meta.label} · ${meta.role}</div>
+<div style="color:#e2e8f0;">Liquidity Vacuum UP → ${vacuum.target}</div>
+<div style="color:#94a3b8;font-size:12px;">Zona sin liquidez. Movimiento rápido probable.</div>
+</div>
+`;
+}
+
+}
+
+return html;
 }
 
 function renderLiquidity(state) {
