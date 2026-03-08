@@ -395,7 +395,7 @@ def resample_to_4h(df: pd.DataFrame) -> pd.DataFrame:
     if "volume" in df.columns:
         agg["volume"] = "sum"
 
-    out = df.resample("4H").agg(agg).dropna()
+    out = df.resample("4h").agg(agg).dropna()
     return out
 
 
