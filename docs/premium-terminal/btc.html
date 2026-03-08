@@ -188,6 +188,37 @@ body{
         padding:12px;
     }
 }
+
+#targetBox{
+position:fixed;
+top:90px;
+right:30px;
+background:#111;
+padding:12px 18px;
+border-radius:10px;
+border:1px solid #333;
+text-align:center;
+z-index:1000;
+}
+
+#targetTitle{
+font-size:12px;
+opacity:0.7;
+}
+
+#targetValue{
+font-size:28px;
+font-weight:bold;
+}
+
+#targetLed{
+width:10px;
+height:10px;
+border-radius:50%;
+background:#444;
+margin:6px auto 0 auto;
+}
+  
 </style>
 </head>
 
@@ -317,6 +348,7 @@ async function loadBTC() {
         renderLiquidity(data.state || {});
         renderSignals(data.state || {});
         renderBias(data.bias || null);
+        updateTargetBox(data.bias || null);
         renderDebug(data);
 
     } catch (err) {
@@ -818,9 +850,38 @@ function drawChart(canvasId, series, liquidity) {
     });
 }
 
+function updateTargetBox(bias) {
+    const valueEl = document.getElementById("targetValue");
+    const ledEl = document.getElementById("targetLed");
+
+    if (!valueEl || !ledEl) return;
+
+    if (!bias || bias.target === null || bias.target === undefined) {
+        valueEl.textContent = "---";
+        ledEl.style.background = "#444";
+        return;
+    }
+
+    valueEl.textContent = Number(bias.target).toLocaleString();
+
+    if (bias.bias === "bullish") {
+        ledEl.style.background = "#22c55e";
+    } else if (bias.bias === "bearish") {
+        ledEl.style.background = "#ef4444";
+    } else {
+        ledEl.style.background = "#94a3b8";
+    }
+}
+    
 loadBTC();
 setInterval(loadBTC, 60000);
 </script>
+
+<div id="targetBox">
+    <div id="targetTitle">🎯 TARGET</div>
+    <div id="targetValue">---</div>
+    <div id="targetLed"></div>
+</div>
 
 </body>
 </html>
