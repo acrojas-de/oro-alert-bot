@@ -221,6 +221,76 @@ def detect_liquidity_vacuum(close: pd.Series, liq: dict) -> dict:
         "distance_down": round(dist_low, 6)
     }
 
+# =========================================================
+# ZONA 2F · BIAS ENGINE
+# Resume todas las señales en un sesgo de mercado
+# =========================================================
+def compute_bias(state: dict) -> dict:
+
+    score_bull = 0
+    score_bear = 0
+    targets = []
+
+    for tf, data in state.items():
+
+        magnet = data.get("magnet", {})
+        sweep = data.get("sweep", {})
+        compression = data.get("compression", {})
+        vacuum = data.get("vacuum", {})
+
+        # Magnet
+        if magnet.get("direction") == "up":
+            score_bull += 30
+            targets.append(magnet.get("target"))
+
+        elif magnet.get("direction") == "down":
+            score_bear += 30
+            targets.append(magnet.get("target"))
+
+        # Sweep
+        if sweep.get("sweep_high"):
+            score_bear += 15
+
+        if sweep.get("sweep_low"):
+            score_bull += 15
+
+        # Compression
+        if compression.get("compression"):
+            score_bull += 5
+            score_bear += 5
+
+        # Vacuum
+        if vacuum.get("vacuum"):
+
+            if vacuum.get("direction") == "up":
+                score_bull += 20
+                targets.append(vacuum.get("target"))
+
+            elif vacuum.get("direction") == "down":
+                score_bear += 20
+                targets.append(vacuum.get("target"))
+
+    total = score_bull + score_bear
+
+    if total == 0:
+        bull_pct = bear_pct = 50
+    else:
+        bull_pct = round(score_bull / total * 100, 2)
+        bear_pct = round(score_bear / total * 100, 2)
+
+    bias = "bullish" if bull_pct > bear_pct else "bearish"
+
+    target = None
+    if targets:
+        target = round(sum(targets) / len(targets), 6)
+
+    return {
+        "bias": bias,
+        "bullish_pct": bull_pct,
+        "bearish_pct": bear_pct,
+        "target": target
+    }
+
 
 # =========================================================
 # ZONA 3 · FETCH POR TIMEFRAME
@@ -325,6 +395,8 @@ def main():
             "vacuum": tf_data["vacuum"]
         }
 
+    data["bias"] = compute_bias(data["state"])
+    
     # -----------------------------------------------------
     # SUBZONA 4B · GUARDAR JSON EN DISCO
     # -----------------------------------------------------
