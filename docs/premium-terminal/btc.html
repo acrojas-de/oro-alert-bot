@@ -1172,64 +1172,85 @@ function updateMarketHeat() {
 }   
 
 function updateMarketPressure(data) {
+
     const pressureHud = document.getElementById("pressureHud");
     const pressureValue = document.getElementById("pressureValue");
     const pressureSub = document.getElementById("pressureSub");
+
     if (!pressureHud || !pressureValue || !pressureSub) return;
 
     const s1h = data?.state?.["1h"] || {};
     const s5m = data?.state?.["5m"] || {};
+    const s1m = data?.state?.["1m"] || {};
     const bias = data?.bias || {};
 
-    let bullScore = 0;
-    let bearScore = 0;
+    let bull = 0;
+    let bear = 0;
 
-    if (s1h.compression?.compression) {
-        bullScore += 1;
-        bearScore += 1;
+    /* MAGNET */
+    if (s1h.magnet?.direction === "up") bull += 2;
+    if (s1h.magnet?.direction === "down") bear += 2;
+
+    if (s5m.magnet?.direction === "up") bull += 1;
+    if (s5m.magnet?.direction === "down") bear += 1;
+
+    /* VACUUM */
+    if (s1h.vacuum?.vacuum) {
+        if (s1h.vacuum.direction === "up") bull += 2;
+        if (s1h.vacuum.direction === "down") bear += 2;
     }
 
-    if (s5m.compression?.compression) {
-        bullScore += 1;
-        bearScore += 1;
+    if (s5m.vacuum?.vacuum) {
+        if (s5m.vacuum.direction === "up") bull += 1;
+        if (s5m.vacuum.direction === "down") bear += 1;
     }
 
-    if (s1h.magnet?.direction === "up") bullScore += 2;
-    if (s1h.magnet?.direction === "down") bearScore += 2;
+    /* TRAPS */
+    if (s1h.trap?.trap) {
+        if (s1h.trap.type === "bear_trap") bull += 3;
+        if (s1h.trap.type === "bull_trap") bear += 3;
+    }
 
-    if (s5m.magnet?.direction === "up") bullScore += 1;
-    if (s5m.magnet?.direction === "down") bearScore += 1;
+    if (s5m.trap?.trap) {
+        if (s5m.trap.type === "bear_trap") bull += 2;
+        if (s5m.trap.type === "bull_trap") bear += 2;
+    }
 
-    if (s1h.vacuum?.vacuum && s1h.vacuum?.direction === "up") bullScore += 2;
-    if (s1h.vacuum?.vacuum && s1h.vacuum?.direction === "down") bearScore += 2;
+    /* SWEEP exhaustion */
+    if (s1m.sweep?.sweep_high) bear += 1;
+    if (s1m.sweep?.sweep_low) bull += 1;
 
-    if (s5m.vacuum?.vacuum && s5m.vacuum?.direction === "up") bullScore += 1;
-    if (s5m.vacuum?.vacuum && s5m.vacuum?.direction === "down") bearScore += 1;
+    /* COMPRESSION = buildup */
+    const compression =
+        s1h.compression?.compression ||
+        s5m.compression?.compression;
 
-    if (s1h.trap?.trap && s1h.trap?.direction === "up") bullScore += 2;
-    if (s1h.trap?.trap && s1h.trap?.direction === "down") bearScore += 2;
-
-    if (s5m.trap?.trap && s5m.trap?.direction === "up") bullScore += 1;
-    if (s5m.trap?.trap && s5m.trap?.direction === "down") bearScore += 1;
-
-    if (typeof bias.bullish_pct === "number" && bias.bullish_pct >= 60) bullScore += 2;
-    if (typeof bias.bearish_pct === "number" && bias.bearish_pct >= 60) bearScore += 2;
+    /* BIAS */
+    if (bias?.bias === "bullish") bull += 2;
+    if (bias?.bias === "bearish") bear += 2;
 
     let value = "NEUTRAL";
-    let sub = "No pressure";
+    let sub = "Balanced market";
     let cls = "pressure-neutral";
 
-    if (bullScore >= bearScore + 3) {
+    if (bull >= bear + 3) {
         value = "BULLISH";
-        sub = "Buy pressure detected";
+        sub = "Buy pressure dominant";
         cls = "pressure-bull";
-    } else if (bearScore >= bullScore + 3) {
+    }
+    else if (bear >= bull + 3) {
         value = "BEARISH";
-        sub = "Sell pressure detected";
+        sub = "Sell pressure dominant";
         cls = "pressure-bear";
-    } else if (bullScore > 0 || bearScore > 0) {
+    }
+    else if (compression) {
         value = "BUILDUP";
-        sub = "Pressure building";
+        sub = "Energy building";
+        cls = "pressure-build";
+    }
+    else if (bull > 0 || bear > 0) {
+        value = "EXHAUSTION";
+        sub = "Liquidity event detected";
         cls = "pressure-build";
     }
 
@@ -1239,6 +1260,7 @@ function updateMarketPressure(data) {
         "pressure-build",
         "pressure-neutral"
     );
+
     pressureHud.classList.add(cls);
 
     pressureValue.textContent = value;
