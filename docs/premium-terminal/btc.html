@@ -522,6 +522,27 @@ body{
 #heatHud.heat-extreme .heatValue{
     color:#86efac;
 }
+
+.indexGroup{
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:4px;
+padding:0 12px;
+}
+
+.indexGroupTitle{
+font-size:10px;
+color:#94a3b8;
+letter-spacing:.8px;
+font-weight:700;
+margin-bottom:2px;
+}
+
+.indexRow{
+display:flex;
+gap:12px;
+}
     
 </style>
 </head>
@@ -635,7 +656,14 @@ body{
     <div class="heatSub" id="marketHeatSub">Quiet market</div>
         </div>
 
-        <div class="hudBox" id="indexHud">
+    <div class="hudBox" id="indexHud">
+
+    <!-- EUROPE -->
+    <div class="indexGroup">
+        <div class="indexGroupTitle">EUROPE</div>
+
+        <div class="indexRow">
+
             <div class="indexMini closed" id="idxIBEX">
                 <div class="indexName">IBEX</div>
                 <div class="indexHours">09:00–17:30</div>
@@ -654,6 +682,16 @@ body{
                 <div class="indexLine"></div>
             </div>
 
+        </div>
+    </div>
+
+
+    <!-- USA -->
+    <div class="indexGroup">
+        <div class="indexGroupTitle">USA</div>
+
+        <div class="indexRow">
+
             <div class="indexMini closed" id="idxSPX">
                 <div class="indexName">SPX</div>
                 <div class="indexHours">15:30–22:00</div>
@@ -666,13 +704,26 @@ body{
                 <div class="indexLine"></div>
             </div>
 
+        </div>
+    </div>
+
+
+    <!-- ASIA -->
+    <div class="indexGroup">
+        <div class="indexGroupTitle">ASIA</div>
+
+        <div class="indexRow">
+
             <div class="indexMini closed" id="idxNIKKEI">
                 <div class="indexName">NIKKEI</div>
                 <div class="indexHours">09:00–15:00</div>
                 <div class="indexLine"></div>
             </div>
+
         </div>
     </div>
+
+</div>   
 
     <div class="grid">
         <div class="card">
