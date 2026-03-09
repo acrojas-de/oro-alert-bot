@@ -2,7 +2,7 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-03-09T18:05:54+00:00"
+    "updated_utc": "2026-03-09T19:05:53+00:00"
   },
   "series": [
     {
@@ -12783,6 +12783,34 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-03-09T19:05:53+00:00",
+      "candle_ts": "2026-03-09T17:00:00+00:00",
+      "score": 50,
+      "bias": "MIXTO_ESPERAR",
+      "gold": 5104.9,
+      "gold_ema9": 5104.19,
+      "gold_ema21": 5107.42,
+      "gold_ema50": 5120.3,
+      "gold_rsi14": 48.55,
+      "gold_rsi14_prev": 50.92,
+      "dxy": 99.161,
+      "dxy_ema21": 99.2471,
+      "tnx": 4.13,
+      "tnx_ema21": 4.1258,
+      "nasdaq": 22371.57,
+      "nasdaq_ema21": 22485.06,
+      "ema_spread_pct": 0.002524,
+      "atr": 32.9704,
+      "atr_pct": 0.006459,
+      "ema21_slope_pct": -4.9e-05,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -13441,15 +13469,37 @@
       "ema21": 5107.12,
       "stop_price": 5100.84,
       "confirm_pct": 0.003
+    },
+    {
+      "ts": "2026-03-09T17:00:00+00:00",
+      "asset": "GOLD",
+      "type": "SELL",
+      "reason": "Cruce bajista: precio cae por debajo de EMA21",
+      "strength": 2,
+      "price": 5104.9,
+      "ema21": 5107.42,
+      "stop_price": 5112.56,
+      "confirm_pct": 0.003
+    },
+    {
+      "ts": "2026-03-09T19:05:53+00:00",
+      "asset": "GOLD",
+      "type": "STOP_HIT",
+      "reason": "Stop tocado (SELL): 5134.80 > 5112.56",
+      "strength": 4,
+      "price": 5134.8,
+      "from_price": 5104.9,
+      "stop_price": 5112.56,
+      "source_ts": "2026-03-09T17:00:00+00:00"
     }
   ],
   "state": {
     "metrics": {
-      "ema_spread": 13.2597,
-      "ema_spread_pct": 0.002593,
-      "atr": 34.1367,
-      "atr_pct": 0.006676,
-      "ema21_slope_pct": 0.000106,
+      "ema_spread": 12.8828,
+      "ema_spread_pct": 0.002524,
+      "atr": 32.9704,
+      "atr_pct": 0.006459,
+      "ema21_slope_pct": -4.9e-05,
       "thresholds": {
         "COMP_EMA_PCT": 0.0015,
         "COMP_ATR_PCT": 0.0018,
@@ -13457,16 +13507,6 @@
         "ATR_LEN": 14
       }
     },
-    "market_state": "NORMAL",
-    "pending_confirm": {
-      "direction": "UP",
-      "from_ts": "2026-03-09T15:00:00+00:00",
-      "from_price": 5108.5,
-      "threshold_pct": 0.003,
-      "stop_price": 5100.8372500000005,
-      "warmup_bars": 1,
-      "source_type": "BUY",
-      "created_at": "2026-03-09T16:35:13+00:00"
-    }
+    "market_state": "NORMAL"
   }
 }
