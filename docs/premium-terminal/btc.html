@@ -587,6 +587,64 @@ body{
 }
 #flowHud.flow-neutral .flowValue{
     color:#cbd5e1;
+}   
+
+#pressureHud{
+    min-width:170px;
+    flex-direction:column;
+    gap:4px;
+    transition:all .25s ease;
+}
+
+.pressureLabel{
+    font-size:11px;
+    color:var(--muted);
+    letter-spacing:.8px;
+    font-weight:700;
+}
+
+.pressureValue{
+    font-size:22px;
+    font-weight:800;
+    line-height:1;
+    letter-spacing:.6px;
+}
+
+.pressureSub{
+    font-size:11px;
+    color:var(--muted);
+    text-align:center;
+}
+
+#pressureHud.pressure-bull{
+    border-color:#22c55e;
+    box-shadow:0 0 10px rgba(34,197,94,.20);
+}
+#pressureHud.pressure-bull .pressureValue{
+    color:#86efac;
+}
+
+#pressureHud.pressure-bear{
+    border-color:#ef4444;
+    box-shadow:0 0 10px rgba(239,68,68,.20);
+}
+#pressureHud.pressure-bear .pressureValue{
+    color:#fca5a5;
+}
+
+#pressureHud.pressure-build{
+    border-color:#f59e0b;
+    box-shadow:0 0 10px rgba(245,158,11,.20);
+}
+#pressureHud.pressure-build .pressureValue{
+    color:#fcd34d;
+}
+
+#pressureHud.pressure-neutral{
+    border-color:#334155;
+}
+#pressureHud.pressure-neutral .pressureValue{
+    color:#cbd5e1;
 }    
 
 .indexGroup{
@@ -728,6 +786,12 @@ gap:12px;
         <div class="flowSub" id="flowSub">Waiting flow</div>
     </div>
 
+    <div class="hudBox" id="pressureHud">
+    <div class="pressureLabel">MARKET PRESSURE</div>
+    <div class="pressureValue" id="pressureValue">NEUTRAL</div>
+    <div class="pressureSub" id="pressureSub">No pressure</div>
+     </div>
+     
     <div class="hudBox" id="indexHud">
 
         <div class="indexGroup">
@@ -848,7 +912,7 @@ gap:12px;
         </div>
     </div>
 </div>
-    
+</div>   
 <script>
 const charts = {};
 
@@ -1106,6 +1170,80 @@ function updateMarketHeat() {
     flowValue.textContent = region;
     flowSub.textContent = sub;
 }   
+
+function updateMarketPressure(data) {
+    const pressureHud = document.getElementById("pressureHud");
+    const pressureValue = document.getElementById("pressureValue");
+    const pressureSub = document.getElementById("pressureSub");
+    if (!pressureHud || !pressureValue || !pressureSub) return;
+
+    const s1h = data?.state?.["1h"] || {};
+    const s5m = data?.state?.["5m"] || {};
+    const bias = data?.bias || {};
+
+    let bullScore = 0;
+    let bearScore = 0;
+
+    if (s1h.compression?.compression) {
+        bullScore += 1;
+        bearScore += 1;
+    }
+
+    if (s5m.compression?.compression) {
+        bullScore += 1;
+        bearScore += 1;
+    }
+
+    if (s1h.magnet?.direction === "up") bullScore += 2;
+    if (s1h.magnet?.direction === "down") bearScore += 2;
+
+    if (s5m.magnet?.direction === "up") bullScore += 1;
+    if (s5m.magnet?.direction === "down") bearScore += 1;
+
+    if (s1h.vacuum?.vacuum && s1h.vacuum?.direction === "up") bullScore += 2;
+    if (s1h.vacuum?.vacuum && s1h.vacuum?.direction === "down") bearScore += 2;
+
+    if (s5m.vacuum?.vacuum && s5m.vacuum?.direction === "up") bullScore += 1;
+    if (s5m.vacuum?.vacuum && s5m.vacuum?.direction === "down") bearScore += 1;
+
+    if (s1h.trap?.trap && s1h.trap?.direction === "up") bullScore += 2;
+    if (s1h.trap?.trap && s1h.trap?.direction === "down") bearScore += 2;
+
+    if (s5m.trap?.trap && s5m.trap?.direction === "up") bullScore += 1;
+    if (s5m.trap?.trap && s5m.trap?.direction === "down") bearScore += 1;
+
+    if (typeof bias.bullish_pct === "number" && bias.bullish_pct >= 60) bullScore += 2;
+    if (typeof bias.bearish_pct === "number" && bias.bearish_pct >= 60) bearScore += 2;
+
+    let value = "NEUTRAL";
+    let sub = "No pressure";
+    let cls = "pressure-neutral";
+
+    if (bullScore >= bearScore + 3) {
+        value = "BULLISH";
+        sub = "Buy pressure detected";
+        cls = "pressure-bull";
+    } else if (bearScore >= bullScore + 3) {
+        value = "BEARISH";
+        sub = "Sell pressure detected";
+        cls = "pressure-bear";
+    } else if (bullScore > 0 || bearScore > 0) {
+        value = "BUILDUP";
+        sub = "Pressure building";
+        cls = "pressure-build";
+    }
+
+    pressureHud.classList.remove(
+        "pressure-bull",
+        "pressure-bear",
+        "pressure-build",
+        "pressure-neutral"
+    );
+    pressureHud.classList.add(cls);
+
+    pressureValue.textContent = value;
+    pressureSub.textContent = sub;
+}
     
 async function loadBTC() {
     try {
@@ -1128,6 +1266,7 @@ async function loadBTC() {
         renderSignals(data.state || {});
         renderBias(data.bias || null);
         updateTradeHud(data);
+        updateMarketPressure(data);
         renderDebug(data);
 
     } catch (err) {
