@@ -193,18 +193,6 @@ body{
     position:relative;
 }
 
-#clockCenter{
-    position:absolute;
-    left:50%;
-    top:50%;
-    transform:translate(-50%,-50%);
-    font-size:26px;
-    font-weight:bold;
-    letter-spacing:1px;
-    color:var(--text);
-    pointer-events:none;
-}
-
 #tradeHud{
     display:flex;
     gap:18px;
@@ -300,6 +288,63 @@ body{
     background:linear-gradient(180deg, rgba(245,158,11,0.18) 0%, rgba(180,83,9,0.18) 100%);
     border-color:rgba(245,158,11,0.42);
 }
+
+#clockZone{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+#clockSpainBox{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:8px 16px;
+    border-radius:12px;
+    background:linear-gradient(180deg,#0b1833 0%,#0a1730 100%);
+    border:1px solid var(--border);
+    box-shadow:0 0 18px rgba(59,130,246,0.10) inset;
+}
+
+.clockLabel{
+    font-size:11px;
+    color:var(--muted);
+}
+
+#clockSpain{
+    font-size:26px;
+    font-weight:bold;
+    letter-spacing:1px;
+}
+
+.marketClocks{
+    display:flex;
+    gap:8px;
+}
+
+.miniClock{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:6px 10px;
+    border-radius:10px;
+    background:var(--panel2);
+    border:1px solid var(--border);
+}
+
+.miniClockLabel{
+    font-size:10px;
+    color:var(--muted);
+}
+
+.miniClockValue{
+    font-size:14px;
+    font-weight:bold;
+}
     
 </style>
 </head>
@@ -312,6 +357,33 @@ body{
             <h1>BTC MASTER TERMINAL</h1>
             <div class="subtitle">Suite piloto del activo maestro · multi-timeframe · base para futuras alertas</div>
         </div>
+
+        <div id="clockZone">
+
+    <div id="clockSpainBox">
+        <div class="clockLabel">🇪🇸 ESPAÑA</div>
+        <div id="clockSpain">--:--:--</div>
+    </div>
+
+    <div class="marketClocks">
+        <div class="miniClock">
+            <div class="miniClockLabel">🇬🇧 LON</div>
+            <div class="miniClockValue" id="clockLondon">--:--</div>
+        </div>
+
+        <div class="miniClock">
+            <div class="miniClockLabel">🇺🇸 NY</div>
+            <div class="miniClockValue" id="clockNewYork">--:--</div>
+        </div>
+
+        <div class="miniClock">
+            <div class="miniClockLabel">🇯🇵 TOK</div>
+            <div class="miniClockValue" id="clockTokyo">--:--</div>
+        </div>
+    </div>
+
+</div>
+        
 
         <div class="infoBar">
             <div class="infoChip">
@@ -331,7 +403,7 @@ body{
                 <div class="infoValue" id="biasValue">—</div>
             </div>
         </div>
-        <div id="clockCenter">--:--:--</div>
+ 
     
     </div>
 
@@ -427,18 +499,29 @@ body{
 const charts = {};
 
 function updateClock() {
-    const el = document.getElementById("clockCenter");
-    if (!el) return;
-
     const now = new Date();
-    const hh = String(now.getHours()).padStart(2, "0");
-    const mm = String(now.getMinutes()).padStart(2, "0");
-    const ss = String(now.getSeconds()).padStart(2, "0");
 
-    el.textContent = `${hh}:${mm}:${ss}`;
+    const format = (zone, seconds = false) =>
+        new Intl.DateTimeFormat("es-ES", {
+            timeZone: zone,
+            hour: "2-digit",
+            minute: "2-digit",
+            second: seconds ? "2-digit" : undefined,
+            hour12: false
+        }).format(now);
+
+    const spain = document.getElementById("clockSpain");
+    const london = document.getElementById("clockLondon");
+    const ny = document.getElementById("clockNewYork");
+    const tokyo = document.getElementById("clockTokyo");
+
+    if (spain) spain.textContent = format("Europe/Madrid", true);
+    if (london) london.textContent = format("Europe/London");
+    if (ny) ny.textContent = format("America/New_York");
+    if (tokyo) tokyo.textContent = format("Asia/Tokyo");
 }
 
-const FRAME_META = {
+   const FRAME_META = {
     "4h": { label: "BTC 4H", role: "Estructura" },
     "1h": { label: "BTC 1H", role: "Contexto" },
     "5m": { label: "BTC 5m", role: "Confirmación" },
