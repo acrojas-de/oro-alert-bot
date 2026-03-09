@@ -460,6 +460,69 @@ body{
         font-size:24px;
     }
 }
+
+#heatHud{
+    min-width:160px;
+    flex-direction:column;
+    gap:4px;
+    transition:all .25s ease;
+}
+
+.heatLabel{
+    font-size:11px;
+    color:var(--muted);
+    letter-spacing:.8px;
+    font-weight:700;
+}
+
+.heatValue{
+    font-size:24px;
+    font-weight:800;
+    line-height:1;
+    letter-spacing:.6px;
+}
+
+.heatSub{
+    font-size:11px;
+    color:var(--muted);
+    text-align:center;
+}
+
+#heatHud.heat-low{
+    border-color:#334155;
+}
+
+#heatHud.heat-low .heatValue{
+    color:#cbd5e1;
+}
+
+#heatHud.heat-medium{
+    border-color:#3b82f6;
+    box-shadow:0 0 10px rgba(59,130,246,.18);
+}
+
+#heatHud.heat-medium .heatValue{
+    color:#93c5fd;
+}
+
+#heatHud.heat-high{
+    border-color:#f59e0b;
+    box-shadow:0 0 12px rgba(245,158,11,.22);
+}
+
+#heatHud.heat-high .heatValue{
+    color:#fcd34d;
+}
+
+#heatHud.heat-extreme{
+    border-color:#22c55e;
+    box-shadow:0 0 14px rgba(34,197,94,.25);
+}
+
+#heatHud.heat-extreme .heatValue{
+    color:#86efac;
+}
+    
 </style>
 </head>
 
@@ -564,6 +627,12 @@ body{
         <div class="hudBox target-neutral" id="targetHud">
             <div class="hudMiniLabel">TARGET</div>
             <div id="targetHudText">---</div>
+        </div>
+
+        <div class="hudBox" id="heatHud">
+    <div class="heatLabel">MARKET HEAT</div>
+    <div class="heatValue" id="marketHeatValue">LOW</div>
+    <div class="heatSub" id="marketHeatSub">Quiet market</div>
         </div>
 
         <div class="hudBox" id="indexHud">
@@ -796,6 +865,84 @@ function updateIndexHud() {
     setIndexState("idxNIKKEI", getMarketPhase(tokyoNow, hmToMinutes("09:00"), hmToMinutes("15:00")));
 }
 
+function isOpenPhase(phase) {
+    return phase === "open";
+}
+
+function getSessionPhases() {
+    const sydneyNow = getMinutesInZone("Australia/Sydney");
+    const tokyoNow = getMinutesInZone("Asia/Tokyo");
+    const londonNow = getMinutesInZone("Europe/London");
+    const frankfurtNow = getMinutesInZone("Europe/Berlin");
+    const newYorkNow = getMinutesInZone("America/New_York");
+
+    const sydneyPhase =
+        (
+            getMarketPhase(sydneyNow, hmToMinutes("22:00"), hmToMinutes("24:00"), 30) === "open" ||
+            getMarketPhase(sydneyNow, hmToMinutes("00:00"), hmToMinutes("07:00"), 30) === "open"
+        )
+            ? "open"
+            : ((sydneyNow >= hmToMinutes("21:30") && sydneyNow < hmToMinutes("22:00")) ? "pre" : "closed");
+
+    return {
+        sydney: sydneyPhase,
+        tokyo: getMarketPhase(tokyoNow, hmToMinutes("00:00"), hmToMinutes("09:00")),
+        london: getMarketPhase(londonNow, hmToMinutes("08:00"), hmToMinutes("17:00")),
+        frankfurt: getMarketPhase(frankfurtNow, hmToMinutes("08:00"), hmToMinutes("16:30")),
+        newYork: getMarketPhase(newYorkNow, hmToMinutes("09:30"), hmToMinutes("16:00"))
+    };
+}
+
+function updateMarketHeat() {
+    const heatBox = document.getElementById("heatHud");
+    const heatValue = document.getElementById("marketHeatValue");
+    const heatSub = document.getElementById("marketHeatSub");
+    if (!heatBox || !heatValue || !heatSub) return;
+
+    const phases = getSessionPhases();
+
+    let score = 0;
+
+    if (phases.sydney === "open") score += 1;
+    if (phases.tokyo === "open") score += 1;
+    if (phases.london === "open") score += 2;
+    if (phases.frankfurt === "open") score += 2;
+    if (phases.newYork === "open") score += 3;
+
+    if (phases.london === "open" && phases.frankfurt === "open") score += 1;
+    if (phases.london === "open" && phases.newYork === "open") score += 3;
+    if (phases.frankfurt === "open" && phases.newYork === "open") score += 2;
+    if (phases.tokyo === "open" && phases.sydney === "open") score += 1;
+
+    if (phases.newYork === "pre") score += 1;
+    if (phases.london === "pre") score += 1;
+    if (phases.frankfurt === "pre") score += 1;
+
+    let level = "LOW";
+    let sub = "Quiet market";
+    let cls = "heat-low";
+
+    if (score >= 9) {
+        level = "EXTREME";
+        sub = "Institutional window";
+        cls = "heat-extreme";
+    } else if (score >= 6) {
+        level = "HIGH";
+        sub = "High liquidity";
+        cls = "heat-high";
+    } else if (score >= 3) {
+        level = "MEDIUM";
+        sub = "Active session";
+        cls = "heat-medium";
+    }
+
+    heatBox.classList.remove("heat-low", "heat-medium", "heat-high", "heat-extreme");
+    heatBox.classList.add(cls);
+
+    heatValue.textContent = level;
+    heatSub.textContent = sub;
+}
+    
 async function loadBTC() {
     try {
         const r = await fetch("btc_data.json?v=" + Date.now(), { cache: "no-store" });
@@ -1401,6 +1548,10 @@ setInterval(updateSessions, 60000);
 
 updateIndexHud();
 setInterval(updateIndexHud, 60000);
+
+updateMarketHeat();
+setInterval(updateMarketHeat, 60000);   
+    
 </script>
 
 </body>
