@@ -1,7 +1,7 @@
 {
   "meta": {
     "asset": "BTC-USD",
-    "updated_utc": "2026-03-09T22:49:16+00:00"
+    "updated_utc": "2026-03-09T22:50:29+00:00"
   },
   "signals": [],
   "series": {
@@ -840,11 +840,11 @@
         "hist": 200.055655
       },
       {
-        "price": 68689.90625,
-        "ema21": 68182.335224,
-        "ema50": 68297.572683,
-        "macd": -193.106353,
-        "hist": 223.31828
+        "price": 68724.078125,
+        "ema21": 68185.441758,
+        "ema50": 68298.912756,
+        "macd": -190.380391,
+        "hist": 225.499049
       }
     ],
     "1h": [
@@ -1682,11 +1682,11 @@
         "hist": 78.950429
       },
       {
-        "price": 68689.90625,
-        "ema21": 68307.269214,
-        "ema50": 68005.880804,
-        "macd": 437.131923,
-        "hist": 40.765687
+        "price": 68724.078125,
+        "ema21": 68310.375748,
+        "ema50": 68007.220877,
+        "macd": 439.857884,
+        "hist": 42.946456
       }
     ],
     "5m": [
@@ -2524,21 +2524,14 @@
         "hist": -25.232841
       },
       {
-        "price": 68689.90625,
-        "ema21": 68834.779855,
-        "ema50": 68846.060183,
-        "macd": -51.882208,
-        "hist": -25.291851
+        "price": 68724.078125,
+        "ema21": 68837.886389,
+        "ema50": 68847.400257,
+        "macd": -49.156246,
+        "hist": -23.111082
       }
     ],
     "1m": [
-      {
-        "price": 68989.882812,
-        "ema21": 69006.129164,
-        "ema50": 68962.924906,
-        "macd": 0.194599,
-        "hist": -5.513451
-      },
       {
         "price": 68948.570312,
         "ema21": 69000.896542,
@@ -3371,6 +3364,13 @@
         "ema50": 68802.15006,
         "macd": -31.746041,
         "hist": 1.694681
+      },
+      {
+        "price": 68689.90625,
+        "ema21": 68742.559666,
+        "ema50": 68797.748342,
+        "macd": -32.351335,
+        "hist": 0.87151
       }
     ]
   },
@@ -3388,21 +3388,21 @@
       },
       "compression": {
         "compression": false,
-        "volatility": 0.011056640320861046,
-        "macd_compression": 181.5543907469826
+        "volatility": 0.011020871629148183,
+        "macd_compression": 181.77246767005886
       },
       "magnet": {
         "direction": "up",
         "target": 69053.765625,
-        "distance_up": 363.859375,
-        "distance_down": 2698.929688
+        "distance_up": 329.6875,
+        "distance_down": 2733.101563
       },
       "vacuum": {
         "vacuum": true,
         "direction": "down",
         "target": 65990.976562,
-        "distance_up": 363.859375,
-        "distance_down": 2698.929688
+        "distance_up": 329.6875,
+        "distance_down": 2733.101563
       },
       "trap": {
         "trap": false,
@@ -3425,21 +3425,21 @@
       },
       "compression": {
         "compression": false,
-        "volatility": 0.0060075352522261675,
-        "macd_compression": 147.20367878001525
+        "volatility": 0.005960211434070695,
+        "macd_compression": 147.42175570309155
       },
       "magnet": {
         "direction": "up",
         "target": 69149.828125,
-        "distance_up": 459.921875,
-        "distance_down": 1505.09375
+        "distance_up": 425.75,
+        "distance_down": 1539.265625
       },
       "vacuum": {
         "vacuum": true,
         "direction": "down",
         "target": 67184.8125,
-        "distance_up": 459.921875,
-        "distance_down": 1505.09375
+        "distance_up": 425.75,
+        "distance_down": 1539.265625
       },
       "trap": {
         "trap": false,
@@ -3462,21 +3462,21 @@
       },
       "compression": {
         "compression": true,
-        "volatility": 0.0012594157300875061,
-        "macd_compression": 23.489173649964506
+        "volatility": 0.0012612779101195753,
+        "macd_compression": 23.27109672688821
       },
       "magnet": {
         "direction": "down",
         "target": 68637.109375,
-        "distance_up": 325.640625,
-        "distance_down": 52.796875
+        "distance_up": 291.46875,
+        "distance_down": 86.96875
       },
       "vacuum": {
         "vacuum": false,
         "direction": "none",
-        "target": 68689.90625,
-        "distance_up": 325.640625,
-        "distance_down": 52.796875
+        "target": 68724.078125,
+        "distance_up": 291.46875,
+        "distance_down": 86.96875
       },
       "trap": {
         "trap": false,
@@ -3499,21 +3499,21 @@
       },
       "compression": {
         "compression": true,
-        "volatility": 0.0008022052665225092,
-        "macd_compression": 9.583920907482135
+        "volatility": 0.0003974600041745232,
+        "macd_compression": 9.593814109663661
       },
       "magnet": {
         "direction": "down",
         "target": 68637.109375,
-        "distance_up": 125.421874,
-        "distance_down": 93.257812
+        "distance_up": 165.882812,
+        "distance_down": 52.796875
       },
       "vacuum": {
         "vacuum": false,
         "direction": "none",
-        "target": 68730.367188,
-        "distance_up": 125.421874,
-        "distance_down": 93.257812
+        "target": 68689.90625,
+        "distance_up": 165.882812,
+        "distance_down": 52.796875
       },
       "trap": {
         "trap": false,
