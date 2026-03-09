@@ -38,7 +38,6 @@ body{
 
 .topbar{
     display:flex;
-    justify-content:space-between;
     align-items:center;
     gap:16px;
     flex-wrap:wrap;
@@ -290,12 +289,10 @@ body{
 }
 
 #clockZone{
-    position:absolute;
-    left:50%;
-    transform:translateX(-50%);
     display:flex;
     align-items:center;
     gap:14px;
+    margin:0 auto;
 }
 
 #clockSpainBox{
@@ -345,6 +342,12 @@ body{
     font-size:14px;
     font-weight:bold;
 }
+
+ .marketClocks{
+    display:flex;
+    gap:6px;
+    opacity:0.85;
+}   
     
 </style>
 </head>
