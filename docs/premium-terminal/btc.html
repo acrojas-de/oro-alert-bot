@@ -667,6 +667,34 @@ margin-bottom:2px;
 display:flex;
 gap:12px;
 }
+
+#smRadar{
+    min-width:170px;
+    flex-direction:column;
+    gap:4px;
+    transition:all .25s ease;
+}
+
+.hudTitle{
+    font-size:11px;
+    color:var(--muted);
+    letter-spacing:.8px;
+    font-weight:700;
+}
+
+.hudValue{
+    font-size:22px;
+    font-weight:800;
+    line-height:1;
+    letter-spacing:.6px;
+    color:#cbd5e1;
+}
+
+.hudSub{
+    font-size:11px;
+    color:var(--muted);
+    text-align:center;
+}   
     
 </style>
 </head>
@@ -792,7 +820,13 @@ gap:12px;
     <div class="pressureSub" id="pressureSub">No pressure</div>
      </div>
      
-    <div class="hudBox" id="indexHud">
+     <div class="hudBox" id="smRadar">
+     <div class="hudTitle">SMART MONEY</div>
+     <div class="hudValue" id="smValue">IDLE</div>
+     <div class="hudSub" id="smSub">No activity</div>
+</div>
+     
+     <div class="hudBox" id="indexHud">
 
         <div class="indexGroup">
             <div class="indexGroupTitle">EUROPE</div>
@@ -1266,6 +1300,52 @@ function updateMarketPressure(data) {
     pressureValue.textContent = value;
     pressureSub.textContent = sub;
 }
+
+function updateSmartMoney(data){
+
+    const value = document.getElementById("smValue");
+    const sub = document.getElementById("smSub");
+    const box = document.getElementById("smRadar");
+
+    if(!value || !sub || !box) return;
+
+    const s1h = data?.state?.["1h"] || {};
+    const s5m = data?.state?.["5m"] || {};
+    const s1m = data?.state?.["1m"] || {};
+
+    let signals = 0;
+
+    if(s1m.sweep?.sweep_high || s1m.sweep?.sweep_low) signals++;
+    if(s5m.trap?.trap) signals++;
+    if(s1h.trap?.trap) signals++;
+    if(s1h.vacuum?.vacuum) signals++;
+    if(s1h.compression?.compression) signals++;
+    if(s1h.magnet?.direction) signals++;
+
+    let radar = "IDLE";
+    let desc = "No institutional activity";
+    let color = "#2c3e50";
+
+    if(signals >= 4){
+        radar = "DETECTED ⚡";
+        desc = "Smart money activity";
+        color = "#ffcc00";
+    }
+    else if(signals === 3){
+        radar = "ACTIVE";
+        desc = "Institutional signals aligning";
+        color = "#ff8c00";
+    }
+    else if(signals === 2){
+        radar = "WATCH";
+        desc = "Possible setup forming";
+        color = "#00bfff";
+    }
+
+    value.textContent = radar;
+    sub.textContent = desc;
+    box.style.borderColor = color;
+}
     
 async function loadBTC() {
     try {
@@ -1289,6 +1369,7 @@ async function loadBTC() {
         renderBias(data.bias || null);
         updateTradeHud(data);
         updateMarketPressure(data);
+        updateSmartMoney(data);
         renderDebug(data);
 
     } catch (err) {
