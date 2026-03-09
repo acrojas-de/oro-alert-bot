@@ -46,6 +46,7 @@ body{
     background:linear-gradient(180deg, #0b1833 0%, #0a1730 100%);
     border:1px solid var(--border);
     border-radius:14px;
+    position:relative;
 }
 
 .titleBox h1{
@@ -85,111 +86,112 @@ body{
     font-weight:bold;
 }
 
-.grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:18px;
-    margin-bottom:18px;
+#clockZone{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+    margin:0 auto;
+    flex-wrap:wrap;
 }
 
-.card{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:16px;
-    padding:16px;
-    min-height:360px;
+#clockSpainBox{
     display:flex;
     flex-direction:column;
-}
-
-.cardHead{
-    display:flex;
-    justify-content:space-between;
     align-items:center;
-    margin-bottom:10px;
-    gap:10px;
+    justify-content:center;
+    min-width:110px;
+    padding:8px 16px;
+    border-radius:12px;
+    background:linear-gradient(180deg,#0b1833 0%,#0a1730 100%);
+    border:1px solid var(--border);
+    box-shadow:0 0 18px rgba(59,130,246,0.10) inset;
 }
 
-.cardHead h3{
-    margin:0;
+.clockLabel{
+    font-size:11px;
+    color:var(--muted);
+}
+
+#clockSpain{
     font-size:26px;
+    font-weight:bold;
+    letter-spacing:1px;
 }
 
-.badge{
-    font-size:12px;
-    color:var(--muted);
-    background:var(--panel2);
-    border:1px solid var(--border);
-    padding:6px 10px;
-    border-radius:999px;
+.marketClocks{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    opacity:.95;
 }
 
-.chartWrap{
-    position:relative;
-    flex:1;
-    min-height:280px;
+.sessionClock{
+    background:#162338;
+    border:1px solid #23324d;
+    border-radius:10px;
+    padding:8px 10px;
+    min-width:88px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    transition:all .25s ease;
 }
 
-.chartWrap canvas{
-    width:100% !important;
-    height:100% !important;
+.sessionTop{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
 }
 
-.bottomZone{
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    gap:18px;
+.sessionName{
+    font-size:11px;
+    font-weight:700;
+    color:var(--text);
+    letter-spacing:.4px;
 }
 
-.panel{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:16px;
-    padding:16px;
-    min-height:180px;
+.sessionTime{
+    font-size:16px;
+    font-weight:bold;
 }
 
-.panel h3{
-    margin:0 0 12px 0;
-    font-size:18px;
+.sessionHours{
+    font-size:10px;
+    color:#94a3b8;
 }
 
-.placeholder{
-    color:var(--muted);
-    font-size:14px;
-    line-height:1.6;
+.sessionStatus{
+    font-size:10px;
+    font-weight:bold;
+    letter-spacing:.4px;
 }
 
-@media (max-width:1100px){
-    .grid{
-        grid-template-columns:1fr;
-    }
-
-    .bottomZone{
-        grid-template-columns:1fr;
-    }
-
-    .card{
-        min-height:320px;
-    }
+.sessionClock.open{
+    border-color:#22c55e;
+    box-shadow:0 0 8px rgba(34,197,94,0.35);
 }
 
-@media (max-width:700px){
-    .titleBox h1{
-        font-size:24px;
-    }
-
-    .cardHead h3{
-        font-size:20px;
-    }
-
-    .wrapper{
-        padding:12px;
-    }
+.sessionClock.open .sessionStatus{
+    color:#86efac;
 }
 
-.topbar{
-    position:relative;
+.sessionClock.pre{
+    border-color:#f59e0b;
+    box-shadow:0 0 8px rgba(245,158,11,0.28);
+}
+
+.sessionClock.pre .sessionStatus{
+    color:#fcd34d;
+}
+
+.sessionClock.closed{
+    opacity:.7;
+}
+
+.sessionClock.closed .sessionStatus{
+    color:#94a3b8;
 }
 
 #tradeHud{
@@ -288,106 +290,176 @@ body{
     border-color:rgba(245,158,11,0.42);
 }
 
-#clockZone{
+#indexHud{
     display:flex;
-    align-items:flex-start;
-    gap:14px;
-    margin:0 auto;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
     flex-wrap:wrap;
+    padding:10px 14px;
+    min-width:520px;
+    flex:1;
 }
 
-#clockSpainBox{
+.indexMini{
+    width:68px;
     display:flex;
     flex-direction:column;
     align-items:center;
     justify-content:center;
-    min-width:110px;
-    padding:8px 16px;
-    border-radius:12px;
-    background:linear-gradient(180deg,#0b1833 0%,#0a1730 100%);
-    border:1px solid var(--border);
-    box-shadow:0 0 18px rgba(59,130,246,0.10) inset
+    gap:5px;
 }
 
-.clockLabel{
+.indexName{
     font-size:11px;
+    font-weight:700;
+    color:var(--text);
+    letter-spacing:.5px;
+}
+
+.indexHours{
+    font-size:10px;
     color:var(--muted);
+    line-height:1;
+    white-space:nowrap;
 }
 
-#clockSpain{
-    font-size:26px;
-    font-weight:bold;
-    letter-spacing:1px;
+.indexLine{
+    width:52px;
+    height:4px;
+    border-radius:999px;
+    background:#475569;
+    opacity:.85;
+    transition:background .25s ease, box-shadow .25s ease, opacity .25s ease;
 }
 
-.marketClocks{
-    display:flex;
-    gap:8px;
+.indexMini.open .indexLine{
+    background:#22c55e;
+    box-shadow:0 0 8px rgba(34,197,94,.45);
 }
 
-.miniClock{
+.indexMini.pre .indexLine{
+    background:#f59e0b;
+    box-shadow:0 0 8px rgba(245,158,11,.35);
+}
+
+.indexMini.closed .indexLine{
+    background:#475569;
+    opacity:.55;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    margin-bottom:18px;
+}
+
+.card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px;
+    min-height:360px;
     display:flex;
     flex-direction:column;
+}
+
+.cardHead{
+    display:flex;
+    justify-content:space-between;
     align-items:center;
-    justify-content:center;
-    padding:6px 10px;
-    border-radius:10px;
+    margin-bottom:10px;
+    gap:10px;
+}
+
+.cardHead h3{
+    margin:0;
+    font-size:26px;
+}
+
+.badge{
+    font-size:12px;
+    color:var(--muted);
     background:var(--panel2);
     border:1px solid var(--border);
+    padding:6px 10px;
+    border-radius:999px;
 }
 
-.miniClockLabel{
-    font-size:10px;
+.chartWrap{
+    position:relative;
+    flex:1;
+    min-height:280px;
+}
+
+.chartWrap canvas{
+    width:100% !important;
+    height:100% !important;
+}
+
+.bottomZone{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:18px;
+}
+
+.panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px;
+    min-height:180px;
+}
+
+.panel h3{
+    margin:0 0 12px 0;
+    font-size:18px;
+}
+
+.placeholder{
     color:var(--muted);
-}
-
-.miniClockValue{
     font-size:14px;
-    font-weight:bold;
+    line-height:1.6;
 }
 
- .marketClocks{
-    display:flex;
-    gap:6px;
-    opacity:0.85;
-}   
+@media (max-width:1100px){
+    .grid{
+        grid-template-columns:1fr;
+    }
 
- .sessionClock{
-    background:#162338;
-    border:1px solid #23324d;
-    border-radius:10px;
-    padding:8px 10px;
-    min-width:80px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:2px;
+    .bottomZone{
+        grid-template-columns:1fr;
+    }
+
+    .card{
+        min-height:320px;
+    }
+
+    #indexHud{
+        min-width:100%;
+    }
 }
 
-.sessionTime{
-    font-size:16px;
-    font-weight:bold;
-}
+@media (max-width:700px){
+    .titleBox h1{
+        font-size:24px;
+    }
 
-.sessionHours{
-    font-size:10px;
-    color:#94a3b8;
-}
+    .cardHead h3{
+        font-size:20px;
+    }
 
-.sessionStatus{
-    font-size:10px;
-    font-weight:bold;
-}
+    .wrapper{
+        padding:12px;
+    }
 
-.sessionClock.open{
-    border-color:#22c55e;
-    box-shadow:0 0 6px rgba(34,197,94,0.4);
+    #priceText,
+    #diffText,
+    #targetHudText{
+        font-size:24px;
+    }
 }
-
-.sessionClock.closed{
-    opacity:0.6;
-}   
-    
 </style>
 </head>
 
@@ -401,61 +473,58 @@ body{
         </div>
 
         <div id="clockZone">
-
-    <div id="clockSpainBox">
-        <div class="clockLabel">🇪🇸 ESPAÑA</div>
-        <div id="clockSpain">--:--:--</div>
-    </div>
-
-    <div class="marketClocks" id="marketClocks">
-        <div class="sessionClock closed" id="sessionSydney">
-            <div class="sessionTop">
-                <div class="sessionName">🇦🇺 SYD</div>
-                <div class="sessionStatus" id="statusSydney">CLOSED</div>
+            <div id="clockSpainBox">
+                <div class="clockLabel">🇪🇸 ESPAÑA</div>
+                <div id="clockSpain">--:--:--</div>
             </div>
-            <div class="sessionTime" id="clockSydney">--:--</div>
-            <div class="sessionHours">22:00 → 07:00</div>
-        </div>
 
-        <div class="sessionClock closed" id="sessionTokyo">
-            <div class="sessionTop">
-                <div class="sessionName">🇯🇵 TOK</div>
-                <div class="sessionStatus" id="statusTokyo">CLOSED</div>
+            <div class="marketClocks" id="marketClocks">
+                <div class="sessionClock closed" id="sessionSydney">
+                    <div class="sessionTop">
+                        <div class="sessionName">🇦🇺 SYD</div>
+                        <div class="sessionStatus" id="statusSydney">CLOSED</div>
+                    </div>
+                    <div class="sessionTime" id="clockSydney">--:--</div>
+                    <div class="sessionHours">22:00 → 07:00</div>
+                </div>
+
+                <div class="sessionClock closed" id="sessionTokyo">
+                    <div class="sessionTop">
+                        <div class="sessionName">🇯🇵 TOK</div>
+                        <div class="sessionStatus" id="statusTokyo">CLOSED</div>
+                    </div>
+                    <div class="sessionTime" id="clockTokyo">--:--</div>
+                    <div class="sessionHours">00:00 → 09:00</div>
+                </div>
+
+                <div class="sessionClock closed" id="sessionLondon">
+                    <div class="sessionTop">
+                        <div class="sessionName">🇬🇧 LON</div>
+                        <div class="sessionStatus" id="statusLondon">CLOSED</div>
+                    </div>
+                    <div class="sessionTime" id="clockLondon">--:--</div>
+                    <div class="sessionHours">08:00 → 17:00</div>
+                </div>
+
+                <div class="sessionClock closed" id="sessionFrankfurt">
+                    <div class="sessionTop">
+                        <div class="sessionName">🇩🇪 FRA</div>
+                        <div class="sessionStatus" id="statusFrankfurt">CLOSED</div>
+                    </div>
+                    <div class="sessionTime" id="clockFrankfurt">--:--</div>
+                    <div class="sessionHours">08:00 → 16:30</div>
+                </div>
+
+                <div class="sessionClock closed" id="sessionNewYork">
+                    <div class="sessionTop">
+                        <div class="sessionName">🇺🇸 NY</div>
+                        <div class="sessionStatus" id="statusNewYork">CLOSED</div>
+                    </div>
+                    <div class="sessionTime" id="clockNewYork">--:--</div>
+                    <div class="sessionHours">14:30 → 21:00</div>
+                </div>
             </div>
-            <div class="sessionTime" id="clockTokyo">--:--</div>
-            <div class="sessionHours">00:00 → 09:00</div>
         </div>
-
-        <div class="sessionClock closed" id="sessionLondon">
-            <div class="sessionTop">
-                <div class="sessionName">🇬🇧 LON</div>
-                <div class="sessionStatus" id="statusLondon">CLOSED</div>
-            </div>
-            <div class="sessionTime" id="clockLondon">--:--</div>
-            <div class="sessionHours">08:00 → 17:00</div>
-        </div>
-
-        <div class="sessionClock closed" id="sessionFrankfurt">
-            <div class="sessionTop">
-                <div class="sessionName">🇩🇪 FRA</div>
-                <div class="sessionStatus" id="statusFrankfurt">CLOSED</div>
-            </div>
-            <div class="sessionTime" id="clockFrankfurt">--:--</div>
-            <div class="sessionHours">08:00 → 16:30</div>
-        </div>
-
-        <div class="sessionClock closed" id="sessionNewYork">
-            <div class="sessionTop">
-                <div class="sessionName">🇺🇸 NY</div>
-                <div class="sessionStatus" id="statusNewYork">CLOSED</div>
-            </div>
-            <div class="sessionTime" id="clockNewYork">--:--</div>
-            <div class="sessionHours">14:30 → 21:00</div>
-        </div>
-    </div>
-
-</div>
-        
 
         <div class="infoBar">
             <div class="infoChip">
@@ -475,8 +544,6 @@ body{
                 <div class="infoValue" id="biasValue">—</div>
             </div>
         </div>
- 
-    
     </div>
 
     <div id="tradeHud">
@@ -498,8 +565,46 @@ body{
             <div class="hudMiniLabel">TARGET</div>
             <div id="targetHudText">---</div>
         </div>
+
+        <div class="hudBox" id="indexHud">
+            <div class="indexMini closed" id="idxIBEX">
+                <div class="indexName">IBEX</div>
+                <div class="indexHours">09:00–17:30</div>
+                <div class="indexLine"></div>
+            </div>
+
+            <div class="indexMini closed" id="idxDAX">
+                <div class="indexName">DAX</div>
+                <div class="indexHours">09:00–17:30</div>
+                <div class="indexLine"></div>
+            </div>
+
+            <div class="indexMini closed" id="idxFTSE">
+                <div class="indexName">FTSE</div>
+                <div class="indexHours">08:00–16:30</div>
+                <div class="indexLine"></div>
+            </div>
+
+            <div class="indexMini closed" id="idxSPX">
+                <div class="indexName">SPX</div>
+                <div class="indexHours">15:30–22:00</div>
+                <div class="indexLine"></div>
+            </div>
+
+            <div class="indexMini closed" id="idxNASDAQ">
+                <div class="indexName">NASDAQ</div>
+                <div class="indexHours">15:30–22:00</div>
+                <div class="indexLine"></div>
+            </div>
+
+            <div class="indexMini closed" id="idxNIKKEI">
+                <div class="indexName">NIKKEI</div>
+                <div class="indexHours">09:00–15:00</div>
+                <div class="indexLine"></div>
+            </div>
+        </div>
     </div>
-    
+
     <div class="grid">
         <div class="card">
             <div class="cardHead">
@@ -564,11 +669,58 @@ body{
             </div>
         </div>
     </div>
-
 </div>
 
 <script>
 const charts = {};
+
+const FRAME_META = {
+    "4h": { label: "BTC 4H", role: "Estructura" },
+    "1h": { label: "BTC 1H", role: "Contexto" },
+    "5m": { label: "BTC 5m", role: "Confirmación" },
+    "1m": { label: "BTC 1m", role: "Entrada fina" }
+};
+
+function hmToMinutes(hhmm) {
+    const [h, m] = hhmm.split(":").map(Number);
+    return h * 60 + m;
+}
+
+function getMinutesInZone(timeZone) {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone,
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+    }).formatToParts(new Date());
+
+    const hour = Number(parts.find(p => p.type === "hour")?.value || 0);
+    const minute = Number(parts.find(p => p.type === "minute")?.value || 0);
+    return hour * 60 + minute;
+}
+
+function getMarketPhase(nowMin, openMin, closeMin, preOpenMinutes = 30) {
+    if (nowMin >= openMin && nowMin < closeMin) return "open";
+    if (nowMin >= openMin - preOpenMinutes && nowMin < openMin) return "pre";
+    return "closed";
+}
+
+function setSessionState(boxId, statusId, phase) {
+    const box = document.getElementById(boxId);
+    const status = document.getElementById(statusId);
+    if (!box || !status) return;
+
+    box.classList.remove("open", "pre", "closed");
+    box.classList.add(phase);
+    status.textContent = phase.toUpperCase();
+}
+
+function setIndexState(id, phase) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove("open", "pre", "closed");
+    el.classList.add(phase);
+}
 
 function updateClock() {
     const now = new Date();
@@ -583,22 +735,66 @@ function updateClock() {
         }).format(now);
 
     const spain = document.getElementById("clockSpain");
-    const london = document.getElementById("clockLondon");
-    const ny = document.getElementById("clockNewYork");
+    const sydney = document.getElementById("clockSydney");
     const tokyo = document.getElementById("clockTokyo");
+    const london = document.getElementById("clockLondon");
+    const frankfurt = document.getElementById("clockFrankfurt");
+    const ny = document.getElementById("clockNewYork");
 
     if (spain) spain.textContent = format("Europe/Madrid", true);
-    if (london) london.textContent = format("Europe/London");
-    if (ny) ny.textContent = format("America/New_York");
+    if (sydney) sydney.textContent = format("Australia/Sydney");
     if (tokyo) tokyo.textContent = format("Asia/Tokyo");
+    if (london) london.textContent = format("Europe/London");
+    if (frankfurt) frankfurt.textContent = format("Europe/Berlin");
+    if (ny) ny.textContent = format("America/New_York");
 }
 
-   const FRAME_META = {
-    "4h": { label: "BTC 4H", role: "Estructura" },
-    "1h": { label: "BTC 1H", role: "Contexto" },
-    "5m": { label: "BTC 5m", role: "Confirmación" },
-    "1m": { label: "BTC 1m", role: "Entrada fina" }
-};
+function updateSessions() {
+    const sydneyNow = getMinutesInZone("Australia/Sydney");
+    const tokyoNow = getMinutesInZone("Asia/Tokyo");
+    const londonNow = getMinutesInZone("Europe/London");
+    const frankfurtNow = getMinutesInZone("Europe/Berlin");
+    const newYorkNow = getMinutesInZone("America/New_York");
+
+    setSessionState("sessionSydney", "statusSydney",
+        getMarketPhase(sydneyNow, hmToMinutes("22:00"), hmToMinutes("24:00"), 30) === "open" ||
+        getMarketPhase(sydneyNow, hmToMinutes("00:00"), hmToMinutes("07:00"), 30) === "open"
+            ? "open"
+            : (
+                (sydneyNow >= hmToMinutes("21:30") && sydneyNow < hmToMinutes("22:00")) ? "pre" : "closed"
+            )
+    );
+
+    setSessionState("sessionTokyo", "statusTokyo",
+        getMarketPhase(tokyoNow, hmToMinutes("00:00"), hmToMinutes("09:00"))
+    );
+
+    setSessionState("sessionLondon", "statusLondon",
+        getMarketPhase(londonNow, hmToMinutes("08:00"), hmToMinutes("17:00"))
+    );
+
+    setSessionState("sessionFrankfurt", "statusFrankfurt",
+        getMarketPhase(frankfurtNow, hmToMinutes("08:00"), hmToMinutes("16:30"))
+    );
+
+    setSessionState("sessionNewYork", "statusNewYork",
+        getMarketPhase(newYorkNow, hmToMinutes("09:30"), hmToMinutes("16:00"))
+    );
+}
+
+function updateIndexHud() {
+    const madridNow = getMinutesInZone("Europe/Madrid");
+    const londonNow = getMinutesInZone("Europe/London");
+    const newYorkNow = getMinutesInZone("America/New_York");
+    const tokyoNow = getMinutesInZone("Asia/Tokyo");
+
+    setIndexState("idxIBEX", getMarketPhase(madridNow, hmToMinutes("09:00"), hmToMinutes("17:30")));
+    setIndexState("idxDAX", getMarketPhase(madridNow, hmToMinutes("09:00"), hmToMinutes("17:30")));
+    setIndexState("idxFTSE", getMarketPhase(londonNow, hmToMinutes("08:00"), hmToMinutes("16:30")));
+    setIndexState("idxSPX", getMarketPhase(newYorkNow, hmToMinutes("09:30"), hmToMinutes("16:00")));
+    setIndexState("idxNASDAQ", getMarketPhase(newYorkNow, hmToMinutes("09:30"), hmToMinutes("16:00")));
+    setIndexState("idxNIKKEI", getMarketPhase(tokyoNow, hmToMinutes("09:00"), hmToMinutes("15:00")));
+}
 
 async function loadBTC() {
     try {
@@ -710,7 +906,6 @@ function renderSignals(state) {
     if (!box) return;
 
     let html = "";
-
     html += buildSweepSignals(state);
     html += buildCompressionSignals(state);
     html += buildMagnetSignals(state);
@@ -1200,7 +1395,12 @@ setInterval(loadBTC, 60000);
 
 updateClock();
 setInterval(updateClock, 1000);
-    
+
+updateSessions();
+setInterval(updateSessions, 60000);
+
+updateIndexHud();
+setInterval(updateIndexHud, 60000);
 </script>
 
 </body>
