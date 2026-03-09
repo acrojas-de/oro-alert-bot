@@ -290,20 +290,23 @@ body{
 
 #clockZone{
     display:flex;
-    align-items:center;
+    align-items:flex-start;
     gap:14px;
     margin:0 auto;
+    flex-wrap:wrap;
 }
 
 #clockSpainBox{
     display:flex;
     flex-direction:column;
     align-items:center;
+    justify-content:center;
+    min-width:110px;
     padding:8px 16px;
     border-radius:12px;
     background:linear-gradient(180deg,#0b1833 0%,#0a1730 100%);
     border:1px solid var(--border);
-    box-shadow:0 0 18px rgba(59,130,246,0.10) inset;
+    box-shadow:0 0 18px rgba(59,130,246,0.10) inset
 }
 
 .clockLabel{
@@ -368,20 +371,50 @@ body{
         <div id="clockSpain">--:--:--</div>
     </div>
 
-    <div class="marketClocks">
-        <div class="miniClock">
-            <div class="miniClockLabel">🇬🇧 LON</div>
-            <div class="miniClockValue" id="clockLondon">--:--</div>
+    <div class="marketClocks" id="marketClocks">
+        <div class="sessionClock closed" id="sessionSydney">
+            <div class="sessionTop">
+                <div class="sessionName">🇦🇺 SYD</div>
+                <div class="sessionStatus" id="statusSydney">CLOSED</div>
+            </div>
+            <div class="sessionTime" id="clockSydney">--:--</div>
+            <div class="sessionHours">22:00 → 07:00</div>
         </div>
 
-        <div class="miniClock">
-            <div class="miniClockLabel">🇺🇸 NY</div>
-            <div class="miniClockValue" id="clockNewYork">--:--</div>
+        <div class="sessionClock closed" id="sessionTokyo">
+            <div class="sessionTop">
+                <div class="sessionName">🇯🇵 TOK</div>
+                <div class="sessionStatus" id="statusTokyo">CLOSED</div>
+            </div>
+            <div class="sessionTime" id="clockTokyo">--:--</div>
+            <div class="sessionHours">00:00 → 09:00</div>
         </div>
 
-        <div class="miniClock">
-            <div class="miniClockLabel">🇯🇵 TOK</div>
-            <div class="miniClockValue" id="clockTokyo">--:--</div>
+        <div class="sessionClock closed" id="sessionLondon">
+            <div class="sessionTop">
+                <div class="sessionName">🇬🇧 LON</div>
+                <div class="sessionStatus" id="statusLondon">CLOSED</div>
+            </div>
+            <div class="sessionTime" id="clockLondon">--:--</div>
+            <div class="sessionHours">08:00 → 17:00</div>
+        </div>
+
+        <div class="sessionClock closed" id="sessionFrankfurt">
+            <div class="sessionTop">
+                <div class="sessionName">🇩🇪 FRA</div>
+                <div class="sessionStatus" id="statusFrankfurt">CLOSED</div>
+            </div>
+            <div class="sessionTime" id="clockFrankfurt">--:--</div>
+            <div class="sessionHours">08:00 → 16:30</div>
+        </div>
+
+        <div class="sessionClock closed" id="sessionNewYork">
+            <div class="sessionTop">
+                <div class="sessionName">🇺🇸 NY</div>
+                <div class="sessionStatus" id="statusNewYork">CLOSED</div>
+            </div>
+            <div class="sessionTime" id="clockNewYork">--:--</div>
+            <div class="sessionHours">14:30 → 21:00</div>
         </div>
     </div>
 
