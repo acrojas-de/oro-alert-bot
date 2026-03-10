@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 import pandas as pd
 import yfinance as yf
+import numpy as np
 
 
 # =========================================================
@@ -50,6 +51,21 @@ def macd(series: pd.Series):
     signal = ema(macd_line, 9)
     hist = macd_line - signal
     return macd_line, signal, hist
+
+
+def rsi(series: pd.Series, length: int = 14) -> pd.Series:
+    delta = series.diff()
+
+    gain = delta.clip(lower=0)
+    loss = -delta.clip(upper=0)
+
+    avg_gain = gain.ewm(alpha=1 / length, min_periods=length, adjust=False).mean()
+    avg_loss = loss.ewm(alpha=1 / length, min_periods=length, adjust=False).mean()
+
+    rs = avg_gain / avg_loss.replace(0, np.nan)
+    out = 100 - (100 / (1 + rs))
+
+    return out.fillna(50)
 
 
 # =========================================================
@@ -228,40 +244,6 @@ def detect_liquidity_vacuum(close: pd.Series, liq: dict) -> dict:
 
 
 # =========================================================
-# ZONA 2G · TRAP DETECTOR
-# =========================================================
-def detect_trap(sweep: dict, magnet: dict, compression: dict) -> dict:
-    sweep_high = bool(sweep.get("sweep_high", False))
-    sweep_low = bool(sweep.get("sweep_low", False))
-    magnet_dir = magnet.get("direction", "none")
-    is_compression = bool(compression.get("compression", False))
-
-    bull_trap = sweep_high and magnet_dir == "down"
-    bear_trap = sweep_low and magnet_dir == "up"
-
-    trap_type = "none"
-    direction = "none"
-    confidence = "low"
-
-    if bull_trap:
-        trap_type = "bull_trap"
-        direction = "down"
-        confidence = "high" if is_compression else "medium"
-    elif bear_trap:
-        trap_type = "bear_trap"
-        direction = "up"
-        confidence = "high" if is_compression else "medium"
-
-    return {
-        "trap": trap_type != "none",
-        "type": trap_type,
-        "direction": direction,
-        "confidence": confidence,
-        "compression_confirmed": is_compression
-    }
-
-
-# =========================================================
 # ZONA 2F · BIAS ENGINE + TARGET DIRECCIONAL
 # =========================================================
 def compute_bias(state: dict) -> dict:
@@ -360,6 +342,298 @@ def compute_bias(state: dict) -> dict:
 
 
 # =========================================================
+# ZONA 2G · TRAP DETECTOR
+# =========================================================
+def detect_trap(sweep: dict, magnet: dict, compression: dict) -> dict:
+    sweep_high = bool(sweep.get("sweep_high", False))
+    sweep_low = bool(sweep.get("sweep_low", False))
+    magnet_dir = magnet.get("direction", "none")
+    is_compression = bool(compression.get("compression", False))
+
+    bull_trap = sweep_high and magnet_dir == "down"
+    bear_trap = sweep_low and magnet_dir == "up"
+
+    trap_type = "none"
+    direction = "none"
+    confidence = "low"
+
+    if bull_trap:
+        trap_type = "bull_trap"
+        direction = "down"
+        confidence = "high" if is_compression else "medium"
+    elif bear_trap:
+        trap_type = "bear_trap"
+        direction = "up"
+        confidence = "high" if is_compression else "medium"
+
+    return {
+        "trap": trap_type != "none",
+        "type": trap_type,
+        "direction": direction,
+        "confidence": confidence,
+        "compression_confirmed": is_compression
+    }
+
+
+# =========================================================
+# ZONA 2H · ALERT ENGINE POR TIMEFRAME
+# =========================================================
+def detect_divergence(close: pd.Series, rsi_series: pd.Series, lookback: int = 8) -> dict:
+    s_close = close.dropna()
+    s_rsi = rsi_series.dropna()
+
+    size = min(len(s_close), len(s_rsi))
+    if size < lookback * 3:
+        return {
+            "active": False,
+            "type": "none",
+            "label": "insufficient_data"
+        }
+
+    s_close = s_close.iloc[-lookback * 3:]
+    s_rsi = s_rsi.iloc[-lookback * 3:]
+
+    a_close = s_close.iloc[:lookback]
+    b_close = s_close.iloc[lookback:lookback * 2]
+    c_close = s_close.iloc[lookback * 2:]
+
+    a_rsi = s_rsi.iloc[:lookback]
+    b_rsi = s_rsi.iloc[lookback:lookback * 2]
+    c_rsi = s_rsi.iloc[lookback * 2:]
+
+    bearish = (
+        float(c_close.max()) > float(b_close.max()) > float(a_close.max())
+        and float(c_rsi.max()) < float(b_rsi.max())
+    )
+
+    bullish = (
+        float(c_close.min()) < float(b_close.min()) < float(a_close.min())
+        and float(c_rsi.min()) > float(b_rsi.min())
+    )
+
+    if bearish:
+        return {
+            "active": True,
+            "type": "bearish",
+            "label": "bearish_divergence"
+        }
+
+    if bullish:
+        return {
+            "active": True,
+            "type": "bullish",
+            "label": "bullish_divergence"
+        }
+
+    return {
+        "active": False,
+        "type": "none",
+        "label": "no_divergence"
+    }
+
+
+def detect_directional_bias_tf(
+    close: pd.Series,
+    ema21: pd.Series,
+    ema50: pd.Series,
+    rsi_series: pd.Series,
+    liq: dict,
+    sweep: dict,
+    compression: dict,
+    magnet: dict,
+    divergence: dict
+) -> dict:
+    if len(close) == 0 or len(ema21) == 0 or len(ema50) == 0 or len(rsi_series) == 0:
+        return {
+            "score": 0,
+            "bias": "neutral",
+            "confidence": "low",
+            "reasons": ["insufficient_data"]
+        }
+
+    last_close = float(close.iloc[-1])
+    last_ema21 = float(ema21.iloc[-1])
+    last_ema50 = float(ema50.iloc[-1])
+    last_rsi = float(rsi_series.iloc[-1])
+
+    score = 0
+    reasons = []
+
+    if last_ema21 > last_ema50:
+        score += 2
+        reasons.append("ema21_above_ema50")
+    elif last_ema21 < last_ema50:
+        score -= 2
+        reasons.append("ema21_below_ema50")
+
+    if last_close > last_ema21:
+        score += 1
+        reasons.append("price_above_ema21")
+    elif last_close < last_ema21:
+        score -= 1
+        reasons.append("price_below_ema21")
+
+    if last_rsi >= 55:
+        score += 1
+        reasons.append("rsi_bullish")
+    elif last_rsi <= 45:
+        score -= 1
+        reasons.append("rsi_bearish")
+
+    if magnet.get("direction") == "up":
+        score += 1
+        reasons.append("magnet_up")
+    elif magnet.get("direction") == "down":
+        score -= 1
+        reasons.append("magnet_down")
+
+    if sweep.get("sweep_low"):
+        score += 1
+        reasons.append("sweep_low_supports_up")
+
+    if sweep.get("sweep_high"):
+        score -= 1
+        reasons.append("sweep_high_supports_down")
+
+    if divergence.get("type") == "bullish":
+        score += 1
+        reasons.append("bullish_divergence_bonus")
+    elif divergence.get("type") == "bearish":
+        score -= 1
+        reasons.append("bearish_divergence_penalty")
+
+    compression_active = bool(compression.get("compression", False))
+
+    if score >= 3:
+        bias = "bullish"
+        confidence = "high" if compression_active else "medium"
+    elif score <= -3:
+        bias = "bearish"
+        confidence = "high" if compression_active else "medium"
+    else:
+        bias = "neutral"
+        confidence = "low"
+
+    return {
+        "score": int(score),
+        "bias": bias,
+        "confidence": confidence,
+        "reasons": reasons
+    }
+
+
+def confirm_breakout(df: pd.DataFrame, compression: dict, lookback: int = 12, min_body_ratio: float = 0.55) -> dict:
+    if df is None or df.empty or len(df) < lookback + 2:
+        return {
+            "active": False,
+            "direction": "none",
+            "label": "insufficient_data"
+        }
+
+    if not bool(compression.get("compression", False)):
+        return {
+            "active": False,
+            "direction": "none",
+            "label": "no_compression_context"
+        }
+
+    required_cols = {"open", "high", "low", "close"}
+    if not required_cols.issubset(df.columns):
+        return {
+            "active": False,
+            "direction": "none",
+            "label": "missing_ohlc"
+        }
+
+    box = df.iloc[-(lookback + 1):-1]
+    last = df.iloc[-1]
+
+    box_high = float(box["high"].max())
+    box_low = float(box["low"].min())
+
+    open_ = float(last["open"])
+    high = float(last["high"])
+    low = float(last["low"])
+    close_ = float(last["close"])
+
+    candle_range = max(high - low, 1e-9)
+    body = abs(close_ - open_)
+    body_ratio = body / candle_range
+
+    bull_breakout = close_ > box_high and body_ratio >= min_body_ratio
+    bear_breakout = close_ < box_low and body_ratio >= min_body_ratio
+
+    if bull_breakout:
+        return {
+            "active": True,
+            "direction": "up",
+            "body_ratio": round(body_ratio, 4),
+            "box_high": round(box_high, 6),
+            "box_low": round(box_low, 6),
+            "label": "bullish_breakout_confirmed"
+        }
+
+    if bear_breakout:
+        return {
+            "active": True,
+            "direction": "down",
+            "body_ratio": round(body_ratio, 4),
+            "box_high": round(box_high, 6),
+            "box_low": round(box_low, 6),
+            "label": "bearish_breakout_confirmed"
+        }
+
+    return {
+        "active": False,
+        "direction": "none",
+        "body_ratio": round(body_ratio, 4),
+        "box_high": round(box_high, 6),
+        "box_low": round(box_low, 6),
+        "label": "no_breakout"
+    }
+
+
+def build_alert_engine_tf(
+    df: pd.DataFrame,
+    close: pd.Series,
+    ema21: pd.Series,
+    ema50: pd.Series,
+    rsi_series: pd.Series,
+    liq: dict,
+    sweep: dict,
+    compression: dict,
+    magnet: dict
+) -> dict:
+    divergence = detect_divergence(close, rsi_series)
+
+    directional_bias = detect_directional_bias_tf(
+        close=close,
+        ema21=ema21,
+        ema50=ema50,
+        rsi_series=rsi_series,
+        liq=liq,
+        sweep=sweep,
+        compression=compression,
+        magnet=magnet,
+        divergence=divergence
+    )
+
+    breakout = confirm_breakout(df, compression)
+
+    return {
+        "compression": {
+            "active": bool(compression.get("compression", False)),
+            "volatility": round(float(compression.get("volatility", 0.0)), 8),
+            "macd_compression": round(float(compression.get("macd_compression", 0.0)), 6),
+            "label": "compression" if compression.get("compression") else "normal"
+        },
+        "directional_bias": directional_bias,
+        "divergence": divergence,
+        "breakout_confirmation": breakout
+    }
+
+
+# =========================================================
 # ZONA 3A · DESCARGA Y NORMALIZACIÓN
 # =========================================================
 def download_raw(period: str, interval: str) -> pd.DataFrame | None:
@@ -454,6 +728,7 @@ def fetch(tf: str) -> dict | None:
 
     ema21 = ema(close, 21)
     ema50 = ema(close, 50)
+    rsi14 = rsi(close, 14)
     macd_line, signal, hist = macd(close)
 
     liq = liquidity_levels(close)
@@ -462,6 +737,18 @@ def fetch(tf: str) -> dict | None:
     magnet = detect_liquidity_magnet(close, liq)
     vacuum = detect_liquidity_vacuum(close, liq)
     trap = detect_trap(sweep, magnet, compression)
+
+    alert_engine = build_alert_engine_tf(
+        df=df,
+        close=close,
+        ema21=ema21,
+        ema50=ema50,
+        rsi_series=rsi14,
+        liq=liq,
+        sweep=sweep,
+        compression=compression,
+        magnet=magnet
+    )
 
     out = []
     for i in range(len(close)):
@@ -472,6 +759,7 @@ def fetch(tf: str) -> dict | None:
             "price": round(float(close.iloc[i]), 6),
             "ema21": round(float(ema21.iloc[i]), 6),
             "ema50": round(float(ema50.iloc[i]), 6),
+            "rsi": round(float(rsi14.iloc[i]), 6) if pd.notna(rsi14.iloc[i]) else None,
             "macd": round(float(macd_line.iloc[i]), 6) if pd.notna(macd_line.iloc[i]) else None,
             "hist": round(float(hist.iloc[i]), 6) if pd.notna(hist.iloc[i]) else None
         })
@@ -483,7 +771,8 @@ def fetch(tf: str) -> dict | None:
         "compression": compression,
         "magnet": magnet,
         "vacuum": vacuum,
-        "trap": trap
+        "trap": trap,
+        "alert_engine": alert_engine
     }
 
 
@@ -494,7 +783,7 @@ def build_telegram_message(data: dict) -> str | None:
     bias = data.get("bias", {})
     state = data.get("state", {})
 
-    if not bias:
+    if not bias or not state:
         return None
 
     bias_side = bias.get("bias", "neutral")
@@ -502,27 +791,44 @@ def build_telegram_message(data: dict) -> str | None:
     bear = bias.get("bearish_pct")
     target = bias.get("target")
 
-    if bias_side == "bullish" and (bull is None or bull < 65):
-        return None
-    if bias_side == "bearish" and (bear is None or bear < 65):
-        return None
-
-    trap_hits = []
-    for tf in ["4h", "1h", "5m", "1m"]:
-        trap = state.get(tf, {}).get("trap", {})
-        if trap.get("trap"):
-            trap_hits.append(f"{tf}: {trap.get('type')} ({trap.get('confidence')})")
-
     lines = [
-        "⚠ BTC Setup detectado",
+        "⚠ BTC Alert Engine",
         "",
-        f"Bias: {bias_side} | Bull {bull}% / Bear {bear}%",
+        f"Bias global: {bias_side} | Bull {bull}% / Bear {bear}%",
         f"Target radar: {target}",
+        ""
     ]
 
-    if trap_hits:
-        lines.append("Trap detector:")
-        lines.extend(trap_hits)
+    interesting = False
+
+    for tf in ["4h", "1h", "5m", "1m"]:
+        tf_state = state.get(tf, {})
+        ae = tf_state.get("alert_engine", {})
+
+        compression = ae.get("compression", {})
+        directional = ae.get("directional_bias", {})
+        divergence = ae.get("divergence", {})
+        breakout = ae.get("breakout_confirmation", {})
+
+        tf_lines = []
+
+        if compression.get("active"):
+            tf_lines.append(
+                f"• {tf} compression | bias {directional.get('bias')} ({directional.get('confidence')})"
+            )
+
+        if divergence.get("active"):
+            tf_lines.append(f"• {tf} divergence: {divergence.get('type')}")
+
+        if breakout.get("active"):
+            tf_lines.append(f"• {tf} breakout confirmed: {breakout.get('direction')}")
+
+        if tf_lines:
+            interesting = True
+            lines.extend(tf_lines)
+
+    if not interesting:
+        return None
 
     return "\n".join(lines)
 
@@ -570,7 +876,8 @@ def main():
             "compression": tf_data["compression"],
             "magnet": tf_data["magnet"],
             "vacuum": tf_data["vacuum"],
-            "trap": tf_data["trap"]
+            "trap": tf_data["trap"],
+            "alert_engine": tf_data["alert_engine"]
         }
 
     if data["state"]:
