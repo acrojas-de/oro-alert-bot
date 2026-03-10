@@ -322,11 +322,16 @@ def compute_bias(state: dict) -> dict:
     if total == 0:
         bull_pct = 50.0
         bear_pct = 50.0
+        bias = "neutral"
     else:
         bull_pct = round(score_bull / total * 100, 2)
         bear_pct = round(score_bear / total * 100, 2)
-
-    bias = "bullish" if bull_pct > bear_pct else "bearish"
+        if bull_pct > bear_pct:
+            bias = "bullish"
+        elif bear_pct > bull_pct:
+            bias = "bearish"
+        else:
+            bias = "neutral"
 
     def weighted_avg(targets):
         if not targets:
@@ -339,7 +344,12 @@ def compute_bias(state: dict) -> dict:
             return None
         return round(sum(t * w for t, w in valid) / total_w, 6)
 
-    target = weighted_avg(targets_up) if bias == "bullish" else weighted_avg(targets_down)
+    if bias == "bullish":
+        target = weighted_avg(targets_up)
+    elif bias == "bearish":
+        target = weighted_avg(targets_down)
+    else:
+        target = None
 
     return {
         "bias": bias,
@@ -352,7 +362,7 @@ def compute_bias(state: dict) -> dict:
 # =========================================================
 # ZONA 3A · DESCARGA Y NORMALIZACIÓN
 # =========================================================
-def download_raw(period: str, interval: str) -> pd.DataFrame:
+def download_raw(period: str, interval: str) -> pd.DataFrame | None:
     df = yf.download(
         BTC,
         period=period,
@@ -363,7 +373,8 @@ def download_raw(period: str, interval: str) -> pd.DataFrame:
     )
 
     if df is None or df.empty:
-        raise RuntimeError(f"Sin datos para {BTC} en intervalo {interval}")
+        print(f"[WARN] Sin datos para {BTC} en intervalo {interval}")
+        return None
 
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
@@ -371,19 +382,25 @@ def download_raw(period: str, interval: str) -> pd.DataFrame:
     df = df.rename(columns=str.lower).dropna(how="all")
 
     if "close" not in df.columns:
-        raise RuntimeError(f"No existe columna close para {BTC} en intervalo {interval}")
+        print(f"[WARN] No existe columna close para {BTC} en intervalo {interval}")
+        return None
 
     return df
 
 
-def resample_to_4h(df: pd.DataFrame) -> pd.DataFrame:
+def resample_to_4h(df: pd.DataFrame) -> pd.DataFrame | None:
+    if df is None or df.empty:
+        return None
+
     if not isinstance(df.index, pd.DatetimeIndex):
-        raise RuntimeError("El índice no es DatetimeIndex para reagrupar a 4H")
+        print("[WARN] El índice no es DatetimeIndex para reagrupar a 4H")
+        return None
 
     cols_needed = ["open", "high", "low", "close"]
     for c in cols_needed:
         if c not in df.columns:
-            raise RuntimeError(f"Falta columna {c} para reagrupar a 4H")
+            print(f"[WARN] Falta columna {c} para reagrupar a 4H")
+            return None
 
     agg = {
         "open": "first",
@@ -396,28 +413,44 @@ def resample_to_4h(df: pd.DataFrame) -> pd.DataFrame:
         agg["volume"] = "sum"
 
     out = df.resample("4h").agg(agg).dropna()
+
+    if out.empty:
+        print("[WARN] El resample a 4H devolvió vacío")
+        return None
+
     return out
 
 
 # =========================================================
 # ZONA 3 · FETCH POR TIMEFRAME
 # =========================================================
-def fetch(tf: str) -> dict:
+def fetch(tf: str) -> dict | None:
     period, interval = TIMEFRAMES[tf]
 
     raw = download_raw(period, interval)
+    if raw is None:
+        return None
 
     if tf == "4h":
         df = resample_to_4h(raw)
     else:
         df = raw.copy()
 
+    if df is None or df.empty:
+        print(f"[WARN] DataFrame vacío para {BTC} en {tf}")
+        return None
+
     df = df.dropna()
+
+    if "close" not in df.columns:
+        print(f"[WARN] El dataframe de {tf} no contiene 'close'")
+        return None
 
     close = df["close"].dropna()
 
     if len(close) < 30:
-        raise RuntimeError(f"Datos insuficientes para {BTC} en {tf}: {len(close)} velas")
+        print(f"[WARN] Datos insuficientes para {BTC} en {tf}: {len(close)} velas")
+        return None
 
     ema21 = ema(close, 21)
     ema50 = ema(close, 50)
@@ -495,7 +528,6 @@ def build_telegram_message(data: dict) -> str | None:
 
 
 def maybe_send_telegram(data: dict):
-    # Preparado, pero no activo si no hay credenciales
     if not TELEGRAM_ENABLED:
         return
 
@@ -503,8 +535,6 @@ def maybe_send_telegram(data: dict):
         print("Telegram habilitado pero faltan TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID")
         return
 
-    # Aquí lo dejamos preparado para la siguiente fase.
-    # No hacemos envío real todavía para no tocar API sin cerrar diseño final.
     msg = build_telegram_message(data)
     if msg:
         print("Telegram READY:")
@@ -528,6 +558,10 @@ def main():
     for tf in TIMEFRAMES:
         tf_data = fetch(tf)
 
+        if tf_data is None:
+            print(f"[SKIP] {tf} sin datos suficientes")
+            continue
+
         data["series"][tf] = tf_data["series"]
 
         data["state"][tf] = {
@@ -539,7 +573,15 @@ def main():
             "trap": tf_data["trap"]
         }
 
-    data["bias"] = compute_bias(data["state"])
+    if data["state"]:
+        data["bias"] = compute_bias(data["state"])
+    else:
+        data["bias"] = {
+            "bias": "neutral",
+            "bullish_pct": 50.0,
+            "bearish_pct": 50.0,
+            "target": None
+        }
 
     with open(DATA_PATH, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
