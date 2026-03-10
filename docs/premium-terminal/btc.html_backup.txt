@@ -645,6 +645,64 @@ body{
 }
 #pressureHud.pressure-neutral .pressureValue{
     color:#cbd5e1;
+}  
+
+#liquidityRadar{
+    min-width:170px;
+    flex-direction:column;
+    gap:4px;
+    transition:all .25s ease;
+}
+
+.lrLabel{
+    font-size:11px;
+    color:var(--muted);
+    letter-spacing:.8px;
+    font-weight:700;
+}
+
+.lrValue{
+    font-size:22px;
+    font-weight:800;
+    line-height:1;
+    letter-spacing:.6px;
+}
+
+.lrSub{
+    font-size:11px;
+    color:var(--muted);
+    text-align:center;
+}
+
+#liquidityRadar.lr-up{
+    border-color:#22c55e;
+    box-shadow:0 0 10px rgba(34,197,94,.20);
+}
+#liquidityRadar.lr-up .lrValue{
+    color:#86efac;
+}
+
+#liquidityRadar.lr-down{
+    border-color:#ef4444;
+    box-shadow:0 0 10px rgba(239,68,68,.20);
+}
+#liquidityRadar.lr-down .lrValue{
+    color:#fca5a5;
+}
+
+#liquidityRadar.lr-balanced{
+    border-color:#3b82f6;
+    box-shadow:0 0 10px rgba(59,130,246,.20);
+}
+#liquidityRadar.lr-balanced .lrValue{
+    color:#93c5fd;
+}
+
+#liquidityRadar.lr-void{
+    border-color:#334155;
+}
+#liquidityRadar.lr-void .lrValue{
+    color:#cbd5e1;
 }    
 
 .indexGroup{
@@ -675,6 +733,37 @@ gap:12px;
     transition:all .25s ease;
 }
 
+#smRadar.sm-idle{
+    border-color:#334155;
+}
+#smRadar.sm-idle .hudValue{
+    color:#cbd5e1;
+}
+
+#smRadar.sm-watch{
+    border-color:#0ea5e9;
+    box-shadow:0 0 10px rgba(14,165,233,.18);
+}
+#smRadar.sm-watch .hudValue{
+    color:#7dd3fc;
+}
+
+#smRadar.sm-active{
+    border-color:#f59e0b;
+    box-shadow:0 0 10px rgba(245,158,11,.18);
+}
+#smRadar.sm-active .hudValue{
+    color:#fcd34d;
+}
+
+#smRadar.sm-detected{
+    border-color:#22c55e;
+    box-shadow:0 0 12px rgba(34,197,94,.22);
+}
+#smRadar.sm-detected .hudValue{
+    color:#86efac;
+}
+    
 .hudTitle{
     font-size:11px;
     color:var(--muted);
@@ -824,6 +913,12 @@ gap:12px;
      <div class="hudTitle">SMART MONEY</div>
      <div class="hudValue" id="smValue">IDLE</div>
      <div class="hudSub" id="smSub">No activity</div>
+</div>
+
+     <div class="hudBox" id="liquidityRadar">
+    <div class="lrLabel">LIQUIDITY RADAR</div>
+    <div class="lrValue" id="lrValue">VOID</div>
+    <div class="lrSub" id="lrSub">No liquidity map</div>
 </div>
      
      <div class="hudBox" id="indexHud">
@@ -1301,8 +1396,7 @@ function updateMarketPressure(data) {
     pressureSub.textContent = sub;
 }
 
-function updateSmartMoney(data){
-
+    function updateSmartMoney(data){
     const value = document.getElementById("smValue");
     const sub = document.getElementById("smSub");
     const box = document.getElementById("smRadar");
@@ -1315,37 +1409,101 @@ function updateSmartMoney(data){
 
     let signals = 0;
 
-    if(s1m.sweep?.sweep_high || s1m.sweep?.sweep_low) signals++;
-    if(s5m.trap?.trap) signals++;
-    if(s1h.trap?.trap) signals++;
-    if(s1h.vacuum?.vacuum) signals++;
-    if(s1h.compression?.compression) signals++;
-    if(s1h.magnet?.direction) signals++;
+    if (s1m.sweep?.sweep_high || s1m.sweep?.sweep_low) signals++;
+    if (s5m.trap?.trap) signals++;
+    if (s1h.trap?.trap) signals++;
+    if (s1h.vacuum?.vacuum) signals++;
+    if (s1h.compression?.compression) signals++;
+    if (s1h.magnet?.direction) signals++;
 
     let radar = "IDLE";
     let desc = "No institutional activity";
-    let color = "#2c3e50";
+    let cls = "sm-idle";
 
-    if(signals >= 4){
-        radar = "DETECTED ⚡";
+    if (signals >= 4) {
+        radar = "DETECTED";
         desc = "Smart money activity";
-        color = "#ffcc00";
-    }
-    else if(signals === 3){
+        cls = "sm-detected";
+    } else if (signals === 3) {
         radar = "ACTIVE";
         desc = "Institutional signals aligning";
-        color = "#ff8c00";
-    }
-    else if(signals === 2){
+        cls = "sm-active";
+    } else if (signals === 2) {
         radar = "WATCH";
         desc = "Possible setup forming";
-        color = "#00bfff";
+        cls = "sm-watch";
     }
+
+    box.classList.remove("sm-idle", "sm-watch", "sm-active", "sm-detected");
+    box.classList.add(cls);
 
     value.textContent = radar;
     sub.textContent = desc;
-    box.style.borderColor = color;
 }
+
+   function updateLiquidityRadar(data) {
+    const box = document.getElementById("liquidityRadar");
+    const value = document.getElementById("lrValue");
+    const sub = document.getElementById("lrSub");
+
+    if (!box || !value || !sub) return;
+
+    const s1h = data?.state?.["1h"]?.liquidity || null;
+    const s5m = data?.state?.["5m"]?.liquidity || null;
+    const s1mSeries = data?.series?.["1m"] || [];
+    const lastPoint = s1mSeries.length ? s1mSeries[s1mSeries.length - 1] : null;
+    const price = lastPoint?.price ?? null;
+
+    let status = "VOID";
+    let desc = "No liquidity map";
+    let cls = "lr-void";
+
+    if (price !== null && s1h) {
+        const up1h = Math.abs((s1h.range_high_20 ?? price) - price);
+        const down1h = Math.abs(price - (s1h.range_low_20 ?? price));
+
+        let upScore = 0;
+        let downScore = 0;
+
+        if (up1h < down1h) upScore += 2;
+        if (down1h < up1h) downScore += 2;
+
+        if (s1h.swing_high !== undefined && s1h.swing_high !== null) {
+            const distSwingHigh = Math.abs(s1h.swing_high - price);
+            const distSwingLow = Math.abs(price - (s1h.swing_low ?? price));
+            if (distSwingHigh < distSwingLow) upScore += 1;
+            if (distSwingLow < distSwingHigh) downScore += 1;
+        }
+
+        if (s5m) {
+            const up5m = Math.abs((s5m.range_high_20 ?? price) - price);
+            const down5m = Math.abs(price - (s5m.range_low_20 ?? price));
+
+            if (up5m < down5m) upScore += 1;
+            if (down5m < up5m) downScore += 1;
+        }
+
+        if (upScore >= downScore + 2) {
+            status = "UP";
+            desc = "Liquidity resting above";
+            cls = "lr-up";
+        } else if (downScore >= upScore + 2) {
+            status = "DOWN";
+            desc = "Liquidity resting below";
+            cls = "lr-down";
+        } else {
+            status = "BALANCED";
+            desc = "Liquidity balanced both sides";
+            cls = "lr-balanced";
+        }
+    }
+
+    box.classList.remove("lr-up", "lr-down", "lr-balanced", "lr-void");
+    box.classList.add(cls);
+
+    value.textContent = status;
+    sub.textContent = desc;
+} 
     
 async function loadBTC() {
     try {
@@ -1370,6 +1528,7 @@ async function loadBTC() {
         updateTradeHud(data);
         updateMarketPressure(data);
         updateSmartMoney(data);
+        updateLiquidityRadar(data);
         renderDebug(data);
 
     } catch (err) {
