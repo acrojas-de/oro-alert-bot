@@ -1517,10 +1517,12 @@ async function loadBTC() {
         const has4h = (data.series?.["4h"] || []).length > 0;
         document.getElementById("marketState").textContent = has4h ? "Activo" : "Sin datos";
 
-        drawChart("btc4h", data.series?.["4h"] || [], data.state?.["4h"]?.liquidity || null);
-        drawChart("btc1h", data.series?.["1h"] || [], data.state?.["1h"]?.liquidity || null);
-        drawChart("btc5m", data.series?.["5m"] || [], data.state?.["5m"]?.liquidity || null);
-        drawChart("btc1m", data.series?.["1m"] || [], data.state?.["1m"]?.liquidity || null);
+        const target = data?.bias?.target ?? null;
+
+        drawChart("btc4h", data.series?.["4h"] || [], data.state?.["4h"]?.liquidity || null, target);
+        drawChart("btc1h", data.series?.["1h"] || [], data.state?.["1h"]?.liquidity || null, target);
+        drawChart("btc5m", data.series?.["5m"] || [], data.state?.["5m"]?.liquidity || null, target);
+        drawChart("btc1m", data.series?.["1m"] || [], data.state?.["1m"]?.liquidity || null, target);
 
         renderLiquidity(data.state || {});
         renderSignals(data.state || {});
@@ -1864,7 +1866,7 @@ function makeZoneSeries(length, fromValue, toValue) {
     };
 }
 
-function drawChart(canvasId, series, liquidity) {
+function drawChart(canvasId, series, liquidity, target) {
     if (!Array.isArray(series) || series.length === 0) {
         console.warn("Sin datos para", canvasId);
         return;
@@ -2035,6 +2037,24 @@ function drawChart(canvasId, series, liquidity) {
             order: 2
         }
     );
+
+    if (target !== null) {
+
+    const targetLine = new Array(prices.length).fill(target);
+
+    datasets.push({
+        type: "line",
+        label: "Institutional Target",
+        data: targetLine,
+        borderColor: "#22c55e",
+        borderWidth: 2,
+        borderDash: [4,4],
+        pointRadius: 0,
+        yAxisID: "price",
+        order: 2
+    });
+
+}
 
     if (hasLiquidity) {
         datasets.push(
