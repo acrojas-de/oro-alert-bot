@@ -784,6 +784,69 @@ gap:12px;
     color:var(--muted);
     text-align:center;
 }   
+
+.alert-engine-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin:12px 0 14px;
+}
+
+.ae-card{
+  background:rgba(10,22,48,.92);
+  border:1px solid rgba(90,140,220,.22);
+  border-radius:14px;
+  padding:12px 14px;
+  box-shadow:0 8px 24px rgba(0,0,0,.18);
+}
+
+.ae-title{
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.08em;
+  color:#7fb3ff;
+  margin-bottom:6px;
+}
+
+.ae-value{
+  font-size:24px;
+  font-weight:900;
+  color:#f8fbff;
+  line-height:1.1;
+}
+
+.ae-sub{
+  margin-top:4px;
+  font-size:11px;
+  color:#91a8d0;
+}
+
+.ae-bullish{
+  border-color:rgba(34,197,94,.45);
+  box-shadow:0 0 0 1px rgba(34,197,94,.18), 0 10px 28px rgba(34,197,94,.10);
+}
+
+.ae-bearish{
+  border-color:rgba(239,68,68,.45);
+  box-shadow:0 0 0 1px rgba(239,68,68,.18), 0 10px 28px rgba(239,68,68,.10);
+}
+
+.ae-neutral{
+  border-color:rgba(250,204,21,.40);
+  box-shadow:0 0 0 1px rgba(250,204,21,.14), 0 10px 28px rgba(250,204,21,.08);
+}
+
+@media (max-width: 1100px){
+  .alert-engine-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media (max-width: 640px){
+  .alert-engine-grid{
+    grid-template-columns:1fr;
+  }
+}
     
 </style>
 </head>
@@ -977,6 +1040,32 @@ gap:12px;
     </div>
 </div>   
 
+<div class="alert-engine-grid">
+  <div class="ae-card" id="aeCompression">
+    <div class="ae-title">COMPRESSION</div>
+    <div class="ae-value" id="aeCompressionValue">--</div>
+    <div class="ae-sub" id="aeCompressionSub">Waiting...</div>
+  </div>
+
+  <div class="ae-card" id="aeBias">
+    <div class="ae-title">DIRECTIONAL BIAS</div>
+    <div class="ae-value" id="aeBiasValue">--</div>
+    <div class="ae-sub" id="aeBiasSub">Waiting...</div>
+  </div>
+
+  <div class="ae-card" id="aeDivergence">
+    <div class="ae-title">DIVERGENCE</div>
+    <div class="ae-value" id="aeDivergenceValue">--</div>
+    <div class="ae-sub" id="aeDivergenceSub">Waiting...</div>
+  </div>
+
+  <div class="ae-card" id="aeBreakout">
+    <div class="ae-title">BREAKOUT</div>
+    <div class="ae-value" id="aeBreakoutValue">--</div>
+    <div class="ae-sub" id="aeBreakoutSub">Waiting...</div>
+  </div>
+</div>
+    
 <div class="grid">
     <div class="card">
         <div class="cardHead">
@@ -1042,7 +1131,8 @@ gap:12px;
     </div>
 </div>
 </div>   
-<script>
+
+    <script>
 const charts = {};
 
 const FRAME_META = {
@@ -1504,7 +1594,81 @@ function updateMarketPressure(data) {
     value.textContent = status;
     sub.textContent = desc;
 } 
-    
+
+function setAECardState(el, state) {
+    if (!el) return;
+    el.classList.remove("ae-bullish", "ae-bearish", "ae-neutral");
+    if (state === "bullish" || state === "up" || state === "active") {
+        el.classList.add("ae-bullish");
+    } else if (state === "bearish" || state === "down") {
+        el.classList.add("ae-bearish");
+    } else {
+        el.classList.add("ae-neutral");
+    }
+}
+
+function renderAlertEngine(tfState) {
+    const ae = tfState?.alert_engine || {};
+    const compression = ae.compression || {};
+    const directional = ae.directional_bias || {};
+    const divergence = ae.divergence || {};
+    const breakout = ae.breakout_confirmation || {};
+
+    const compCard = document.getElementById("aeCompression");
+    const compValue = document.getElementById("aeCompressionValue");
+    const compSub = document.getElementById("aeCompressionSub");
+
+    if (compression.active) {
+        compValue.textContent = "ACTIVE";
+        compSub.textContent = `Vol ${compression.volatility ?? "--"} | MACD ${compression.macd_compression ?? "--"}`;
+        setAECardState(compCard, "active");
+    } else {
+        compValue.textContent = "NORMAL";
+        compSub.textContent = "No compression";
+        setAECardState(compCard, "neutral");
+    }
+
+    const biasCard = document.getElementById("aeBias");
+    const biasValue = document.getElementById("aeBiasValue");
+    const biasSub = document.getElementById("aeBiasSub");
+
+    const reasons = Array.isArray(directional.reasons)
+        ? directional.reasons.slice(0, 3).join(" · ")
+        : "No reasons";
+
+    biasValue.textContent = (directional.bias || "--").toUpperCase();
+    biasSub.textContent = `Score ${directional.score ?? "--"} | ${directional.confidence || "--"} | ${reasons}`;
+    setAECardState(biasCard, directional.bias || "neutral");
+
+    const divCard = document.getElementById("aeDivergence");
+    const divValue = document.getElementById("aeDivergenceValue");
+    const divSub = document.getElementById("aeDivergenceSub");
+
+    if (divergence.active) {
+        divValue.textContent = (divergence.type || "--").toUpperCase();
+        divSub.textContent = divergence.label || "Divergence detected";
+        setAECardState(divCard, divergence.type || "neutral");
+    } else {
+        divValue.textContent = "NONE";
+        divSub.textContent = "No divergence";
+        setAECardState(divCard, "neutral");
+    }
+
+    const brCard = document.getElementById("aeBreakout");
+    const brValue = document.getElementById("aeBreakoutValue");
+    const brSub = document.getElementById("aeBreakoutSub");
+
+    if (breakout.active) {
+        brValue.textContent = (breakout.direction || "--").toUpperCase();
+        brSub.textContent = `Body ${breakout.body_ratio ?? "--"} | Box ${breakout.box_low ?? "--"} / ${breakout.box_high ?? "--"}`;
+        setAECardState(brCard, breakout.direction || "neutral");
+    } else {
+        brValue.textContent = "WAIT";
+        brSub.textContent = `Box ${breakout.box_low ?? "--"} / ${breakout.box_high ?? "--"}`;
+        setAECardState(brCard, "neutral");
+    }
+}
+        
 async function loadBTC() {
     try {
         const r = await fetch("btc_data.json?v=" + Date.now(), { cache: "no-store" });
@@ -1531,6 +1695,13 @@ async function loadBTC() {
         updateMarketPressure(data);
         updateSmartMoney(data);
         updateLiquidityRadar(data);
+        const aeState =
+    data.state?.["1m"] ||
+    data.state?.["5m"] ||
+    data.state?.["1h"] ||
+    data.state?.["4h"] ||
+    null;
+        renderAlertEngine(aeState);
         renderDebug(data);
 
     } catch (err) {
