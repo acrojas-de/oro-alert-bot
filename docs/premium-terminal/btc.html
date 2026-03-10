@@ -1953,16 +1953,16 @@ series.forEach((candle) => {
     
     if (upperZone) {
         datasets.push(
-            {
+           {
                 type: "line",
-                label: "Upper Liquidity Zone Base",
-                data: upperZone.from,
-                borderWidth: 0,
+                label: "Price",
+                data: prices,
+                borderColor: "#38bdf8",
+                borderWidth: 2,
                 pointRadius: 0,
-                fill: false,
-                yAxisID: "price"
+                yAxisID: "price",
                 order: 2
-            },
+            }
             {
                 type: "line",
                 label: "Upper Liquidity Zone",
@@ -2008,7 +2008,8 @@ series.forEach((candle) => {
             borderColor: "#38bdf8",
             borderWidth: 2,
             pointRadius: 0,
-            yAxisID: "price"
+            yAxisID: "price",
+            order: 2
         },
         {
             type: "line",
@@ -2017,7 +2018,8 @@ series.forEach((candle) => {
             borderColor: "#22c55e",
             borderWidth: 1.5,
             pointRadius: 0,
-            yAxisID: "price"
+            yAxisID: "price",
+            order: 2
         },
         {
             type: "line",
@@ -2027,6 +2029,7 @@ series.forEach((candle) => {
             borderWidth: 1.5,
             pointRadius: 0,
             yAxisID: "price"
+            order: 2
         }
     );
 
