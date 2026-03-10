@@ -1881,22 +1881,22 @@ function drawChart(canvasId, series, liquidity) {
     const hist = series.map(x => x.hist ?? 0);
 
     const labels = prices.map((_, i) => i);
+
     const heatmapData = [];
-const heatmapColors = [];
+    const heatmapColors = [];
 
-series.forEach((candle) => {
-    const heat = Math.abs(candle.hist ?? 0);
+    series.forEach((candle) => {
+        const heat = Math.abs(candle.hist ?? 0);
+        heatmapData.push(heat);
 
-    heatmapData.push(heat);
-
-    if (heat > 150) {
-        heatmapColors.push("rgba(255,80,80,0.35)");
-    } else if (heat > 80) {
-        heatmapColors.push("rgba(255,180,80,0.28)");
-    } else {
-        heatmapColors.push("rgba(80,160,255,0.18)");
-    }
-});
+        if (heat > 150) {
+            heatmapColors.push("rgba(255,80,80,0.35)");
+        } else if (heat > 80) {
+            heatmapColors.push("rgba(255,180,80,0.28)");
+        } else {
+            heatmapColors.push("rgba(80,160,255,0.18)");
+        }
+    });
 
     const hasLiquidity = !!liquidity;
     const highLine = hasLiquidity ? new Array(prices.length).fill(liquidity.range_high_20) : [];
@@ -1940,29 +1940,29 @@ series.forEach((candle) => {
     const datasets = [];
 
     datasets.push({
-    type: "bar",
-    label: "Liquidity Heat",
-    data: heatmapData,
-    backgroundColor: heatmapColors,
-    borderWidth: 0,
-    barPercentage: 1.0,
-    categoryPercentage: 1.0,
-    yAxisID: "heat"
-    order: 0    
-});
-    
+        type: "bar",
+        label: "Liquidity Heat",
+        data: heatmapData,
+        backgroundColor: heatmapColors,
+        borderWidth: 0,
+        barPercentage: 1.0,
+        categoryPercentage: 1.0,
+        yAxisID: "heat",
+        order: 0
+    });
+
     if (upperZone) {
         datasets.push(
-           {
+            {
                 type: "line",
-                label: "Price",
-                data: prices,
-                borderColor: "#38bdf8",
-                borderWidth: 2,
+                label: "Upper Liquidity Zone Base",
+                data: upperZone.from,
+                borderWidth: 0,
                 pointRadius: 0,
+                fill: false,
                 yAxisID: "price",
-                order: 2
-            }
+                order: 1
+            },
             {
                 type: "line",
                 label: "Upper Liquidity Zone",
@@ -1971,7 +1971,8 @@ series.forEach((candle) => {
                 pointRadius: 0,
                 fill: "-1",
                 backgroundColor: "rgba(96, 165, 250, 0.12)",
-                yAxisID: "price"
+                yAxisID: "price",
+                order: 1
             }
         );
     }
@@ -1985,7 +1986,8 @@ series.forEach((candle) => {
                 borderWidth: 0,
                 pointRadius: 0,
                 fill: false,
-                yAxisID: "price"
+                yAxisID: "price",
+                order: 1
             },
             {
                 type: "line",
@@ -1995,7 +1997,8 @@ series.forEach((candle) => {
                 pointRadius: 0,
                 fill: "-1",
                 backgroundColor: "rgba(248, 113, 113, 0.12)",
-                yAxisID: "price"
+                yAxisID: "price",
+                order: 1
             }
         );
     }
@@ -2028,7 +2031,7 @@ series.forEach((candle) => {
             borderColor: "#f97316",
             borderWidth: 1.5,
             pointRadius: 0,
-            yAxisID: "price"
+            yAxisID: "price",
             order: 2
         }
     );
@@ -2043,7 +2046,8 @@ series.forEach((candle) => {
                 borderWidth: 1.5,
                 borderDash: [6, 6],
                 pointRadius: 0,
-                yAxisID: "price"
+                yAxisID: "price",
+                order: 2
             },
             {
                 type: "line",
@@ -2053,7 +2057,8 @@ series.forEach((candle) => {
                 borderWidth: 1.5,
                 borderDash: [6, 6],
                 pointRadius: 0,
-                yAxisID: "price"
+                yAxisID: "price",
+                order: 2
             }
         );
     }
@@ -2064,7 +2069,8 @@ series.forEach((candle) => {
             label: "MACD Hist",
             data: hist,
             backgroundColor: hist.map(v => (v >= 0 ? "#22c55e88" : "#ef444488")),
-            yAxisID: "macd"
+            yAxisID: "macd",
+            order: 3
         },
         {
             type: "line",
@@ -2073,7 +2079,8 @@ series.forEach((candle) => {
             borderColor: "#eab308",
             borderWidth: 1.5,
             pointRadius: 0,
-            yAxisID: "macd"
+            yAxisID: "macd",
+            order: 3
         },
         {
             type: "line",
@@ -2082,7 +2089,8 @@ series.forEach((candle) => {
             borderColor: "#334155",
             borderWidth: 1,
             pointRadius: 0,
-            yAxisID: "macd"
+            yAxisID: "macd",
+            order: 3
         },
         {
             type: "line",
@@ -2091,7 +2099,8 @@ series.forEach((candle) => {
             borderColor: "#334155",
             borderWidth: 1,
             pointRadius: 0,
-            yAxisID: "macd"
+            yAxisID: "macd",
+            order: 3
         }
     );
 
@@ -2107,19 +2116,19 @@ series.forEach((candle) => {
                 legend: { display: false }
             },
             scales: {
-    heat: {
-        type: "linear",
-        position: "right",
-        min: 0,
-        suggestedMax: 250,
-        display: false,
-        grid: {
-            drawOnChartArea: false
-        }
-    },
-    price: {
-        type: "linear",
-        position: "left",
+                heat: {
+                    type: "linear",
+                    position: "right",
+                    min: 0,
+                    suggestedMax: 250,
+                    display: false,
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                },
+                price: {
+                    type: "linear",
+                    position: "left",
                     min: minPrice - pad,
                     max: maxPrice + pad,
                     grid: {
