@@ -1881,6 +1881,22 @@ function drawChart(canvasId, series, liquidity) {
     const hist = series.map(x => x.hist ?? 0);
 
     const labels = prices.map((_, i) => i);
+    const heatmapData = [];
+const heatmapColors = [];
+
+series.forEach((candle) => {
+    const heat = Math.abs(candle.hist ?? 0);
+
+    heatmapData.push(heat);
+
+    if (heat > 150) {
+        heatmapColors.push("rgba(255,80,80,0.35)");
+    } else if (heat > 80) {
+        heatmapColors.push("rgba(255,180,80,0.28)");
+    } else {
+        heatmapColors.push("rgba(80,160,255,0.18)");
+    }
+});
 
     const hasLiquidity = !!liquidity;
     const highLine = hasLiquidity ? new Array(prices.length).fill(liquidity.range_high_20) : [];
@@ -1923,6 +1939,18 @@ function drawChart(canvasId, series, liquidity) {
 
     const datasets = [];
 
+    datasets.push({
+    type: "bar",
+    label: "Liquidity Heat",
+    data: heatmapData,
+    backgroundColor: heatmapColors,
+    borderWidth: 0,
+    barPercentage: 1.0,
+    categoryPercentage: 1.0,
+    yAxisID: "heat"
+    order: 0    
+});
+    
     if (upperZone) {
         datasets.push(
             {
@@ -1933,6 +1961,7 @@ function drawChart(canvasId, series, liquidity) {
                 pointRadius: 0,
                 fill: false,
                 yAxisID: "price"
+                order: 2
             },
             {
                 type: "line",
@@ -2075,9 +2104,19 @@ function drawChart(canvasId, series, liquidity) {
                 legend: { display: false }
             },
             scales: {
-                price: {
-                    type: "linear",
-                    position: "left",
+    heat: {
+        type: "linear",
+        position: "right",
+        min: 0,
+        suggestedMax: 250,
+        display: false,
+        grid: {
+            drawOnChartArea: false
+        }
+    },
+    price: {
+        type: "linear",
+        position: "left",
                     min: minPrice - pad,
                     max: maxPrice + pad,
                     grid: {
