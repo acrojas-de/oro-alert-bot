@@ -834,6 +834,7 @@ def build_telegram_message(data: dict) -> str | None:
 
 
 def maybe_send_telegram(data: dict):
+
     if not TELEGRAM_ENABLED:
         return
 
@@ -842,10 +843,28 @@ def maybe_send_telegram(data: dict):
         return
 
     msg = build_telegram_message(data)
-    if msg:
-        print("Telegram READY:")
-        print(msg)
 
+    if not msg:
+        return
+
+    try:
+
+        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+
+        payload = {
+            "chat_id": TELEGRAM_CHAT_ID,
+            "text": msg
+        }
+
+        r = requests.post(url, data=payload, timeout=10)
+
+        if r.status_code == 200:
+            print("Telegram enviado correctamente")
+        else:
+            print("Error Telegram:", r.text)
+
+    except Exception as e:
+        print("Error enviando Telegram:", e)
 
 # =========================================================
 # ZONA 5 · CONSTRUCCIÓN DEL JSON FINAL
