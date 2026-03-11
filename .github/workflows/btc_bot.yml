@@ -26,7 +26,11 @@ jobs:
           pip install pandas yfinance
 
       - name: Ejecutar bot BTC
-        run: python docs/premium-terminal/btc_bot.py
+  env:
+    TELEGRAM_ENABLED: "1"
+    TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+    TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+  run: python docs/premium-terminal/btc_bot.py
 
       - name: Commit btc_data.json
         run: |
