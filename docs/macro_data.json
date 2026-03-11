@@ -2,36 +2,9 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-03-11T20:57:04+00:00"
+    "updated_utc": "2026-03-11T21:29:05+00:00"
   },
   "series": [
-    {
-      "ts": "2026-02-26T23:04:47+00:00",
-      "candle_ts": "2026-02-26T20:00:00+00:00",
-      "score": 75,
-      "bias": "LONG_FAVORABLE",
-      "gold": 5213.5,
-      "gold_ema21": 5198.25,
-      "gold_ema50": 5193.78,
-      "gold_rsi14": 55.72,
-      "gold_rsi14_prev": 52.66,
-      "dxy": 97.794,
-      "dxy_ema21": 97.748,
-      "tnx": 4.025,
-      "tnx_ema21": 4.0372,
-      "nasdaq": 22833.67,
-      "nasdaq_ema21": 22880.85,
-      "ema_spread_pct": 0.000857,
-      "atr": 23.7459,
-      "atr_pct": 0.004555,
-      "ema21_slope_pct": 0.000293,
-      "tickers": {
-        "gold": "GC=F",
-        "dxy": "DX-Y.NYB",
-        "tnx": "^TNX",
-        "nasdaq": "^IXIC"
-      }
-    },
     {
       "ts": "2026-02-26T23:40:08+00:00",
       "candle_ts": "2026-02-26T21:00:00+00:00",
@@ -13849,6 +13822,34 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-03-11T21:29:05+00:00",
+      "candle_ts": "2026-03-11T19:00:00+00:00",
+      "score": 25,
+      "bias": "SHORT_CUIDADO",
+      "gold": 5191.0,
+      "gold_ema9": 5185.59,
+      "gold_ema21": 5190.72,
+      "gold_ema50": 5183.1,
+      "gold_rsi14": 50.23,
+      "gold_rsi14_prev": 45.13,
+      "dxy": 99.266,
+      "dxy_ema21": 99.065,
+      "tnx": 4.204,
+      "tnx_ema21": 4.1593,
+      "nasdaq": 22662.1,
+      "nasdaq_ema21": 22661.24,
+      "ema_spread_pct": 0.001467,
+      "atr": 21.9182,
+      "atr_pct": 0.004222,
+      "ema21_slope_pct": 5e-06,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -14623,7 +14624,7 @@
       "stop_price": 5183.2135,
       "warmup_bars": 1,
       "source_type": "BUY",
-      "created_at": "2026-03-11T20:57:04+00:00"
+      "created_at": "2026-03-11T21:29:05+00:00"
     }
   }
 }
