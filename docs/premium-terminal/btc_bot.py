@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 import pandas as pd
 import yfinance as yf
 import numpy as np
-
+import requests
 
 # =========================================================
 # ZONA 0 · CONFIGURACIÓN GENERAL
@@ -866,6 +866,61 @@ def maybe_send_telegram(data: dict):
     except Exception as e:
         print("Error enviando Telegram:", e)
 
+def compute_trade_setup(state: dict, bias: dict) -> dict:
+
+    s1m = state.get("1m", {})
+    ae = s1m.get("alert_engine", {})
+
+    compression = ae.get("compression", {})
+    breakout = ae.get("breakout_confirmation", {})
+
+    bias_side = bias.get("bias")
+
+    price = None
+    try:
+        price = float(state["1m"]["liquidity"]["swing_high"])
+    except:
+        pass
+
+    if compression.get("active") and not breakout.get("active"):
+        return {
+            "state": "WATCHLIST",
+            "direction": "none",
+            "entry": None,
+            "stop": None,
+            "target": bias.get("target"),
+            "reason": "compression active waiting breakout"
+        }
+
+    if breakout.get("active") and breakout.get("direction") == "up" and bias_side == "bullish":
+        return {
+            "state": "LONG_READY",
+            "direction": "long",
+            "entry": price,
+            "stop": price * 0.995 if price else None,
+            "target": bias.get("target"),
+            "reason": "breakout up + bullish bias"
+        }
+
+    if breakout.get("active") and breakout.get("direction") == "down" and bias_side == "bearish":
+        return {
+            "state": "SHORT_READY",
+            "direction": "short",
+            "entry": price,
+            "stop": price * 1.005 if price else None,
+            "target": bias.get("target"),
+            "reason": "breakout down + bearish bias"
+        }
+
+    return {
+        "state": "NO_TRADE",
+        "direction": "none",
+        "entry": None,
+        "stop": None,
+        "target": None,
+        "reason": "no setup"
+    }
+
 # =========================================================
 # ZONA 5 · CONSTRUCCIÓN DEL JSON FINAL
 # =========================================================
@@ -909,7 +964,7 @@ def main():
             "target": None
         }
 
-        data["setup"] = compute_trade_setup(data["state"], data["bias"])
+    data["setup"] = compute_trade_setup(data["state"], data["bias"])
     
     with open(DATA_PATH, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
