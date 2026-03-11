@@ -21,16 +21,16 @@ jobs:
         with:
           python-version: "3.11"
 
-     - name: Instalar dependencias
-  run: |
-    pip install pandas yfinance numpy requests
-    
+      - name: Instalar dependencias
+        run: |
+          pip install pandas yfinance numpy requests
+
       - name: Ejecutar bot BTC
-  env:
-    TELEGRAM_ENABLED: "1"
-    TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-    TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-  run: python docs/premium-terminal/btc_bot.py
+        env:
+          TELEGRAM_ENABLED: "1"
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python docs/premium-terminal/btc_bot.py
 
       - name: Commit btc_data.json
         run: |
