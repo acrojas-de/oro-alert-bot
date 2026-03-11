@@ -909,6 +909,8 @@ def main():
             "target": None
         }
 
+        data["setup"] = compute_trade_setup(data["state"], data["bias"])
+    
     with open(DATA_PATH, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
