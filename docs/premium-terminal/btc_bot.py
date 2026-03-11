@@ -775,62 +775,35 @@ def fetch(tf: str) -> dict | None:
         "alert_engine": alert_engine
     }
 
-
 # =========================================================
 # ZONA 4 · TELEGRAM INTELIGENTE (PREPARADO)
 # =========================================================
 def build_telegram_message(data: dict) -> str | None:
-    bias = data.get("bias", {})
-    state = data.get("state", {})
 
-    if not bias or not state:
+    setup = data.get("setup", {})
+    state = setup.get("state")
+
+    if state in ["NO_TRADE", None]:
         return None
 
-    bias_side = bias.get("bias", "neutral")
-    bull = bias.get("bullish_pct")
-    bear = bias.get("bearish_pct")
-    target = bias.get("target")
+    entry = setup.get("entry")
+    stop = setup.get("stop")
+    target = setup.get("target")
 
-    lines = [
-        "⚠ BTC Alert Engine",
+    msg = [
+        "⚠ BTC MASTER TERMINAL",
         "",
-        f"Bias global: {bias_side} | Bull {bull}% / Bear {bear}%",
-        f"Target radar: {target}",
-        ""
+        f"Estado: {state}",
+        f"Dirección: {setup.get('direction')}",
+        "",
+        f"Entry: {entry}",
+        f"Stop: {stop}",
+        f"Target: {target}",
+        "",
+        f"Motivo: {setup.get('reason')}"
     ]
 
-    interesting = False
-
-    for tf in ["4h", "1h", "5m", "1m"]:
-        tf_state = state.get(tf, {})
-        ae = tf_state.get("alert_engine", {})
-
-        compression = ae.get("compression", {})
-        directional = ae.get("directional_bias", {})
-        divergence = ae.get("divergence", {})
-        breakout = ae.get("breakout_confirmation", {})
-
-        tf_lines = []
-
-        if compression.get("active"):
-            tf_lines.append(
-                f"• {tf} compression | bias {directional.get('bias')} ({directional.get('confidence')})"
-            )
-
-        if divergence.get("active"):
-            tf_lines.append(f"• {tf} divergence: {divergence.get('type')}")
-
-        if breakout.get("active"):
-            tf_lines.append(f"• {tf} breakout confirmed: {breakout.get('direction')}")
-
-        if tf_lines:
-            interesting = True
-            lines.extend(tf_lines)
-
-    if not interesting:
-        return None
-
-    return "\n".join(lines)
+    return "\n".join(msg)
 
 
 def maybe_send_telegram(data: dict):
