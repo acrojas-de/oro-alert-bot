@@ -2,31 +2,9 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-03-11T01:12:39+00:00"
+    "updated_utc": "2026-03-11T02:28:27+00:00"
   },
   "series": [
-    {
-      "ts": "2026-02-26T09:34:34+00:00",
-      "score": 0,
-      "bias": "SHORT_CUIDADO",
-      "gold": 5195.8,
-      "gold_ema21": 5203.15,
-      "gold_ema50": 5193.08,
-      "gold_rsi14": 47.35,
-      "gold_rsi14_prev": 50.04,
-      "dxy": 97.703,
-      "dxy_ema21": 97.6599,
-      "tnx": 4.048,
-      "tnx_ema21": 4.0468,
-      "nasdaq": 23152.89,
-      "nasdaq_ema21": 22923.83,
-      "tickers": {
-        "gold": "GC=F",
-        "dxy": "DX-Y.NYB",
-        "tnx": "^TNX",
-        "nasdaq": "^IXIC"
-      }
-    },
     {
       "ts": "2026-02-26T10:29:44+00:00",
       "score": 0,
@@ -13805,6 +13783,34 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-03-11T02:28:27+00:00",
+      "candle_ts": "2026-03-11T01:00:00+00:00",
+      "score": 50,
+      "bias": "MIXTO_ESPERAR",
+      "gold": 5215.9,
+      "gold_ema9": 5210.86,
+      "gold_ema21": 5199.01,
+      "gold_ema50": 5174.0,
+      "gold_rsi14": 58.53,
+      "gold_rsi14_prev": 61.49,
+      "dxy": 98.826,
+      "dxy_ema21": 98.8279,
+      "tnx": 4.148,
+      "tnx_ema21": 4.124,
+      "nasdaq": 22698.13,
+      "nasdaq_ema21": 22635.62,
+      "ema_spread_pct": 0.004795,
+      "atr": 24.8335,
+      "atr_pct": 0.004761,
+      "ema21_slope_pct": 0.000324,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -14518,11 +14524,11 @@
   ],
   "state": {
     "metrics": {
-      "ema_spread": 25.0338,
-      "ema_spread_pct": 0.004793,
-      "atr": 25.59,
-      "atr_pct": 0.004899,
-      "ema21_slope_pct": 0.000494,
+      "ema_spread": 25.0123,
+      "ema_spread_pct": 0.004795,
+      "atr": 24.8335,
+      "atr_pct": 0.004761,
+      "ema21_slope_pct": 0.000324,
       "thresholds": {
         "COMP_EMA_PCT": 0.0015,
         "COMP_ATR_PCT": 0.0018,
