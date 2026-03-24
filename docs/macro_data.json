@@ -2,37 +2,9 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-03-24T21:21:56+00:00"
+    "updated_utc": "2026-03-24T21:55:59+00:00"
   },
   "series": [
-    {
-      "ts": "2026-03-08T23:28:39+00:00",
-      "candle_ts": "2026-03-08T22:00:00+00:00",
-      "score": 50,
-      "bias": "MIXTO_ESPERAR",
-      "gold": 5138.5,
-      "gold_ema9": 5147.42,
-      "gold_ema21": 5136.95,
-      "gold_ema50": 5143.14,
-      "gold_rsi14": 50.95,
-      "gold_rsi14_prev": 58.76,
-      "dxy": 99.424,
-      "dxy_ema21": 99.0809,
-      "tnx": 4.113,
-      "tnx_ema21": 4.1139,
-      "nasdaq": 22365.6,
-      "nasdaq_ema21": 22597.66,
-      "ema_spread_pct": 0.001205,
-      "atr": 31.6882,
-      "atr_pct": 0.006167,
-      "ema21_slope_pct": 3e-05,
-      "tickers": {
-        "gold": "GC=F",
-        "dxy": "DX-Y.NYB",
-        "tnx": "^TNX",
-        "nasdaq": "^IXIC"
-      }
-    },
     {
       "ts": "2026-03-08T23:47:39+00:00",
       "candle_ts": "2026-03-08T22:00:00+00:00",
@@ -14004,6 +13976,34 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-03-24T21:55:59+00:00",
+      "candle_ts": "2026-03-24T19:00:00+00:00",
+      "score": 50,
+      "bias": "MIXTO_ESPERAR",
+      "gold": 4400.9,
+      "gold_ema9": 4400.74,
+      "gold_ema21": 4399.87,
+      "gold_ema50": 4440.05,
+      "gold_rsi14": 49.62,
+      "gold_rsi14_prev": 48.01,
+      "dxy": 99.226,
+      "dxy_ema21": 99.3629,
+      "tnx": 4.408,
+      "tnx_ema21": 4.3571,
+      "nasdaq": 21810.77,
+      "nasdaq_ema21": 21904.5,
+      "ema_spread_pct": 0.009129,
+      "atr": 51.0889,
+      "atr_pct": 0.011609,
+      "ema21_slope_pct": 2.3e-05,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -15401,6 +15401,24 @@
     },
     {
       "ts": "2026-03-24T21:21:56+00:00",
+      "asset": "GOLD",
+      "type": "CONFIRM_UP",
+      "reason": "Confirmación alcista: 1.86% (+81.80$) desde cruce 4400.90",
+      "strength": 3,
+      "price": 4482.7,
+      "from_price": 4400.9,
+      "move": 81.8,
+      "move_pct": 0.018587,
+      "threshold_pct": 0.003,
+      "stop_price": 4394.3,
+      "source_ts": "2026-03-24T19:00:00+00:00",
+      "source_type": "BUY",
+      "exec_timeframe": "5m",
+      "warmup_bars": 1,
+      "p_base": 4467.7
+    },
+    {
+      "ts": "2026-03-24T21:55:59+00:00",
       "asset": "GOLD",
       "type": "CONFIRM_UP",
       "reason": "Confirmación alcista: 1.86% (+81.80$) desde cruce 4400.90",
