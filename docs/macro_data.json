@@ -2,37 +2,9 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-04-05T06:49:15+00:00"
+    "updated_utc": "2026-04-05T08:24:08+00:00"
   },
   "series": [
-    {
-      "ts": "2026-03-18T20:48:55+00:00",
-      "candle_ts": "2026-03-18T19:00:00+00:00",
-      "score": 50,
-      "bias": "MIXTO_ESPERAR",
-      "gold": 4846.8,
-      "gold_ema9": 4888.55,
-      "gold_ema21": 4929.53,
-      "gold_ema50": 4974.76,
-      "gold_rsi14": 23.73,
-      "gold_rsi14_prev": 25.07,
-      "dxy": 100.165,
-      "dxy_ema21": 99.7689,
-      "tnx": 4.22,
-      "tnx_ema21": 4.2214,
-      "nasdaq": 22207.54,
-      "nasdaq_ema21": 22370.55,
-      "ema_spread_pct": 0.009331,
-      "atr": 27.6355,
-      "atr_pct": 0.005702,
-      "ema21_slope_pct": -0.001707,
-      "tickers": {
-        "gold": "GC=F",
-        "dxy": "DX-Y.NYB",
-        "tnx": "^TNX",
-        "nasdaq": "^IXIC"
-      }
-    },
     {
       "ts": "2026-03-18T21:21:51+00:00",
       "candle_ts": "2026-03-18T19:00:00+00:00",
@@ -14004,6 +13976,34 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-04-05T08:24:08+00:00",
+      "candle_ts": "2026-04-02T19:00:00+00:00",
+      "score": 50,
+      "bias": "MIXTO_ESPERAR",
+      "gold": 4697.9,
+      "gold_ema9": 4683.03,
+      "gold_ema21": 4690.16,
+      "gold_ema50": 4687.72,
+      "gold_rsi14": 50.93,
+      "gold_rsi14_prev": 50.39,
+      "dxy": 100.037,
+      "dxy_ema21": 99.9926,
+      "tnx": 4.311,
+      "tnx_ema21": 4.3217,
+      "nasdaq": 21811.98,
+      "nasdaq_ema21": 21657.18,
+      "ema_spread_pct": 0.000519,
+      "atr": 37.7016,
+      "atr_pct": 0.008025,
+      "ema21_slope_pct": 0.000165,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -15587,7 +15587,7 @@
   ],
   "state": {
     "metrics": {
-      "ema_spread": 2.4386,
+      "ema_spread": 2.4378,
       "ema_spread_pct": 0.000519,
       "atr": 37.7016,
       "atr_pct": 0.008025,
