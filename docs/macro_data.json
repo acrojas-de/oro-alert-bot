@@ -2,37 +2,9 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-04-10T17:13:11+00:00"
+    "updated_utc": "2026-04-10T18:00:31+00:00"
   },
   "series": [
-    {
-      "ts": "2026-03-22T10:58:22+00:00",
-      "candle_ts": "2026-03-20T19:00:00+00:00",
-      "score": 25,
-      "bias": "SHORT_CUIDADO",
-      "gold": 4503.8,
-      "gold_ema9": 4571.29,
-      "gold_ema21": 4619.44,
-      "gold_ema50": 4701.04,
-      "gold_rsi14": 29.59,
-      "gold_rsi14_prev": 28.96,
-      "dxy": 99.587,
-      "dxy_ema21": 99.5458,
-      "tnx": 4.378,
-      "tnx_ema21": 4.301,
-      "nasdaq": 21606.13,
-      "nasdaq_ema21": 21995.84,
-      "ema_spread_pct": 0.018119,
-      "atr": 48.2446,
-      "atr_pct": 0.010712,
-      "ema21_slope_pct": -0.002568,
-      "tickers": {
-        "gold": "GC=F",
-        "dxy": "DX-Y.NYB",
-        "tnx": "^TNX",
-        "nasdaq": "^IXIC"
-      }
-    },
     {
       "ts": "2026-03-22T11:23:51+00:00",
       "candle_ts": "2026-03-20T19:00:00+00:00",
@@ -14004,6 +13976,34 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-04-10T18:00:31+00:00",
+      "candle_ts": "2026-04-10T16:00:00+00:00",
+      "score": 50,
+      "bias": "MIXTO_ESPERAR",
+      "gold": 4788.1,
+      "gold_ema9": 4788.48,
+      "gold_ema21": 4785.39,
+      "gold_ema50": 4776.54,
+      "gold_rsi14": 52.02,
+      "gold_rsi14_prev": 51.01,
+      "dxy": 98.72,
+      "dxy_ema21": 98.7963,
+      "tnx": 4.321,
+      "tnx_ema21": 4.3019,
+      "nasdaq": 22856.86,
+      "nasdaq_ema21": 22616.51,
+      "ema_spread_pct": 0.001847,
+      "atr": 21.6665,
+      "atr_pct": 0.004525,
+      "ema21_slope_pct": 5.7e-05,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -15904,7 +15904,7 @@
   ],
   "state": {
     "metrics": {
-      "ema_spread": 8.8455,
+      "ema_spread": 8.8444,
       "ema_spread_pct": 0.001847,
       "atr": 21.6665,
       "atr_pct": 0.004525,
