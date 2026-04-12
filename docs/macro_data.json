@@ -2,37 +2,9 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-04-12T04:20:19+00:00"
+    "updated_utc": "2026-04-12T06:05:23+00:00"
   },
   "series": [
-    {
-      "ts": "2026-03-23T15:39:27+00:00",
-      "candle_ts": "2026-03-23T14:00:00+00:00",
-      "score": 25,
-      "bias": "SHORT_CUIDADO",
-      "gold": 4463.5,
-      "gold_ema9": 4387.93,
-      "gold_ema21": 4411.13,
-      "gold_ema50": 4527.96,
-      "gold_rsi14": 52.85,
-      "gold_rsi14_prev": 52.31,
-      "dxy": 99.07,
-      "dxy_ema21": 99.5773,
-      "tnx": 4.324,
-      "tnx_ema21": 4.317,
-      "nasdaq": 22129.4,
-      "nasdaq_ema21": 21993.78,
-      "ema_spread_pct": 0.026173,
-      "atr": 83.5493,
-      "atr_pct": 0.018718,
-      "ema21_slope_pct": 0.001173,
-      "tickers": {
-        "gold": "GC=F",
-        "dxy": "DX-Y.NYB",
-        "tnx": "^TNX",
-        "nasdaq": "^IXIC"
-      }
-    },
     {
       "ts": "2026-03-23T16:32:53+00:00",
       "candle_ts": "2026-03-23T15:00:00+00:00",
@@ -14004,6 +13976,34 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-04-12T06:05:23+00:00",
+      "candle_ts": "2026-04-10T19:00:00+00:00",
+      "score": 25,
+      "bias": "SHORT_CUIDADO",
+      "gold": 4783.6,
+      "gold_ema9": 4787.16,
+      "gold_ema21": 4785.5,
+      "gold_ema50": 4777.6,
+      "gold_rsi14": 49.64,
+      "gold_rsi14_prev": 52.65,
+      "dxy": 98.68,
+      "dxy_ema21": 98.767,
+      "tnx": 4.317,
+      "tnx_ema21": 4.3032,
+      "nasdaq": 22916.81,
+      "nasdaq_ema21": 22666.35,
+      "ema_spread_pct": 0.001652,
+      "atr": 20.4362,
+      "atr_pct": 0.004272,
+      "ema21_slope_pct": -4e-05,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -15958,7 +15958,7 @@
       "stop_price": 4790.775497802734,
       "warmup_bars": 1,
       "source_type": "SELL",
-      "created_at": "2026-04-12T04:20:19+00:00"
+      "created_at": "2026-04-12T06:05:23+00:00"
     }
   }
 }
