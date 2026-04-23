@@ -2,37 +2,9 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-04-23T07:10:58+00:00"
+    "updated_utc": "2026-04-23T09:02:33+00:00"
   },
   "series": [
-    {
-      "ts": "2026-04-01T12:39:04+00:00",
-      "candle_ts": "2026-04-01T11:00:00+00:00",
-      "score": 75,
-      "bias": "LONG_FAVORABLE",
-      "gold": 4780.2,
-      "gold_ema9": 4745.95,
-      "gold_ema21": 4711.84,
-      "gold_ema50": 4649.45,
-      "gold_rsi14": 71.15,
-      "gold_rsi14_prev": 67.91,
-      "dxy": 99.408,
-      "dxy_ema21": 99.7644,
-      "tnx": 4.311,
-      "tnx_ema21": 4.3437,
-      "nasdaq": 21561.4,
-      "nasdaq_ema21": 21240.75,
-      "ema_spread_pct": 0.013052,
-      "atr": 30.2253,
-      "atr_pct": 0.006323,
-      "ema21_slope_pct": 0.00143,
-      "tickers": {
-        "gold": "GC=F",
-        "dxy": "DX-Y.NYB",
-        "tnx": "^TNX",
-        "nasdaq": "^IXIC"
-      }
-    },
     {
       "ts": "2026-04-01T14:14:08+00:00",
       "candle_ts": "2026-04-01T13:00:00+00:00",
@@ -14004,6 +13976,34 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-04-23T09:02:33+00:00",
+      "candle_ts": "2026-04-23T07:00:00+00:00",
+      "score": 0,
+      "bias": "SHORT_CUIDADO",
+      "gold": 4736.1,
+      "gold_ema9": 4734.25,
+      "gold_ema21": 4744.76,
+      "gold_ema50": 4764.01,
+      "gold_rsi14": 44.21,
+      "gold_rsi14_prev": 41.32,
+      "dxy": 98.649,
+      "dxy_ema21": 98.5782,
+      "tnx": 4.296,
+      "tnx_ema21": 4.2832,
+      "nasdaq": 24610.3,
+      "nasdaq_ema21": 24414.19,
+      "ema_spread_pct": 0.004065,
+      "atr": 19.2831,
+      "atr_pct": 0.004072,
+      "ema21_slope_pct": -0.000183,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -16477,11 +16477,11 @@
   ],
   "state": {
     "metrics": {
-      "ema_spread": 19.5248,
-      "ema_spread_pct": 0.004128,
-      "atr": 19.3818,
-      "atr_pct": 0.004098,
-      "ema21_slope_pct": -0.000328,
+      "ema_spread": 19.2517,
+      "ema_spread_pct": 0.004065,
+      "atr": 19.2831,
+      "atr_pct": 0.004072,
+      "ema21_slope_pct": -0.000183,
       "thresholds": {
         "COMP_EMA_PCT": 0.0015,
         "COMP_ATR_PCT": 0.0018,
