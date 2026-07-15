@@ -2,37 +2,9 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-07-15T17:15:08+00:00"
+    "updated_utc": "2026-07-15T18:19:36+00:00"
   },
   "series": [
-    {
-      "ts": "2026-05-31T10:49:22+00:00",
-      "candle_ts": "2026-05-29T15:00:00+00:00",
-      "score": 75,
-      "bias": "LONG_FAVORABLE",
-      "gold": 4576.8,
-      "gold_ema9": 4579.09,
-      "gold_ema21": 4559.91,
-      "gold_ema50": 4530.37,
-      "gold_rsi14": 60.7,
-      "gold_rsi14_prev": 64.39,
-      "dxy": 98.893,
-      "dxy_ema21": 98.9884,
-      "tnx": 4.437,
-      "tnx_ema21": 4.4645,
-      "nasdaq": 26980.2,
-      "nasdaq_ema21": 26826.04,
-      "ema_spread_pct": 0.006454,
-      "atr": 20.2499,
-      "atr_pct": 0.004424,
-      "ema21_slope_pct": 0.000369,
-      "tickers": {
-        "gold": "GC=F",
-        "dxy": "DX-Y.NYB",
-        "tnx": "^TNX",
-        "nasdaq": "^IXIC"
-      }
-    },
     {
       "ts": "2026-05-31T12:05:23+00:00",
       "candle_ts": "2026-05-29T15:00:00+00:00",
@@ -14004,6 +13976,34 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-07-15T18:19:36+00:00",
+      "candle_ts": "2026-07-15T13:00:00+00:00",
+      "score": 50,
+      "bias": "MIXTO_ESPERAR",
+      "gold": 4068.7,
+      "gold_ema9": 4054.93,
+      "gold_ema21": 4051.6,
+      "gold_ema50": 4053.67,
+      "gold_rsi14": 57.12,
+      "gold_rsi14_prev": 45.5,
+      "dxy": 100.427,
+      "dxy_ema21": 100.8139,
+      "tnx": 4.549,
+      "tnx_ema21": 4.5694,
+      "nasdaq": 26182.66,
+      "nasdaq_ema21": 26105.76,
+      "ema_spread_pct": 0.00051,
+      "atr": 18.362,
+      "atr_pct": 0.004513,
+      "ema21_slope_pct": 0.00042,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -17966,15 +17966,26 @@
       "ema21": 4049.89,
       "stop_price": 4046.36,
       "confirm_pct": 0.003
+    },
+    {
+      "ts": "2026-07-15T13:00:00+00:00",
+      "asset": "GOLD",
+      "type": "BUY",
+      "reason": "Cruce alcista: precio pasa por encima de EMA21",
+      "strength": 2,
+      "price": 4068.7,
+      "ema21": 4051.6,
+      "stop_price": 4062.6,
+      "confirm_pct": 0.003
     }
   ],
   "state": {
     "metrics": {
-      "ema_spread": 3.1704,
-      "ema_spread_pct": 0.000785,
-      "atr": 17.159,
-      "atr_pct": 0.004247,
-      "ema21_slope_pct": -0.000237,
+      "ema_spread": 2.0735,
+      "ema_spread_pct": 0.00051,
+      "atr": 18.362,
+      "atr_pct": 0.004513,
+      "ema21_slope_pct": 0.00042,
       "thresholds": {
         "COMP_EMA_PCT": 0.0015,
         "COMP_ATR_PCT": 0.0018,
@@ -17984,14 +17995,14 @@
     },
     "market_state": "NORMAL",
     "pending_confirm": {
-      "direction": "DOWN",
-      "from_ts": "2026-07-15T12:00:00+00:00",
-      "from_price": 4040.300048828125,
+      "direction": "UP",
+      "from_ts": "2026-07-15T13:00:00+00:00",
+      "from_price": 4068.699951171875,
       "threshold_pct": 0.003,
-      "stop_price": 4046.3604989013675,
+      "stop_price": 4062.5969012451174,
       "warmup_bars": 1,
-      "source_type": "SELL",
-      "created_at": "2026-07-15T17:15:08+00:00"
+      "source_type": "BUY",
+      "created_at": "2026-07-15T18:19:36+00:00"
     }
   }
 }
