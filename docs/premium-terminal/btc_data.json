@@ -1,7 +1,7 @@
 {
   "meta": {
     "asset": "BTC-USD",
-    "updated_utc": "2026-08-15T04:42:28+00:00"
+    "updated_utc": "2026-08-15T05:04:34+00:00"
   },
   "signals": [],
   "series": {
@@ -959,23 +959,15 @@
         "hist": -12.077801
       },
       {
-        "price": 63079.980469,
-        "ema21": 63337.733932,
-        "ema50": 63734.238474,
-        "rsi": 40.793651,
-        "macd": -309.223982,
-        "hist": 6.030375
+        "price": 63060.640625,
+        "ema21": 63335.975764,
+        "ema50": 63733.480049,
+        "rsi": 40.271138,
+        "macd": -310.766762,
+        "hist": 4.796152
       }
     ],
     "1h": [
-      {
-        "price": 65085.601562,
-        "ema21": 65011.965159,
-        "ema50": 64942.792623,
-        "rsi": 54.211159,
-        "macd": 19.058403,
-        "hist": -11.834081
-      },
       {
         "price": 65248.078125,
         "ema21": 65033.429974,
@@ -1921,47 +1913,23 @@
         "hist": 44.947154
       },
       {
-        "price": 63079.980469,
-        "ema21": 62974.709336,
-        "ema50": 63153.806384,
-        "rsi": 53.16962,
-        "macd": -36.256677,
-        "hist": 47.812297
+        "price": 63052.019531,
+        "ema21": 62972.167432,
+        "ema50": 63152.709877,
+        "rsi": 52.121578,
+        "macd": -38.487179,
+        "hist": 46.027895
+      },
+      {
+        "price": 63060.640625,
+        "ema21": 62980.21045,
+        "ema50": 63149.099318,
+        "rsi": 52.474738,
+        "macd": -27.498686,
+        "hist": 45.61311
       }
     ],
     "5m": [
-      {
-        "price": 62825.980469,
-        "ema21": 62967.407688,
-        "ema50": 62934.942941,
-        "rsi": 35.10972,
-        "macd": -25.656576,
-        "hist": -25.912356
-      },
-      {
-        "price": 62846.929688,
-        "ema21": 62956.455143,
-        "ema50": 62931.491441,
-        "rsi": 37.846351,
-        "macd": -31.384128,
-        "hist": -25.311926
-      },
-      {
-        "price": 62855.921875,
-        "ema21": 62947.315755,
-        "ema50": 62928.527929,
-        "rsi": 39.034855,
-        "macd": -34.796547,
-        "hist": -22.979476
-      },
-      {
-        "price": 62798.960938,
-        "ema21": 62933.828953,
-        "ema50": 62923.44687,
-        "rsi": 34.530495,
-        "macd": -41.617445,
-        "hist": -23.8403
-      },
       {
         "price": 62817.988281,
         "ema21": 62923.297983,
@@ -2883,191 +2851,47 @@
         "hist": 3.861672
       },
       {
-        "price": 63079.980469,
-        "ema21": 63039.183166,
-        "ema50": 63007.571758,
-        "rsi": 64.444192,
-        "macd": 15.409741,
-        "hist": 4.59332
+        "price": 63087.378906,
+        "ema21": 63039.855752,
+        "ema50": 63007.861893,
+        "rsi": 65.883371,
+        "macd": 15.999929,
+        "hist": 5.065471
+      },
+      {
+        "price": 63071.019531,
+        "ema21": 63042.688823,
+        "ema50": 63010.338663,
+        "rsi": 60.091381,
+        "macd": 16.447889,
+        "hist": 4.410745
+      },
+      {
+        "price": 63053.980469,
+        "ema21": 63043.715336,
+        "ema50": 63012.050106,
+        "rsi": 54.697706,
+        "macd": 15.252173,
+        "hist": 2.572023
+      },
+      {
+        "price": 63052.019531,
+        "ema21": 63044.470263,
+        "ema50": 63013.617535,
+        "rsi": 54.095923,
+        "macd": 13.985116,
+        "hist": 1.043973
+      },
+      {
+        "price": 63060.640625,
+        "ema21": 63045.940296,
+        "ema50": 63015.461578,
+        "rsi": 56.368677,
+        "macd": 13.520756,
+        "hist": 0.46369
       }
     ],
     "1m": [
-      {
-        "price": 63050.710938,
-        "ema21": 63043.114532,
-        "ema50": 63019.062402,
-        "rsi": 55.956245,
-        "macd": 12.212135,
-        "hist": -1.957334
-      },
-      {
-        "price": 63047.148438,
-        "ema21": 63043.481251,
-        "ema50": 63020.163815,
-        "rsi": 54.211018,
-        "macd": 11.026884,
-        "hist": -2.514068
-      },
-      {
-        "price": 63052.140625,
-        "ema21": 63044.268467,
-        "ema50": 63021.417808,
-        "rsi": 56.269325,
-        "macd": 10.370843,
-        "hist": -2.536087
-      },
-      {
-        "price": 63052.140625,
-        "ema21": 63044.984117,
-        "ema50": 63022.622624,
-        "rsi": 56.269325,
-        "macd": 9.738665,
-        "hist": -2.534612
-      },
-      {
-        "price": 63054.671875,
-        "ema21": 63045.864823,
-        "ema50": 63023.879457,
-        "rsi": 57.395531,
-        "macd": 9.33431,
-        "hist": -2.351174
-      },
-      {
-        "price": 63050.78125,
-        "ema21": 63046.311771,
-        "ema50": 63024.93443,
-        "rsi": 55.048877,
-        "macd": 8.60077,
-        "hist": -2.467771
-      },
-      {
-        "price": 63071.109375,
-        "ema21": 63048.566098,
-        "ema50": 63026.745212,
-        "rsi": 63.456037,
-        "macd": 9.549662,
-        "hist": -1.215103
-      },
-      {
-        "price": 63069.871094,
-        "ema21": 63050.502916,
-        "ema50": 63028.436423,
-        "rsi": 62.68692,
-        "macd": 10.085488,
-        "hist": -0.543422
-      },
-      {
-        "price": 63067.898438,
-        "ema21": 63052.084327,
-        "ema50": 63029.983953,
-        "rsi": 61.409967,
-        "macd": 10.232997,
-        "hist": -0.31673
-      },
-      {
-        "price": 63060.550781,
-        "ema21": 63052.854005,
-        "ema50": 63031.182652,
-        "rsi": 56.771143,
-        "macd": 9.645813,
-        "hist": -0.723131
-      },
-      {
-        "price": 63057.960938,
-        "ema21": 63053.318271,
-        "ema50": 63032.232781,
-        "rsi": 55.188698,
-        "macd": 8.869248,
-        "hist": -1.199757
-      },
-      {
-        "price": 63063.640625,
-        "ema21": 63054.256667,
-        "ema50": 63033.464461,
-        "rsi": 57.956502,
-        "macd": 8.612835,
-        "hist": -1.164936
-      },
-      {
-        "price": 63063.640625,
-        "ema21": 63055.109754,
-        "ema50": 63034.64784,
-        "rsi": 57.956502,
-        "macd": 8.313789,
-        "hist": -1.171186
-      },
-      {
-        "price": 63071.988281,
-        "ema21": 63056.644166,
-        "ema50": 63036.112171,
-        "rsi": 61.961319,
-        "macd": 8.65066,
-        "hist": -0.667452
-      },
-      {
-        "price": 63071.621094,
-        "ema21": 63058.005705,
-        "ema50": 63037.504678,
-        "rsi": 61.682991,
-        "macd": 8.786716,
-        "hist": -0.425117
-      },
-      {
-        "price": 63071.660156,
-        "ema21": 63059.247018,
-        "ema50": 63038.844108,
-        "rsi": 61.7027,
-        "macd": 8.796295,
-        "hist": -0.33243
-      },
-      {
-        "price": 63071.390625,
-        "ema21": 63060.350983,
-        "ema50": 63040.120442,
-        "rsi": 61.467763,
-        "macd": 8.682056,
-        "hist": -0.357335
-      },
-      {
-        "price": 63072.269531,
-        "ema21": 63061.434487,
-        "ema50": 63041.381191,
-        "rsi": 61.976181,
-        "macd": 8.563724,
-        "hist": -0.380534
-      },
-      {
-        "price": 63062.179688,
-        "ema21": 63061.502233,
-        "ema50": 63042.196818,
-        "rsi": 53.28415,
-        "macd": 7.568533,
-        "hist": -1.100579
-      },
-      {
-        "price": 63069.53125,
-        "ema21": 63062.232143,
-        "ema50": 63043.268757,
-        "rsi": 57.915413,
-        "macd": 7.289024,
-        "hist": -1.104071
-      },
-      {
-        "price": 63064.578125,
-        "ema21": 63062.445414,
-        "ema50": 63044.104418,
-        "rsi": 54.029021,
-        "macd": 6.591849,
-        "hist": -1.440997
-      },
-      {
-        "price": 63068.328125,
-        "ema21": 63062.980206,
-        "ema50": 63045.054368,
-        "rsi": 56.413748,
-        "macd": 6.269653,
-        "hist": -1.410554
-      },
       {
         "price": 63076.308594,
         "ema21": 63064.191878,
@@ -3845,12 +3669,188 @@
         "hist": 0.102066
       },
       {
+        "price": 63081.238281,
+        "ema21": 63064.26335,
+        "ema50": 63048.556906,
+        "rsi": 69.212918,
+        "macd": 10.597987,
+        "hist": 0.220107
+      },
+      {
         "price": 63079.980469,
-        "ema21": 63064.149003,
-        "ema50": 63048.50758,
-        "rsi": 68.550716,
-        "macd": 10.497648,
-        "hist": 0.139836
+        "ema21": 63065.692179,
+        "ema50": 63049.789203,
+        "rsi": 67.678253,
+        "macd": 10.512468,
+        "hist": 0.107671
+      },
+      {
+        "price": 63087.378906,
+        "ema21": 63067.663699,
+        "ema50": 63051.263309,
+        "rsi": 71.658886,
+        "macd": 10.915856,
+        "hist": 0.408846
+      },
+      {
+        "price": 63087.378906,
+        "ema21": 63069.455991,
+        "ema50": 63052.679607,
+        "rsi": 71.658886,
+        "macd": 11.107502,
+        "hist": 0.480395
+      },
+      {
+        "price": 63083.0,
+        "ema21": 63070.687265,
+        "ema50": 63053.868642,
+        "rsi": 66.073187,
+        "macd": 10.781757,
+        "hist": 0.12372
+      },
+      {
+        "price": 63072.359375,
+        "ema21": 63070.839275,
+        "ema50": 63054.593769,
+        "rsi": 54.878844,
+        "macd": 9.55485,
+        "hist": -0.88255
+      },
+      {
+        "price": 63071.019531,
+        "ema21": 63070.855662,
+        "ema50": 63055.237916,
+        "rsi": 53.646348,
+        "macd": 8.377829,
+        "hist": -1.647657
+      },
+      {
+        "price": 63071.019531,
+        "ema21": 63070.870559,
+        "ema50": 63055.856803,
+        "rsi": 53.646348,
+        "macd": 7.360187,
+        "hist": -2.132239
+      },
+      {
+        "price": 63071.011719,
+        "ema21": 63070.883392,
+        "ema50": 63056.451114,
+        "rsi": 53.638202,
+        "macd": 6.47839,
+        "hist": -2.411229
+      },
+      {
+        "price": 63071.019531,
+        "ema21": 63070.895768,
+        "ema50": 63057.022424,
+        "rsi": 53.645783,
+        "macd": 5.714318,
+        "hist": -2.540241
+      },
+      {
+        "price": 63051.210938,
+        "ema21": 63069.106238,
+        "ema50": 63056.794523,
+        "rsi": 37.087663,
+        "macd": 3.470393,
+        "hist": -3.827332
+      },
+      {
+        "price": 63056.960938,
+        "ema21": 63068.00212,
+        "ema50": 63056.801049,
+        "rsi": 42.623792,
+        "macd": 2.131473,
+        "hist": -4.133002
+      },
+      {
+        "price": 63053.980469,
+        "ema21": 63066.727424,
+        "ema50": 63056.690438,
+        "rsi": 40.628079,
+        "macd": 0.820414,
+        "hist": -4.355249
+      },
+      {
+        "price": 63053.980469,
+        "ema21": 63065.56861,
+        "ema50": 63056.584164,
+        "rsi": 40.628079,
+        "macd": -0.216119,
+        "hist": -4.313426
+      },
+      {
+        "price": 63053.980469,
+        "ema21": 63064.515143,
+        "ema50": 63056.482059,
+        "rsi": 40.628079,
+        "macd": -1.025755,
+        "hist": -4.098449
+      },
+      {
+        "price": 63052.019531,
+        "ema21": 63063.379178,
+        "ema50": 63056.307058,
+        "rsi": 39.122826,
+        "macd": -1.804824,
+        "hist": -3.902014
+      },
+      {
+        "price": 63052.011719,
+        "ema21": 63062.345773,
+        "ema50": 63056.138613,
+        "rsi": 39.116608,
+        "macd": -2.39526,
+        "hist": -3.593961
+      },
+      {
+        "price": 63052.019531,
+        "ema21": 63061.407023,
+        "ema50": 63055.97708,
+        "rsi": 39.127027,
+        "macd": -2.829934,
+        "hist": -3.222907
+      },
+      {
+        "price": 63053.980469,
+        "ema21": 63060.731882,
+        "ema50": 63055.898782,
+        "rsi": 41.818433,
+        "macd": -2.981811,
+        "hist": -2.699828
+      },
+      {
+        "price": 63062.941406,
+        "ema21": 63060.932748,
+        "ema50": 63056.174963,
+        "rsi": 52.215604,
+        "macd": -2.351991,
+        "hist": -1.656006
+      },
+      {
+        "price": 63061.671875,
+        "ema21": 63060.999941,
+        "ema50": 63056.390528,
+        "rsi": 50.829735,
+        "macd": -1.933011,
+        "hist": -0.989621
+      },
+      {
+        "price": 63060.398438,
+        "ema21": 63060.945259,
+        "ema50": 63056.547701,
+        "rsi": 49.413021,
+        "macd": -1.684307,
+        "hist": -0.592734
+      },
+      {
+        "price": 63060.640625,
+        "ema21": 63060.917565,
+        "ema50": 63056.708208,
+        "rsi": 49.700158,
+        "macd": -1.450939,
+        "hist": -0.287493
       }
     ]
   },
@@ -3868,21 +3868,21 @@
       },
       "compression": {
         "compression": false,
-        "volatility": 0.0024950634755841012,
-        "macd_compression": 26.547516195182915
+        "volatility": 0.0024709786728326377,
+        "macd_compression": 26.42409383051004
       },
       "magnet": {
         "direction": "down",
         "target": 62793.300781,
-        "distance_up": 1095.917969,
-        "distance_down": 286.679688
+        "distance_up": 1115.257813,
+        "distance_down": 267.339844
       },
       "vacuum": {
         "vacuum": true,
         "direction": "up",
         "target": 64175.898438,
-        "distance_up": 1095.917969,
-        "distance_down": 286.679688
+        "distance_up": 1115.257813,
+        "distance_down": 267.339844
       },
       "trap": {
         "trap": false,
@@ -3894,8 +3894,8 @@
       "alert_engine": {
         "compression": {
           "active": false,
-          "volatility": 0.00249506,
-          "macd_compression": 26.547516,
+          "volatility": 0.00247098,
+          "macd_compression": 26.424094,
           "label": "normal"
         },
         "directional_bias": {
@@ -3923,9 +3923,9 @@
     },
     "1h": {
       "liquidity": {
-        "swing_high": 63079.980469,
+        "swing_high": 63071.390625,
         "swing_low": 62814.53125,
-        "range_high_20": 63079.980469,
+        "range_high_20": 63071.390625,
         "range_low_20": 62545.660156
       },
       "sweep": {
@@ -3934,21 +3934,21 @@
       },
       "compression": {
         "compression": true,
-        "volatility": 0.0012431105801418393,
-        "macd_compression": 35.76168671505804
+        "volatility": 0.0012024394943881823,
+        "macd_compression": 37.45138551117645
       },
       "magnet": {
         "direction": "up",
-        "target": 63079.980469,
-        "distance_up": 0.0,
-        "distance_down": 534.320313
+        "target": 63071.390625,
+        "distance_up": 10.75,
+        "distance_down": 514.980469
       },
       "vacuum": {
         "vacuum": false,
         "direction": "none",
-        "target": 63079.980469,
-        "distance_up": 0.0,
-        "distance_down": 534.320313
+        "target": 63060.640625,
+        "distance_up": 10.75,
+        "distance_down": 514.980469
       },
       "trap": {
         "trap": false,
@@ -3960,8 +3960,8 @@
       "alert_engine": {
         "compression": {
           "active": true,
-          "volatility": 0.00124311,
-          "macd_compression": 35.761687,
+          "volatility": 0.00120244,
+          "macd_compression": 37.451386,
           "label": "compression"
         },
         "directional_bias": {
@@ -3982,7 +3982,7 @@
         "breakout_confirmation": {
           "active": false,
           "direction": "none",
-          "body_ratio": 0.9994,
+          "body_ratio": 0.7888,
           "box_high": 63183.070312,
           "box_low": 62727.308594,
           "label": "no_breakout"
@@ -3991,9 +3991,9 @@
     },
     "5m": {
       "liquidity": {
-        "swing_high": 63079.980469,
-        "swing_low": 62988.390625,
-        "range_high_20": 63083.699219,
+        "swing_high": 63087.378906,
+        "swing_low": 63052.019531,
+        "range_high_20": 63087.378906,
         "range_low_20": 62988.390625
       },
       "sweep": {
@@ -4002,21 +4002,21 @@
       },
       "compression": {
         "compression": true,
-        "volatility": 0.00025861167280977996,
-        "macd_compression": 4.948394728126451
+        "volatility": 0.00020209225629595946,
+        "macd_compression": 2.3792009041537967
       },
       "magnet": {
         "direction": "up",
-        "target": 63083.699219,
-        "distance_up": 3.71875,
-        "distance_down": 91.589844
+        "target": 63087.378906,
+        "distance_up": 26.738281,
+        "distance_down": 72.25
       },
       "vacuum": {
         "vacuum": false,
         "direction": "none",
-        "target": 63079.980469,
-        "distance_up": 3.71875,
-        "distance_down": 91.589844
+        "target": 63060.640625,
+        "distance_up": 26.738281,
+        "distance_down": 72.25
       },
       "trap": {
         "trap": false,
@@ -4028,77 +4028,8 @@
       "alert_engine": {
         "compression": {
           "active": true,
-          "volatility": 0.00025861,
-          "macd_compression": 4.948395,
-          "label": "compression"
-        },
-        "directional_bias": {
-          "score": 5,
-          "bias": "bullish",
-          "confidence": "high",
-          "reasons": [
-            "ema21_above_ema50",
-            "price_above_ema21",
-            "rsi_bullish",
-            "magnet_up"
-          ]
-        },
-        "divergence": {
-          "active": false,
-          "type": "none",
-          "label": "no_divergence"
-        },
-        "breakout_confirmation": {
-          "active": true,
-          "direction": "up",
-          "body_ratio": 0.9795,
-          "box_high": 63077.179688,
-          "box_low": 62978.980469,
-          "label": "bullish_breakout_confirmed"
-        }
-      }
-    },
-    "1m": {
-      "liquidity": {
-        "swing_high": 63079.980469,
-        "swing_low": 63060.03125,
-        "range_high_20": 63079.980469,
-        "range_low_20": 63054.351562
-      },
-      "sweep": {
-        "sweep_high": false,
-        "sweep_low": false
-      },
-      "compression": {
-        "compression": true,
-        "volatility": 0.00011612795460233928,
-        "macd_compression": 0.5142352994586654
-      },
-      "magnet": {
-        "direction": "up",
-        "target": 63079.980469,
-        "distance_up": 0.0,
-        "distance_down": 25.628907
-      },
-      "vacuum": {
-        "vacuum": false,
-        "direction": "none",
-        "target": 63079.980469,
-        "distance_up": 0.0,
-        "distance_down": 25.628907
-      },
-      "trap": {
-        "trap": false,
-        "type": "none",
-        "direction": "none",
-        "confidence": "low",
-        "compression_confirmed": true
-      },
-      "alert_engine": {
-        "compression": {
-          "active": true,
-          "volatility": 0.00011613,
-          "macd_compression": 0.514235,
+          "volatility": 0.00020209,
+          "macd_compression": 2.379201,
           "label": "compression"
         },
         "directional_bias": {
@@ -4120,9 +4051,77 @@
         "breakout_confirmation": {
           "active": false,
           "direction": "none",
+          "body_ratio": 0.7888,
+          "box_high": 63087.378906,
+          "box_low": 62989.988281,
+          "label": "no_breakout"
+        }
+      }
+    },
+    "1m": {
+      "liquidity": {
+        "swing_high": 63062.941406,
+        "swing_low": 63052.011719,
+        "range_high_20": 63087.378906,
+        "range_low_20": 63051.210938
+      },
+      "sweep": {
+        "sweep_high": false,
+        "sweep_low": false
+      },
+      "compression": {
+        "compression": true,
+        "volatility": 4.9264789009548195e-05,
+        "macd_compression": 2.535643798314557
+      },
+      "magnet": {
+        "direction": "down",
+        "target": 63051.210938,
+        "distance_up": 26.738281,
+        "distance_down": 9.429687
+      },
+      "vacuum": {
+        "vacuum": false,
+        "direction": "none",
+        "target": 63060.640625,
+        "distance_up": 26.738281,
+        "distance_down": 9.429687
+      },
+      "trap": {
+        "trap": false,
+        "type": "none",
+        "direction": "none",
+        "confidence": "low",
+        "compression_confirmed": true
+      },
+      "alert_engine": {
+        "compression": {
+          "active": true,
+          "volatility": 4.926e-05,
+          "macd_compression": 2.535644,
+          "label": "compression"
+        },
+        "directional_bias": {
+          "score": 0,
+          "bias": "neutral",
+          "confidence": "low",
+          "reasons": [
+            "ema21_above_ema50",
+            "price_below_ema21",
+            "magnet_down"
+          ]
+        },
+        "divergence": {
+          "active": false,
+          "type": "none",
+          "label": "no_divergence"
+        },
+        "breakout_confirmation": {
+          "active": false,
+          "direction": "none",
           "body_ratio": 0.0,
-          "box_high": 63080.03125,
-          "box_low": 63054.351562,
+          "box_high": 63071.019531,
+          "box_low": 63051.199219,
           "label": "no_breakout"
         }
       }
@@ -4130,16 +4129,16 @@
   },
   "bias": {
     "bias": "bullish",
-    "bullish_pct": 62.93,
-    "bearish_pct": 37.07,
-    "target": 63586.360878
+    "bullish_pct": 57.76,
+    "bearish_pct": 42.24,
+    "target": 63626.309245
   },
   "setup": {
     "state": "WATCHLIST",
     "direction": "none",
     "entry": null,
     "stop": null,
-    "target": 63586.360878,
+    "target": 63626.309245,
     "reason": "compression active waiting breakout"
   }
 }
