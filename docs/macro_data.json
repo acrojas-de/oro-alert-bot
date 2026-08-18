@@ -2,37 +2,9 @@
   "meta": {
     "timeframe": "60m",
     "period": "30d",
-    "updated_utc": "2026-08-18T03:29:17+00:00"
+    "updated_utc": "2026-08-18T04:07:34+00:00"
   },
   "series": [
-    {
-      "ts": "2026-07-28T21:01:27+00:00",
-      "candle_ts": "2026-07-28T15:00:00+00:00",
-      "score": 75,
-      "bias": "LONG_FAVORABLE",
-      "gold": 4025.9,
-      "gold_ema9": 4030.54,
-      "gold_ema21": 4040.3,
-      "gold_ema50": 4055.56,
-      "gold_rsi14": 39.24,
-      "gold_rsi14_prev": 37.37,
-      "dxy": 101.418,
-      "dxy_ema21": 101.4516,
-      "tnx": 4.602,
-      "tnx_ema21": 4.6331,
-      "nasdaq": 24933.95,
-      "nasdaq_ema21": 24995.68,
-      "ema_spread_pct": 0.003789,
-      "atr": 14.4257,
-      "atr_pct": 0.003583,
-      "ema21_slope_pct": -0.000358,
-      "tickers": {
-        "gold": "GC=F",
-        "dxy": "DX-Y.NYB",
-        "tnx": "^TNX",
-        "nasdaq": "^IXIC"
-      }
-    },
     {
       "ts": "2026-07-28T22:11:17+00:00",
       "candle_ts": "2026-07-28T16:00:00+00:00",
@@ -14004,6 +13976,34 @@
         "tnx": "^TNX",
         "nasdaq": "^IXIC"
       }
+    },
+    {
+      "ts": "2026-08-18T04:07:34+00:00",
+      "candle_ts": "2026-08-17T21:00:00+00:00",
+      "score": 25,
+      "bias": "SHORT_CUIDADO",
+      "gold": 4465.4,
+      "gold_ema9": 4473.55,
+      "gold_ema21": 4465.4,
+      "gold_ema50": 4451.88,
+      "gold_rsi14": 51.54,
+      "gold_rsi14_prev": 63.78,
+      "dxy": 99.566,
+      "dxy_ema21": 99.5466,
+      "tnx": 4.728,
+      "tnx_ema21": 4.6882,
+      "nasdaq": 26655.59,
+      "nasdaq_ema21": 26691.14,
+      "ema_spread_pct": 0.003027,
+      "atr": 16.6363,
+      "atr_pct": 0.003726,
+      "ema21_slope_pct": -0.0,
+      "tickers": {
+        "gold": "GC=F",
+        "dxy": "DX-Y.NYB",
+        "tnx": "^TNX",
+        "nasdaq": "^IXIC"
+      }
     }
   ],
   "signals": [
@@ -18725,11 +18725,11 @@
   ],
   "state": {
     "metrics": {
-      "ema_spread": 12.4705,
-      "ema_spread_pct": 0.002799,
-      "atr": 16.5122,
-      "atr_pct": 0.003706,
-      "ema21_slope_pct": -0.000188,
+      "ema_spread": 13.5174,
+      "ema_spread_pct": 0.003027,
+      "atr": 16.6363,
+      "atr_pct": 0.003726,
+      "ema21_slope_pct": -0.0,
       "thresholds": {
         "COMP_EMA_PCT": 0.0015,
         "COMP_ATR_PCT": 0.0018,
@@ -18741,12 +18741,12 @@
     "pending_confirm": {
       "direction": "DOWN",
       "from_ts": "2026-08-17T21:00:00+00:00",
-      "from_price": 4464.60009765625,
+      "from_price": 4465.39990234375,
       "threshold_pct": 0.003,
-      "stop_price": 4471.296997802735,
+      "stop_price": 4472.0980021972655,
       "warmup_bars": 1,
       "source_type": "SELL",
-      "created_at": "2026-08-18T02:47:07+00:00"
+      "created_at": "2026-08-18T04:07:34+00:00"
     }
   }
 }
